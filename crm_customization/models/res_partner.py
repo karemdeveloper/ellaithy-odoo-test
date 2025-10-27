@@ -1,0 +1,78 @@
+from odoo import models, fields,api
+from odoo.exceptions import ValidationError
+
+class ResPartner(models.Model):
+    _inherit = 'res.partner'
+
+    branch_id = fields.Many2one('res.branch', string="Branch")
+    area_id = fields.Many2one('res.area', string="Area")
+    company_custom_id = fields.Many2one('res.company.custom', string="Company")
+    is_opportunity=fields.Boolean(string='Is Opportunity',default=False)
+    survey_ids = fields.One2many('res.survey', 'partner_id', string="Surveys")
+
+    def action_open_create_opportunity_wizard(self):
+        """Open the wizard popup"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Create Opportunity',
+            'res_model': 'opportunity.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_id': self.id},
+        }
+#############################################################################################
+
+    def action_create_survey(self):
+        """Create a new survey for this customer and open it"""
+        self.ensure_one()
+        survey = self.env['res.survey'].create({
+            'partner_id': self.id,  # Customer name automatically filled
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'res.survey',
+            'res_id': survey.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+#########################################################################################
+    survey_count = fields.Integer(string="Survey Count", compute="_compute_survey_count")
+
+    def _compute_survey_count(self):
+        for rec in self:
+            rec.survey_count = self.env['res.survey'].search_count([('partner_id', '=', rec.id)])
+
+    def action_view_survey(self):
+        """View all surveys linked to this customer"""
+        self.ensure_one()
+        action = self.env["ir.actions.actions"]._for_xml_id("crm_customization.action_res_survey")
+        action['domain'] = [('partner_id', '=', self.id)]
+        action['context'] = {'default_partner_id': self.id}
+        return action
+
+    #########################################################################################
+
+    @api.onchange('area_id')
+    def _onchange_area_id(self):
+        for rec in self:
+            rec.branch_id = rec.area_id.branch_area.id if rec.area_id else False
+
+    @api.constrains('phone', 'mobile')
+    def _check_duplicate_phone_mobile(self):
+        for record in self:
+            if record.mobile:
+                duplicate_mobile = self.search([
+                    ('mobile', '=', record.mobile),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if duplicate_mobile:
+                    raise ValidationError("Mobile number already exists for another contact.")
+
+
+            if record.phone:
+                duplicate_phone = self.search([
+                    ('phone', '=', record.phone),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if duplicate_phone:
+                    raise ValidationError("Phone number already exists for another contact.")

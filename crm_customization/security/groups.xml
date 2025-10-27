@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- CRM Customer Group -->
+    <record id="group_crm_customer" model="res.groups">
+        <field name="name">CRM Customer</field>
+    </record>
+
+    <!-- Sales Customer Group -->
+    <record id="group_sales_customer" model="res.groups">
+        <field name="name">Sales Customer</field>
+    </record>
+    <!--    <record id="group_customer_service" model="res.groups">-->
+    <!--        <field name="name">Customer service group</field>-->
+    <!--    </record>-->
+    <!--    <record id="group_sales_team" model="res.groups">-->
+    <!--        <field name="name">Sales Team Group</field>-->
+    <!--    </record>-->
+    <record id="group_crm_opportunity_stage" model="res.groups">
+        <field name="name">CRM Opportunity Stage</field>
+    </record>
+
+    <record id="group_confirmation_inactive_requests" model="res.groups">
+        <field name="name">Confirmation In Active Requests</field>
+    </record>
+    <record id="group_view_inactive_requests" model="res.groups">
+        <field name="name">View InActive Requests</field>
+    </record>
+    <record id="inactive_request_rule_user_own" model="ir.rule">
+        <field name="name">Inactive Request - User Own Records</field>
+        <field name="model_id" ref="model_inactive_request"/>
+        <field name="domain_force">[('create_uid', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="inactive_request_rule_view_all" model="ir.rule">
+        <field name="name">Inactive Request - View All</field>
+        <field name="model_id" ref="model_inactive_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('crm_customization.group_view_inactive_requests'))]"/>
+    </record>
+
+
+</odoo>

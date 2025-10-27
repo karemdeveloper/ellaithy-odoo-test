@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Inherit CRM Opportunity Form -->
+    <record id="view_crm_lead_form_inherit_branch_brand" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.branch.brand</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_set_won_rainbowman']" position="attributes">
+                <attribute name="groups">crm_customization.group_crm_opportunity_stage</attribute>
+            </xpath>
+            <xpath expr="//button[@name='%(crm.crm_lead_lost_action)d']" position="attributes">
+                <attribute name="groups">crm_customization.group_crm_opportunity_stage</attribute>
+            </xpath>
+            <xpath expr="//form[1]/header[1]/button[@name='iap_enrich'][2]" position="attributes">
+                <attribute name="groups">crm_customization.group_crm_opportunity_stage</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_sale_quotations_new']" position="attributes">
+                <attribute name="groups">crm_customization.group_crm_opportunity_stage</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="area_name"/>
+                <field name="branch_name"/>
+                <field name="brand_name"/>
+                <field name="sub_brand_name"/>
+                <field name="source_name"/>
+                <field name="sales_team" invisible="1"/>
+                <field name="sla_duration"/>
+                <field name="marketing_offer"/>
+                <field name="call_type"/>
+            </xpath>
+            <xpath expr="//page[@name='lead']" position="after">
+                <page name="feedback_tab" string="Feedback">
+                    <field name="feedback_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="date"/>
+                            <field name="salesperson_id"/>
+                            <!--                            <field name="feedback"/>-->
+                            <field name="feedback2"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='sales_team']" position="after">
+                <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='lead']/group[1]/group[@name='Misc']/field[@name='team_id']"
+                       position="move"/>
+            </xpath>
+            <xpath expr="//page[@name='lead']" position="replace"/>
+
+
+        </field>
+    </record>
+    <record id="view_crm_lead_kanban_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.inherit.branch.brand</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="phone" display="full" options="{}" widget="phone"/>
+            </xpath>
+              <xpath expr="//field[@name='activity_ids']" position="replace"/>
+
+            <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/footer[1]" position="after">
+                <a type="object"
+                   name="action_open_feedback_wizard"
+                   class="btn btn-primary btn-sm mt-1"
+                   t-att-title="'Add Feedback'">
+                    <i class="fa fa-comment"></i>
+                    Add Feedback
+                </a>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_crm_lead_list_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.list.inherit.branch.brand</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_reschedule_meeting']" position="after">
+                <button name="action_open_feedback_wizard"
+                        string="Add Feedback"
+                        type="object"
+                        class="btn-primary"
+                />
+            </xpath>
+            <xpath expr="//button[@name='%(crm.action_lead_mail_compose)d']" position="replace"/>
+            <xpath expr="//button[@name='%(crm_sms.crm_lead_act_window_sms_composer_multi)d']" position="replace"/>
+
+            <xpath expr="//field[@name='contact_name']" position="after">
+                <field name="branch_name" optional="show"/>
+                <field name="area_name" optional="show"/>
+                <field name="brand_name" optional="show"/>
+                <field name="sub_brand_name" optional="show"/>
+                <field name="source_name" optional="show"/>
+                <field name="sales_team" column_invisible="1"/>
+                <field name="call_type" optional="show"/>
+                <field name="phone" optional="show" widget="phone"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="crm.res_partner_menu_customer" model="ir.ui.menu">
+        <field name="sequence">0</field>
+    </record>
+
+
+</odoo>
