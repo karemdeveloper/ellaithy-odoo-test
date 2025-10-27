@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Inherit CRM team Form -->
+    <record id="view_crm_team_member_form_inherit_branch" model="ir.ui.view">
+        <field name="name">crm.team.member.form.inherit</field>
+        <field name="model">crm.team.member</field>
+        <field name="inherit_id" ref="sales_team.crm_team_member_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='crm_team_id']" position="after">
+                <field name="shift" widget="many2many_tags" invisible="1"/>
+                <field name="state"/>
+                <field name="date_to" invisible="1"/>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

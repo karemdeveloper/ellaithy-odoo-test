@@ -1,0 +1,33 @@
+from odoo import models, fields,api
+
+class InActiveRequest(models.Model):
+    _name = 'inactive.request'
+    _description = 'Inactive Request'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _rec_name = 'inactive_reason'
+
+    date = fields.Date(string="Date")
+    date_from = fields.Datetime(string="From")
+    date_to= fields.Datetime(string="To")
+    inactive_reason=fields.Many2one('inactive.reason',string="In Active reason")
+    state = fields.Selection([
+        ('to_approve', 'To Approve'),
+        ('approved', 'Approved'),
+        ('refused', 'Refused')
+    ], string="State", default='to_approve',tracking=True)
+
+    # ===== Buttons actions =====
+    def action_approve(self):
+        """Set state to Approved"""
+        for rec in self:
+            rec.state = 'approved'
+            member = self.env['crm.team.member'].search([('user_id', '=', rec.create_uid.id)], limit=1)
+            if member:
+                member.state = 'inactive'
+                if rec.date_to:
+                    member.date_to = rec.date_to
+
+    def action_refuse(self):
+        """Set state to Refused"""
+        for rec in self:
+            rec.state = 'refused'
