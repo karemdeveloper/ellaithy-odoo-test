@@ -81,7 +81,15 @@
                     <i class="fa fa-comment"></i>
                     Add Feedback
                 </a>
+                <a type="action"
+                   name="%(crm.crm_lead_lost_action)d"
+                   class="btn btn-danger btn-sm mt-1"
+                   t-att-title="'Mark as Lost'">
+                    <i class="fa fa-times"></i>
+                    Lost
+                </a>
             </xpath>
+
         </field>
     </record>
     <record id="view_crm_lead_list_inherit" model="ir.ui.view">

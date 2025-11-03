@@ -154,11 +154,11 @@
 
             <!-- Move email field before name field -->
             <xpath expr="//search[1]/field[@name='name']" position="before">
-                <xpath expr="//field[@name='email']" position="move"/>
+                <xpath expr="//field[@name='phone_mobile_search']" position="move"/>
             </xpath>
 
             <!-- Remove filter_domain from email field -->
-            <xpath expr="//field[@name='email']" position="attributes">
+            <xpath expr="//field[@name='phone_mobile_search']" position="attributes">
                 <attribute name="filter_domain"/>
             </xpath>
 

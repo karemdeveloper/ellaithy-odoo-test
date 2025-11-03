@@ -63,7 +63,7 @@ class ResComplaintWizard(models.TransientModel):
             'customer_id': self.customer_id.id,
             'complaint_reason_id': self.complaint_reason_id.id,
             'branch_id': self.branch_id.id,
-            'department': self.department.id,  
+            'department': self.department.id,
             'escalation_line_id': self.escalation_line_id.id,
             'solved_by': self.solved_by,
             'validity': self.validity,
