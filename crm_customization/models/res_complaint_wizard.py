@@ -45,6 +45,16 @@ class ResComplaintWizard(models.TransientModel):
             res['customer_id'] = self.env.context.get('active_id')
         return res
 
+##########################################################
+
+    @api.onchange('complaint_type_id')
+    def _onchange_complaint_type_id(self):
+        """Auto-fill department when complaint type is selected"""
+        if self.complaint_type_id:
+            self.department = self.complaint_type_id.department_id
+        else:
+            self.department = False
+##########################################################
     def action_confirm(self):
         """ Create complaint record """
         self.ensure_one()
@@ -53,12 +63,40 @@ class ResComplaintWizard(models.TransientModel):
             'customer_id': self.customer_id.id,
             'complaint_reason_id': self.complaint_reason_id.id,
             'branch_id': self.branch_id.id,
-            'department': self.department.id,  # optional mapping
+            'department': self.department.id,  
             'escalation_line_id': self.escalation_line_id.id,
             'solved_by': self.solved_by,
             'validity': self.validity,
             'solving_date': self.solving_date,
             'complaint_duration': self.complaint_duration,
             'complaint_type_id': self.complaint_type_id.id,
+            'complaint_state': 'under_investigate',
         })
+
+        if self.department and self.department.department_user:
+            for user in self.department.department_user:
+                if user.email:
+                    # Step 2: repair email message
+                    mail_values = {
+                        'subject': f'New Complaint Assigned to {self.department.name}',
+                        'body_html': f"""
+                                  <p>Hello {user.name},</p>
+                                  <p>A new complaint has been created and assigned to your department <b>{self.department.name}</b>.</p>
+                                  <ul>
+                                      <li><b>Customer:</b> {self.customer_id.name}</li>
+                                      <li><b>Complaint Type:</b> {self.complaint_type_id.name or ''}</li>
+                                      <li><b>Date:</b> {self.date}</li>
+                                      <li><b>Reason:</b> {self.complaint_reason_id.name or ''}</li>
+                                  </ul>
+                                  <p>You can view the complaint in the system for more details.</p>
+                                  <p>Best regards,<br/>Complaint Management System</p>
+                              """,
+                        'email_to': user.email,
+                        'email_from': self.env.user.email or 'noreply@example.com',
+                    }
+
+                    # Step 3: send email
+                    mail = self.env['mail.mail'].create(mail_values)
+                    mail.send()
+
         return {'type': 'ir.actions.act_window_close'}

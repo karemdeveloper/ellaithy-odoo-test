@@ -7,4 +7,5 @@ class ResComplaintType(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string="Name")
+    department_id=fields.Many2one('res.department',string='Department')
 

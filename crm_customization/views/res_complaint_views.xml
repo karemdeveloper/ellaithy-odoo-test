@@ -25,27 +25,43 @@
         <field name="model">res.complaint</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <field name="complaint_state" widget="statusbar" statusbar_visible="new,under_investigate,solved"/>
+
+                    <button name="action_under_investigate"
+                            string="Start Investigation"
+                            type="object"
+                            class="btn-primary"
+                            invisible="complaint_state != 'new'"/>
+
+                    <button name="action_mark_solved"
+                            string="Mark Solved"
+                            type="object"
+                            class="btn-success"
+                            invisible="complaint_state != 'under_investigate'"/>
+                </header>
+
                 <sheet>
                     <group>
-                            <group>
-                                <field name="date"/>
-                                <field name="customer_id"/>
-                                <field name="primary_phone" readonly="1"/>
-                                <field name="complaint_reason_id"/>
-                                <field name="complaint_type_id"/>
-                            </group>
-                            <group>
-                                <field name="branch_id"/>
-                                <field name="department"/>
-                                <field name="escalation_line_id"/>
-                                <field name="solved_by"/>
-                                <field name="validity"/>
-                            </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="customer_id"/>
+                            <field name="primary_phone" readonly="1"/>
+                            <field name="complaint_reason_id"/>
+                            <field name="complaint_type_id"/>
                         </group>
                         <group>
-                            <field name="solving_date"/>
-                            <field name="complaint_duration"/>
+                            <field name="branch_id"/>
+                            <field name="department"/>
+                            <field name="escalation_line_id"/>
+                            <field name="solved_by"/>
+                            <field name="validity"/>
                         </group>
+                    </group>
+                    <group>
+                        <field name="solving_date" readonly="1"/>
+                        <field name="complaint_duration"/>
+                    </group>
                 </sheet>
                 <!-- Attachment preview -->
                 <div class="o_attachment_preview"/>

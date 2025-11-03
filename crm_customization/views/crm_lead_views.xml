@@ -29,13 +29,14 @@
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="area_name"/>
                 <field name="branch_name"/>
+                <field name="opportunity_type" invisible="1"/>
                 <field name="brand_name2" widget="many2many_tags"/>
                 <field name="sub_brand_name2" widget="many2many_tags"/>
-                <field name="brand_used_id" widget="many2many_tags"/>
-                <field name="sub_brand_used_id" widget="many2many_tags"/>
+                <field name="brand_used_id" widget="many2many_tags" invisible="opportunity_type=='new'"/>
+                <field name="sub_brand_used_id" widget="many2many_tags" invisible="opportunity_type=='new'"/>
                 <field name="source_name"/>
-                <field name="model"/>
-                <field name="kilometers"/>
+                <field name="model" invisible="opportunity_type=='new'"/>
+                <field name="kilometers" invisible="opportunity_type=='new'"/>
                 <field name="sales_team" invisible="1"/>
                 <field name="sla_duration"/>
                 <field name="marketing_offer"/>
@@ -122,7 +123,6 @@
     <record id="crm.crm_lead_action_pipeline" model="ir.actions.act_window">
         <field name="name">Opportunity</field>
     </record>
-
 
 
 </odoo>

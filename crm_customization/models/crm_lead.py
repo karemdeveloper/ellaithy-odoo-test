@@ -36,6 +36,11 @@ class CrmLead(models.Model):
     )
     model = fields.Char(string="Model")
     kilometers = fields.Char(string="Kilometers")
+    opportunity_type = fields.Selection([
+        ('new', 'New'),
+        ('trade_in', 'Trade In'),
+        ('used', 'Used'),
+    ], string='Opportunity Type', tracking=True)
 ###################################################################################
     @api.onchange('area_name')
     def _onchange_area_name(self):

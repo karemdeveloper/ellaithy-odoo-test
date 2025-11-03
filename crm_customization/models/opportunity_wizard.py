@@ -14,7 +14,7 @@ class OpportunityWizard(models.TransientModel):
 
     name = fields.Char(string="Opportunity Name", required=True)
     brand_id = fields.Many2one('res.brand', string="Brand", required=False)
-    brand_id2 = fields.Many2many('res.brand', string="Brand(s)", required=True)
+    brand_id2 = fields.Many2many('res.brand', string="Brand(s)", required=False)
     brand_used_id = fields.Many2many(
         'res.brand',
         'opportunity_wizard_used_brand_rel',
@@ -28,7 +28,7 @@ class OpportunityWizard(models.TransientModel):
         ('used', 'Used'),
     ], string='Opportunity Type', tracking=True)
     sub_brand_id = fields.Many2one('res.sub.brand', string="Sub Brand", required=False)
-    sub_brand_id2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=True)
+    sub_brand_id2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=False)
     sub_brand_used_id = fields.Many2many(
         'res.sub.brand',
         'opportunity_wizard_used_sub_brand_rel',
@@ -238,8 +238,8 @@ class OpportunityWizard(models.TransientModel):
             'sub_brand_name2': [(6, 0, self.sub_brand_id2.ids)],
             'brand_used_id': [(6, 0, self.brand_used_id.ids)],
             'sub_brand_used_id': [(6, 0, self.sub_brand_used_id.ids)],
-            # ✅ نقل باقي المعلومات (model + kilometers)
             'model': self.model,
+            'opportunity_type': self.opportunity_type,
             'kilometers': self.kilometers,
         })
 

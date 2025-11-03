@@ -18,13 +18,13 @@
                             <field name="branch_id"/>
                             <field name="department"/>
                             <field name="escalation_line_id"/>
-                            <field name="solved_by"/>
+                            <field name="solved_by" invisible="1"/>
                             <field name="validity"/>
                         </group>
                     </group>
                     <group>
-                        <field name="solving_date"/>
-                        <field name="complaint_duration"/>
+                        <field name="solving_date" invisible="1"/>
+                        <field name="complaint_duration" invisible="1"/>
                     </group>
                 </sheet>
                 <footer>
