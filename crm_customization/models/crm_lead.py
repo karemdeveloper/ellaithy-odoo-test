@@ -8,14 +8,34 @@ class CrmLead(models.Model):
     _inherit = 'crm.lead'
     branch_name = fields.Many2one('res.branch', string="Branch")
     area_name = fields.Many2one('res.area', string="Area")
-    brand_name = fields.Many2one('res.brand', string="Brand", required=True)
+    brand_name = fields.Many2one('res.brand', string="Brand", required=False)
+    brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=True)
+
     source_name = fields.Many2one('res.source', string="Source")
     sales_team = fields.Many2one('crm.team', string="Sales team")
     sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", required=True)
+    sub_brand_name2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=True)
+
     sla_duration = fields.Char(string="SLA Duration", compute='_compute_sla_duration')
     marketing_offer=fields.Many2one('marketing.offers',string='Marketing offer')
     call_type=fields.Many2one('call.type',string='Call Type')
     feedback_ids = fields.One2many('crm.feedback', 'lead_id', string="Feedback Lines")
+    # sub_brand_used_id = fields.Many2many(
+    #     'res.sub.brand',
+    #     'opportunity_wizard_used_sub_brand_rel',
+    #     'wizard_id',
+    #     'sub_brand_id',
+    #     string="Used Sub Brand(s)"
+    # )
+    # brand_used_id = fields.Many2many(
+    #     'res.brand',
+    #     'opportunity_wizard_used_brand_rel',
+    #     'wizard_id',
+    #     'brand_id',
+    #     string="Used Brand(s)"
+    # )
+    # model = fields.Char(string="Model")
+    # kilometers = fields.Char(string="Kilometers")
 ###################################################################################
     @api.onchange('area_name')
     def _onchange_area_name(self):

@@ -8,6 +8,7 @@ class ResSurvey(models.Model):
 
     name = fields.Char(string="Survey Name", tracking=True)
     partner_id = fields.Many2one('res.partner', string="Customer")
+    comment = fields.Text(string='Comment')
 
     q1_sales_person = fields.Selection([
         ('excellent', 'ممتاز'),

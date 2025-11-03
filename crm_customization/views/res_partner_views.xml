@@ -14,11 +14,18 @@
                         string="Surveys">
                     <field string="Surveys" name="survey_count" widget="statinfo"/>
                 </button>
+                 <button name="action_view_complaint"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-comments">
+                        <field string="Complaints" name="complaint_count" widget="statinfo"/>
+                    </button>
             </xpath>
             <xpath expr="//div[@name='warning_tax']" position="before">
                 <header>
                     <button string="Create opportunity" name="action_open_create_opportunity_wizard" type="object"/>
                     <button string="Create Survey" name="action_create_survey" type="object"/>
+                    <button name="action_create_complaint" type="object" string="New Complaint" class="oe_stat_button" icon="fa-plus"/>
                 </header>
             </xpath>
             <!-- Make Name mandatory  -->
@@ -43,7 +50,7 @@
 
             <!-- category_id -->
             <xpath expr="//field[@name='category_id']" position="attributes">
-                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+                <attribute name="groups">crm_customization.group_crm_customer</attribute>
             </xpath>
 
 
@@ -58,7 +65,7 @@
 
             <!-- email -->
             <xpath expr="//field[@name='email']" position="attributes">
-                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+                <attribute name="groups">crm_customization.group_crm_customer</attribute>
             </xpath>
 
             <!-- function -->
@@ -86,7 +93,8 @@
                 <field name="company_type" groups="crm_customization.group_crm_customer"/>
                 <field name="area_id" groups="crm_customization.group_crm_customer" required="1"/>
                 <field name="branch_id" groups="crm_customization.group_crm_customer" required="1"/>
-                <field name="company_id" groups="crm_customization.group_crm_customer"/>
+                <field name="company_id" groups="crm_customization.group_sales_customer"/>
+                <field name="company_custom_id" groups="crm_customization.group_crm_customer"/>
                 <field name="is_opportunity" invisible="1"/>
             </xpath>
             <xpath expr="//page[@name='sales_purchases']" position="replace"/>

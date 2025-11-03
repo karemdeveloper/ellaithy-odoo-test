@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_res_complaint_wizard_form" model="ir.ui.view">
+        <field name="name">res.complaint.wizard.form</field>
+        <field name="model">res.complaint.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Complaint">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="customer_id"/>
+                            <field name="primary_phone"/>
+                            <field name="complaint_reason_id"/>
+                            <field name="complaint_type_id"/>
+                        </group>
+                        <group>
+                            <field name="branch_id"/>
+                            <field name="department"/>
+                            <field name="escalation_line_id"/>
+                            <field name="solved_by"/>
+                            <field name="validity"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="solving_date"/>
+                        <field name="complaint_duration"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_res_complaint_wizard" model="ir.actions.act_window">
+        <field name="name">Create Complaint</field>
+        <field name="res_model">res.complaint.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

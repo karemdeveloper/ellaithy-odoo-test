@@ -76,3 +76,35 @@ class ResPartner(models.Model):
                 ], limit=1)
                 if duplicate_phone:
                     raise ValidationError("Phone number already exists for another contact.")
+###################################################################################################################
+
+    complaint_count = fields.Integer(
+        string='Complaints',
+        compute='_compute_complaint_count'
+    )
+
+    def _compute_complaint_count(self):
+        for partner in self:
+            partner.complaint_count = self.env['res.complaint'].search_count([
+                ('customer_id', '=', partner.id)
+            ])
+
+    def action_create_complaint(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Create Complaint',
+            'res_model': 'res.complaint.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_customer_id': self.id},
+        }
+
+    def action_view_complaint(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Complaints',
+            'res_model': 'res.complaint',
+            'view_mode': 'list,form',
+            'domain': [('customer_id', '=', self.id)],
+            'target': 'current',
+        }

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- =================== COMPLAINT REASON =================== -->
+    <record id="view_res_complaint_list" model="ir.ui.view">
+        <field name="name">res.complaint.list</field>
+        <field name="model">res.complaint</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date"/>
+                <field name="customer_id"/>
+                <field name="primary_phone"/>
+                <field name="complaint_reason_id"/>
+                <field name="branch_id"/>
+                <field name="department"/>
+                <field name="solved_by"/>
+                <field name="validity"/>
+                <field name="solving_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_res_complaint_form" model="ir.ui.view">
+        <field name="name">res.complaint</field>
+        <field name="model">res.complaint</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                            <group>
+                                <field name="date"/>
+                                <field name="customer_id"/>
+                                <field name="primary_phone" readonly="1"/>
+                                <field name="complaint_reason_id"/>
+                                <field name="complaint_type_id"/>
+                            </group>
+                            <group>
+                                <field name="branch_id"/>
+                                <field name="department"/>
+                                <field name="escalation_line_id"/>
+                                <field name="solved_by"/>
+                                <field name="validity"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="solving_date"/>
+                            <field name="complaint_duration"/>
+                        </group>
+                </sheet>
+                <!-- Attachment preview -->
+                <div class="o_attachment_preview"/>
+                <!-- Chatter -->
+                <chatter reload_on_attachment="True"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_res_complaint" model="ir.actions.act_window">
+        <field name="name">Complaint</field>
+        <field name="res_model">res.complaint</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_res_complaint"
+              name="Complaint"
+              parent="crm.crm_menu_config"
+              action="action_res_complaint"
+              sequence="2"/>
+
+
+</odoo>

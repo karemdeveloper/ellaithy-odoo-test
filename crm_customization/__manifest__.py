@@ -30,6 +30,12 @@
         'views/call_type_views.xml',
         'views/distribute_sequence_views.xml',
         'views/crm_feedback_wizard_view.xml',
+        'views/res_department_views.xml',
+        'views/res_complaint_views.xml',
+        'views/res_complaint_reason_views.xml',
+        'views/res_complaint_type_views.xml',
+        'views/res_escalation_views.xml',
+        'views/res_complaint_wizard_view.xml',
     ],
 #     'assets': {
 #     'web.assets_backend': [

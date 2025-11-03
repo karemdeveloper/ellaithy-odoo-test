@@ -31,6 +31,7 @@
                             <field name="q4_used_car" widget="radio"/>
                             <field name="q5_offer_shown" widget="radio"/>
                             <field name="q6_tip_request" widget="radio"/>
+                            <field name="comment"/>
                         </group>
                     </group>
                 </sheet>

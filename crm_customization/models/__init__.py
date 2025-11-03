@@ -21,3 +21,9 @@ from . import call_type
 from . import distribute_sequence
 from . import crm_feedback
 from . import crm_feedback_wizard
+from . import res_department
+from . import res_complaint
+from . import res_complaint_reason
+from . import res_complaint_type
+from . import res_escalation
+from . import res_complaint_wizard
