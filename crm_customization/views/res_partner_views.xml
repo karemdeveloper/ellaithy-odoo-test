@@ -14,20 +14,22 @@
                         string="Surveys">
                     <field string="Surveys" name="survey_count" widget="statinfo"/>
                 </button>
-                 <button name="action_view_complaint"
-                            type="object"
-                            class="oe_stat_button"
-                            icon="fa-comments">
-                        <field string="Complaints" name="complaint_count" widget="statinfo"/>
-                    </button>
+                <button name="action_view_complaint"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-comments">
+                    <field string="Complaints" name="complaint_count" widget="statinfo"/>
+                </button>
             </xpath>
             <xpath expr="//div[@name='warning_tax']" position="before">
                 <header>
                     <button string="Create opportunity" name="action_open_create_opportunity_wizard" type="object"/>
                     <button string="Create Survey" name="action_create_survey" type="object"/>
-                    <button name="action_create_complaint" type="object" string="New Complaint" class="oe_stat_button" icon="fa-plus"/>
+                    <button name="action_create_complaint" type="object" string="New Complaint" class="oe_stat_button"
+                            icon="fa-plus"/>
                 </header>
             </xpath>
+
             <!-- Make Name mandatory  -->
             <field name="name" position="attributes">
                 <attribute name="required">1</attribute>
@@ -92,11 +94,22 @@
             <xpath expr="//form[1]/sheet[1]/group[1]/group[2]/div[3]" position="after">
                 <field name="company_type" groups="crm_customization.group_crm_customer"/>
                 <field name="area_id" groups="crm_customization.group_crm_customer" required="1"/>
+                <field name="customer_already_exist_id" readonly="1" class="oe_inline"/>
+                <button name="action_open_existing_customer"
+                        type="object"
+                        string="Open"
+                        icon="fa-external-link"
+                        class="btn btn-secondary oe_inline"
+                        save="false"
+                        />
+
                 <field name="branch_id" groups="crm_customization.group_crm_customer" required="1"/>
+                <field name="source_id" groups="crm_customization.group_crm_customer" required="1"/>
                 <field name="company_id" groups="crm_customization.group_sales_customer"/>
                 <field name="company_custom_id" groups="crm_customization.group_crm_customer"/>
                 <field name="is_opportunity" invisible="1"/>
             </xpath>
+            <xpath expr="//field[@name='lang']" position="replace"/>
             <xpath expr="//page[@name='sales_purchases']" position="replace"/>
             <xpath expr="//page[@name='contact_addresses']" position="replace"/>
             <xpath expr="//page[@name='accounting_disabled']" position="replace"/>
@@ -157,6 +170,12 @@
             </xpath>
 
         </field>
+    </record>
+    <record id="action_open_customer_form" model="ir.actions.act_window">
+        <field name="name">Open Existing Customer</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
     </record>
 
 

@@ -31,7 +31,11 @@
                 <field name="branch_name"/>
                 <field name="brand_name2" widget="many2many_tags"/>
                 <field name="sub_brand_name2" widget="many2many_tags"/>
+                <field name="brand_used_id" widget="many2many_tags"/>
+                <field name="sub_brand_used_id" widget="many2many_tags"/>
                 <field name="source_name"/>
+                <field name="model"/>
+                <field name="kilometers"/>
                 <field name="sales_team" invisible="1"/>
                 <field name="sla_duration"/>
                 <field name="marketing_offer"/>
@@ -99,6 +103,8 @@
                 <field name="area_name" optional="show"/>
                 <field name="brand_name2" optional="show" widget="many2many_tags"/>
                 <field name="sub_brand_name2" optional="show" widget="many2many_tags"/>
+                <field name="brand_used_id" optional="show" widget="many2many_tags"/>
+                <field name="sub_brand_used_id" optional="show" widget="many2many_tags"/>
                 <field name="source_name" optional="show"/>
                 <field name="sales_team" column_invisible="1"/>
                 <field name="call_type" optional="show"/>

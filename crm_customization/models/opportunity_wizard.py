@@ -56,6 +56,7 @@ class OpportunityWizard(models.TransientModel):
             res['name'] = partner.name
             res['area_id'] = partner.area_id.id
             res['branch_id'] = partner.branch_id.id
+            res['source_id'] = partner.source_id.id
         return res
 
     #################################################################################
@@ -205,13 +206,14 @@ class OpportunityWizard(models.TransientModel):
         salesperson = self._get_next_salesperson()
 
         partner_name = self.partner_id.name or 'Unknown'
+        # ✅ Use actual field names from res.brand and res.sub.brand
         sub_brand_names = self.sub_brand_id2.mapped('sub_brand_name')
         brand_names = self.brand_id2.mapped('brand_name')
 
         brand_name_str = ', '.join(brand_names) if brand_names else 'NoBrand'
         sub_brand_name_str = ', '.join(sub_brand_names) if sub_brand_names else 'NoSubBrand'
 
-        # count existing leads matching same partner + brands + sub-brands
+        # count existing leads
         existing_leads_count = self.env['crm.lead'].search_count([
             ('partner_id', '=', self.partner_id.id),
             ('brand_name2', 'in', self.brand_id2.ids),
@@ -221,7 +223,6 @@ class OpportunityWizard(models.TransientModel):
         seq_number = str(existing_leads_count).zfill(3)
         sequence_str = f"{partner_name}/{brand_name_str}/{sub_brand_name_str}/{seq_number}"
 
-        # إنشاء الـ lead الجديد مع الفيلدين الـ M2M
         lead = self.env['crm.lead'].create({
             'name': sequence_str,
             'sla_duration': '00:00:00',
@@ -233,11 +234,14 @@ class OpportunityWizard(models.TransientModel):
             'source_name': self.source_id.id,
             'user_id': salesperson.id if salesperson else False,
             'type': 'opportunity',
-
             'brand_name2': [(6, 0, self.brand_id2.ids)],
             'sub_brand_name2': [(6, 0, self.sub_brand_id2.ids)],
+            'brand_used_id': [(6, 0, self.brand_used_id.ids)],
+            'sub_brand_used_id': [(6, 0, self.sub_brand_used_id.ids)],
+            # ✅ نقل باقي المعلومات (model + kilometers)
+            'model': self.model,
+            'kilometers': self.kilometers,
         })
-
 
         return {
             'type': 'ir.actions.act_window',
