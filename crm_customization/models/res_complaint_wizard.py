@@ -58,7 +58,7 @@ class ResComplaintWizard(models.TransientModel):
     def action_confirm(self):
         """ Create complaint record """
         self.ensure_one()
-        self.env['res.complaint'].create({
+        complaint = self.env['res.complaint'].create({  # ✅ حفظ الـ record في متغير
             'date': self.date,
             'customer_id': self.customer_id.id,
             'complaint_reason_id': self.complaint_reason_id.id,
@@ -98,5 +98,13 @@ class ResComplaintWizard(models.TransientModel):
                     # Step 3: send email
                     mail = self.env['mail.mail'].create(mail_values)
                     mail.send()
+
+                    # ✅ NEW PART: add message in chatter
+                    complaint.message_post(
+                        body=f"📩 Notification email sent to user.name user.email) "
+                             f"for new complaint assigned to department self.department.name.",
+                        subject=f"New Complaint Assigned to {self.department.name}",
+                        message_type='notification',
+                    )
 
         return {'type': 'ir.actions.act_window_close'}

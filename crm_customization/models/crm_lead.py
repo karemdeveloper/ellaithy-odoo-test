@@ -20,6 +20,8 @@ class CrmLead(models.Model):
     marketing_offer=fields.Many2one('marketing.offers',string='Marketing offer')
     call_type=fields.Many2one('call.type',string='Call Type')
     feedback_ids = fields.One2many('crm.feedback', 'lead_id', string="Feedback Lines")
+    has_feedback = fields.Boolean(string="Has Feedback", default=False)
+
     sub_brand_used_id = fields.Many2many(
         'res.sub.brand',
         'opportunity_used_sub_brand_rel',
@@ -32,8 +34,7 @@ class CrmLead(models.Model):
         'opportunity_used_brand_rel',
         'wizard_id',
         'brand_id',
-        string="Used Brand(s)"
-    )
+        string="Used Brand(s)")
     model = fields.Char(string="Model")
     kilometers = fields.Char(string="Kilometers")
     opportunity_type = fields.Selection([
@@ -41,7 +42,8 @@ class CrmLead(models.Model):
         ('trade_in', 'Trade In'),
         ('used', 'Used'),
     ], string='Opportunity Type', tracking=True)
-###################################################################################
+
+    ###################################################################################
     @api.onchange('area_name')
     def _onchange_area_name(self):
         for rec in self:

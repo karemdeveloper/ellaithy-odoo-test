@@ -27,3 +27,4 @@ from . import res_complaint_reason
 from . import res_complaint_type
 from . import res_escalation
 from . import res_complaint_wizard
+from . import crm_stage

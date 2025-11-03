@@ -146,32 +146,32 @@ class ResPartner(models.Model):
                 if existing_customer:
                     rec.customer_already_exist_id = existing_customer
     
-    @api.onchange('phone')
-    def _onchange_phone_check_existing(self):
-        """
-        Check if customer with same phone exists and show warning
-        with option to redirect to existing customer
-        """
-        if self.phone and not self.id:  # Only for new records
-            existing = self.env['res.partner'].search([
-                ('phone', '=', self.phone)
-            ], limit=1)
-            
-            if existing:
-                # Store the existing customer ID for the widget button
-                self.customer_already_exist_id = existing
-                
-                # Return warning with action
-                return {
-                    'warning': {
-                        'title': _('Customer Already Exists!'),
-                        'message': _(
-                            'A customer with phone number "%s" already exists:\n'
-                            'Name: %s\n'
-                            'Click the "Open Existing Customer" button to view the existing record.'
-                        ) % (self.phone, existing.name or 'N/A'),
-                    }
-                }
+    # @api.onchange('phone')
+    # def _onchange_phone_check_existing(self):
+    #     """
+    #     Check if customer with same phone exists and show warning
+    #     with option to redirect to existing customer
+    #     """
+    #     if self.phone and not self.id:  # Only for new records
+    #         existing = self.env['res.partner'].search([
+    #             ('phone', '=', self.phone)
+    #         ], limit=1)
+    #
+    #         if existing:
+    #             # Store the existing customer ID for the widget button
+    #             self.customer_already_exist_id = existing
+    #
+    #             # Return warning with action
+    #             return {
+    #                 'warning': {
+    #                     'title': _('Customer Already Exists!'),
+    #                     'message': _(
+    #                         'A customer with phone number "%s" already exists:\n'
+    #                         'Name: %s\n'
+    #                         'Click the "Open Existing Customer" button to view the existing record.'
+    #                     ) % (self.phone, existing.name or 'N/A'),
+    #                 }
+    #             }
 
     def action_open_existing_customer(self):
         """

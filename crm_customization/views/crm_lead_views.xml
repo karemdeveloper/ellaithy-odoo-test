@@ -41,6 +41,7 @@
                 <field name="sla_duration"/>
                 <field name="marketing_offer"/>
                 <field name="call_type"/>
+                <field name="has_feedback" invisible="1"/>
             </xpath>
             <xpath expr="//page[@name='lead']" position="after">
                 <page name="feedback_tab" string="Feedback">
@@ -122,6 +123,20 @@
             </xpath>
         </field>
     </record>
+    <record id="view_crm_lead_filter_inherit_has_feedback" model="ir.ui.view">
+        <field name="name">crm.lead.search.inherit.has.feedback</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//filter[@name='saleschannel']" position="after">
+                <filter name="studio_group_by_9ag_1j9595aef" string="Feedback"
+                        context="{'group_by': 'has_feedback'}"/>
+            </xpath>
+
+        </field>
+    </record>
+
     <record id="crm.res_partner_menu_customer" model="ir.ui.menu">
         <field name="sequence">0</field>
     </record>

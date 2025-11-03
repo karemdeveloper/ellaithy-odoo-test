@@ -36,6 +36,7 @@
         'views/res_complaint_type_views.xml',
         'views/res_escalation_views.xml',
         'views/res_complaint_wizard_view.xml',
+        'views/crm_stage_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
