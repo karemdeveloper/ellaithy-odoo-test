@@ -91,18 +91,20 @@
 
             </xpath>
 
+            <!-- Add widget after phone field to show duplicate warning -->
+            <xpath expr="//field[@name='phone']" position="after">
+                <!-- Hidden field to store the Many2one relation -->
+                <field name="customer_already_exist_id" invisible="1"/>
+                <!-- Widget field for display -->
+                <field name="customer_already_exist_widget" 
+                       widget="open_existing_customer_button"
+                       nolabel="1"
+                       colspan="2"/>
+            </xpath>
+
             <xpath expr="//form[1]/sheet[1]/group[1]/group[2]/div[3]" position="after">
                 <field name="company_type" groups="crm_customization.group_crm_customer"/>
                 <field name="area_id" groups="crm_customization.group_crm_customer" required="1"/>
-                <field name="customer_already_exist_id" readonly="1" class="oe_inline"/>
-                <button name="action_open_existing_customer"
-                        type="object"
-                        string="Open"
-                        icon="fa-external-link"
-                        class="btn btn-secondary oe_inline"
-                        save="false"
-                        />
-
                 <field name="branch_id" groups="crm_customization.group_crm_customer" required="1"/>
                 <field name="crm_source_id" groups="crm_customization.group_crm_customer" required="1"/>
                 <field name="company_id" groups="crm_customization.group_sales_customer"/>
@@ -150,6 +152,16 @@
         <field name="inherit_id" ref="base.view_res_partner_filter"/>
         <field name="arch" type="xml">
 
+            <!-- Move email field before name field -->
+            <xpath expr="//search[1]/field[@name='name']" position="before">
+                <xpath expr="//field[@name='email']" position="move"/>
+            </xpath>
+
+            <!-- Remove filter_domain from email field -->
+            <xpath expr="//field[@name='email']" position="attributes">
+                <attribute name="filter_domain"/>
+            </xpath>
+
             <xpath expr="//field [@name='parent_id'] " position="after">
                 <field name="type" filter_domain="[('type', 'ilike', self)]"/>
                 <field name="company_name" filter_domain="[('company_name', 'ilike', self)]"/>
@@ -172,6 +184,7 @@
         </field>
     </record>
 
+
 <!--    <record id="action_open_customer_form" model="ir.actions.act_window">-->
 <!--        <field name="name">Open Existing Customer</field>-->
 <!--        <field name="res_model">res.partner</field>-->
@@ -180,5 +193,5 @@
 <!--    </record>-->
 
 
-</odoo>
 
+</odoo>

@@ -1,5 +1,5 @@
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError, UserError
 
 
 class ResPartner(models.Model):
@@ -120,6 +120,19 @@ class ResPartner(models.Model):
         compute="_compute_customer_already_exist",
         store=False
     )
+    
+    # Char field for widget display to avoid Many2one template conflicts
+    customer_already_exist_widget = fields.Char(
+        string="Existing Customer Widget",
+        compute="_compute_customer_already_exist_widget",
+        store=False
+    )
+    
+    @api.depends('customer_already_exist_id')
+    def _compute_customer_already_exist_widget(self):
+        """Dummy field for widget rendering"""
+        for rec in self:
+            rec.customer_already_exist_widget = str(rec.customer_already_exist_id.id) if rec.customer_already_exist_id else False
 
     @api.depends('phone')
     def _compute_customer_already_exist(self):
@@ -132,22 +145,64 @@ class ResPartner(models.Model):
                 ], limit=1)
                 if existing_customer:
                     rec.customer_already_exist_id = existing_customer
+    
+    @api.onchange('phone')
+    def _onchange_phone_check_existing(self):
+        """
+        Check if customer with same phone exists and show warning
+        with option to redirect to existing customer
+        """
+        if self.phone and not self.id:  # Only for new records
+            existing = self.env['res.partner'].search([
+                ('phone', '=', self.phone)
+            ], limit=1)
+            
+            if existing:
+                # Store the existing customer ID for the widget button
+                self.customer_already_exist_id = existing
+                
+                # Return warning with action
+                return {
+                    'warning': {
+                        'title': _('Customer Already Exists!'),
+                        'message': _(
+                            'A customer with phone number "%s" already exists:\n'
+                            'Name: %s\n'
+                            'Click the "Open Existing Customer" button to view the existing record.'
+                        ) % (self.phone, existing.name or 'N/A'),
+                    }
+                }
 
     def action_open_existing_customer(self):
-        """Open existing customer form without saving current record"""
-        # self.ensure_one()
-        customer_id=self.customer_already_exist_id.id
-        self.env.cr.rollback()
-        return{
-            'type':'ir.actions.act_window_close'
-        }
-
-
-    def open_existing_customer_2(self,customer_id):
+        """
+        Open existing customer form without saving current record.
+        This bypasses all field validations and discards the current form.
+        """
+        # This method works with NewId records (unsaved forms)
+        # We access the computed field directly from the recordset
+        if hasattr(self, 'customer_already_exist_id') and self.customer_already_exist_id:
+            customer_id = self.customer_already_exist_id.id
+        else:
+            # Fallback: search for existing customer by phone if field not computed
+            if self.phone:
+                existing = self.env['res.partner'].search([
+                    ('phone', '=', self.phone),
+                    ('id', '!=', self.id if self.id else 0)
+                ], limit=1)
+                customer_id = existing.id if existing else False
+            else:
+                customer_id = False
+        
+        if not customer_id:
+            raise UserError(_("No existing customer found."))
+        
+        # Return action to open existing customer
+        # Using 'target': 'current' will replace current form and discard unsaved changes
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'res.partner',
             'view_mode': 'form',
             'target': 'current',
-            'res_id': self.customer_already_exist_id.id,
+            'res_id': customer_id,
+            'context': self.env.context,
         }

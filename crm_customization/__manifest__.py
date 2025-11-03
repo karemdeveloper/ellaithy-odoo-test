@@ -37,13 +37,12 @@
         'views/res_escalation_views.xml',
         'views/res_complaint_wizard_view.xml',
     ],
-#     'assets': {
-#     'web.assets_backend': [
-#         '/crm_customization/static/src/js/sla_ticker.js',
-#         '/crm_customization/static/src/xml/sla_ticker_template.xml',
-#     ],
-# },
-# },
+    'assets': {
+        'web.assets_backend': [
+            'crm_customization/static/src/js/open_existing_customer_button.js',
+            'crm_customization/static/src/xml/open_existing_customer_button.xml',
+        ],
+    },
 
     'installable': True,
     'application': False,
