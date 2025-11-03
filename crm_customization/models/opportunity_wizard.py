@@ -56,7 +56,7 @@ class OpportunityWizard(models.TransientModel):
             res['name'] = partner.name
             res['area_id'] = partner.area_id.id
             res['branch_id'] = partner.branch_id.id
-            res['source_id'] = partner.source_id.id
+            res['source_id'] = partner.crm_source_id.id
         return res
 
     #################################################################################

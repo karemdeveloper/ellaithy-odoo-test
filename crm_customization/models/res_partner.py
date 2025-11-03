@@ -10,7 +10,7 @@ class ResPartner(models.Model):
     company_custom_id = fields.Many2one('res.company.custom', string="Company")
     is_opportunity = fields.Boolean(string='Is Opportunity', default=False)
     survey_ids = fields.One2many('res.survey', 'partner_id', string="Surveys")
-    source_id = fields.Many2one('res.source', string="Source", required=True)
+    crm_source_id = fields.Many2one('res.source', string="Source", required=True)
 
     def action_open_create_opportunity_wizard(self):
         """Open the wizard popup"""

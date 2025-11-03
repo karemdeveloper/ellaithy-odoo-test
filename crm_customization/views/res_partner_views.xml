@@ -104,7 +104,7 @@
                         />
 
                 <field name="branch_id" groups="crm_customization.group_crm_customer" required="1"/>
-                <field name="source_id" groups="crm_customization.group_crm_customer" required="1"/>
+                <field name="crm_source_id" groups="crm_customization.group_crm_customer" required="1"/>
                 <field name="company_id" groups="crm_customization.group_sales_customer"/>
                 <field name="company_custom_id" groups="crm_customization.group_crm_customer"/>
                 <field name="is_opportunity" invisible="1"/>
@@ -171,12 +171,13 @@
 
         </field>
     </record>
-    <record id="action_open_customer_form" model="ir.actions.act_window">
-        <field name="name">Open Existing Customer</field>
-        <field name="res_model">res.partner</field>
-        <field name="view_mode">form</field>
-        <field name="target">current</field>
-    </record>
+
+<!--    <record id="action_open_customer_form" model="ir.actions.act_window">-->
+<!--        <field name="name">Open Existing Customer</field>-->
+<!--        <field name="res_model">res.partner</field>-->
+<!--        <field name="view_mode">form</field>-->
+<!--        <field name="target">current</field>-->
+<!--    </record>-->
 
 
 </odoo>
