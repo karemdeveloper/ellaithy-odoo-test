@@ -39,6 +39,7 @@
                 <field name="kilometers" invisible="opportunity_type=='new'"/>
                 <field name="sales_team" invisible="1"/>
                 <field name="sla_duration"/>
+                <field name="late_days"/>
                 <field name="marketing_offer"/>
                 <field name="call_type"/>
                 <field name="has_feedback" invisible="1"/>

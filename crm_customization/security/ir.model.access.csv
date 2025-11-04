@@ -24,4 +24,6 @@ access_res_company_custom,res.company.custom,model_res_company_custom,,1,1,1,1
 access_opportunity_wizard,opportunity.wizard,model_opportunity_wizard,,1,1,1,1
 access_crm_feedback_wizard,crm.feedback.wizard,model_crm_feedback_wizard,,1,1,1,1
 access_res_complaint_wizard,res.complaint.wizard,model_res_complaint_wizard,,1,1,1,1
+access_crm_penalty_wizard,crm.penalty.wizard,model_crm_penalty_wizard,,1,1,1,1
+
 

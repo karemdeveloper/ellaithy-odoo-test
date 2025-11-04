@@ -37,6 +37,8 @@
         'views/res_escalation_views.xml',
         'views/res_complaint_wizard_view.xml',
         'views/crm_stage_views.xml',
+        'views/crm_penalty_wizard_view.xml',
+        'reports/crm_penalty_report_template.xml',
     ],
     'assets': {
         'web.assets_backend': [

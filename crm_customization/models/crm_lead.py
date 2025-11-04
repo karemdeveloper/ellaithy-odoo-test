@@ -3,6 +3,8 @@ from odoo.exceptions import UserError
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 import pytz
+import math
+
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
@@ -21,7 +23,6 @@ class CrmLead(models.Model):
     call_type=fields.Many2one('call.type',string='Call Type')
     feedback_ids = fields.One2many('crm.feedback', 'lead_id', string="Feedback Lines")
     has_feedback = fields.Boolean(string="Has Feedback", default=False)
-
     sub_brand_used_id = fields.Many2many(
         'res.sub.brand',
         'opportunity_used_sub_brand_rel',
@@ -103,3 +104,39 @@ class CrmLead(models.Model):
                 'default_lead_ids': [(6, 0, self.ids)],
             }
         }
+
+################################################################################################
+    late_days = fields.Integer(string="Late Days", compute='_compute_late_days', store=True)
+
+    @api.depends('sla_duration')
+    def _compute_late_days(self):
+        """Compute late_days as floor(total_hours / 9).
+        sla_duration is expected to be 'HH:MM:SS' (string).
+        """
+        for rec in self:
+            rec.late_days = 0
+            sd = rec.sla_duration or ''
+            # handle cases: empty, already in HH:MM:SS, or unexpected format
+            try:
+                parts = sd.split(':')
+                if len(parts) == 3:
+                    hh = float(parts[0])
+                    mm = float(parts[1])
+                    ss = float(parts[2])
+                    total_hours = hh + (mm / 60.0) + (ss / 3600.0)
+                elif len(parts) == 2:
+                    # sometimes could be "HH:MM"
+                    hh = float(parts[0])
+                    mm = float(parts[1])
+                    total_hours = hh + (mm / 60.0)
+                elif sd.strip() != '':
+                    # try to parse as float number of hours (e.g., "2.7")
+                    total_hours = float(sd)
+                else:
+                    total_hours = 0.0
+
+                # divide by 9 and take integer part (floor)
+                rec.late_days = int(math.floor(total_hours / 9.0))
+            except Exception:
+                # on any parse error, fallback to 0
+                rec.late_days = 0
