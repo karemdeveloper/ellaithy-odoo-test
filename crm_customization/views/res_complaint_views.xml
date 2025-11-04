@@ -80,7 +80,7 @@
               name="Complaint"
               parent="crm.crm_menu_root"
               action="action_res_complaint"
-              sequence="2"/>
+              sequence="27"/>
 
 
 </odoo>

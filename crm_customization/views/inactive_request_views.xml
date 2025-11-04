@@ -47,6 +47,7 @@
 
                             <field name="date_from" required="1" readonly="state=='approved'"/>
                             <field name="date_to" required="1" readonly="state=='approved'"/>
+                            <field name="team_leader" invisible="1"/>
 
                         </group>
                     </group>

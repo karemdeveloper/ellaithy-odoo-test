@@ -8,7 +8,13 @@ class CrmTeamMember(models.Model):
         ('inactive', 'Inactive')
     ], string="Status", default='active', tracking=True)
     date_to= fields.Datetime(string="To")
-
+    team_leader = fields.Many2one(
+        'res.users',
+        string='Team Leader',
+        related='crm_team_id.user_id',  # <-- تأكدي أن اسم الحقل داخل crm.team هو user_id
+        store=True,
+        readonly=True
+    )
     @api.model
     def _cron_check_inactive_members(self):
         """Deactivate members whose date_to has passed."""

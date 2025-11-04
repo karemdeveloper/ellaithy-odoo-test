@@ -140,3 +140,4 @@ class CrmLead(models.Model):
             except Exception:
                 # on any parse error, fallback to 0
                 rec.late_days = 0
+################################################################################
