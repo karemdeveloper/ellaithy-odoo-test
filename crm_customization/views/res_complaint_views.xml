@@ -78,7 +78,7 @@
     </record>
     <menuitem id="menu_res_complaint"
               name="Complaint"
-              parent="crm.crm_menu_config"
+              parent="crm.crm_menu_root"
               action="action_res_complaint"
               sequence="2"/>
 
