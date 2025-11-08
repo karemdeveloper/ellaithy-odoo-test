@@ -59,6 +59,28 @@ class OpportunityWizard(models.TransientModel):
             res['source_id'] = partner.crm_source_id.id
         return res
 
+    @api.onchange('brand_id2')
+    def _onchange_brand_id2(self):
+        """Clear sub-brands when brands change (New section)"""
+        if self.brand_id2:
+            # Keep only sub-brands that belong to selected brands
+            valid_sub_brands = self.sub_brand_id2.filtered(lambda sb: sb.brand in self.brand_id2)
+            self.sub_brand_id2 = valid_sub_brands
+        else:
+            # If no brands selected, clear all sub-brands
+            self.sub_brand_id2 = False
+
+    @api.onchange('brand_used_id')
+    def _onchange_brand_used_id(self):
+        """Clear sub-brands when brands change (Used section)"""
+        if self.brand_used_id:
+            # Keep only sub-brands that belong to selected brands
+            valid_sub_brands = self.sub_brand_used_id.filtered(lambda sb: sb.brand in self.brand_used_id)
+            self.sub_brand_used_id = valid_sub_brands
+        else:
+            # If no brands selected, clear all sub-brands
+            self.sub_brand_used_id = False
+
     #################################################################################
 
     def _get_next_salesperson(self):

@@ -49,6 +49,30 @@ class CrmLead(models.Model):
     def _onchange_area_name(self):
         for rec in self:
             rec.branch_name = rec.area_name.branch_area.id if rec.area_name else False
+
+    @api.onchange('brand_name2')
+    def _onchange_brand_name2(self):
+        """Clear sub-brands when brands change (New section)"""
+        for rec in self:
+            if rec.brand_name2:
+                # Keep only sub-brands that belong to selected brands
+                valid_sub_brands = rec.sub_brand_name2.filtered(lambda sb: sb.brand in rec.brand_name2)
+                rec.sub_brand_name2 = valid_sub_brands
+            else:
+                # If no brands selected, clear all sub-brands
+                rec.sub_brand_name2 = False
+
+    @api.onchange('brand_used_id')
+    def _onchange_brand_used_id(self):
+        """Clear sub-brands when brands change (Used section)"""
+        for rec in self:
+            if rec.brand_used_id:
+                # Keep only sub-brands that belong to selected brands
+                valid_sub_brands = rec.sub_brand_used_id.filtered(lambda sb: sb.brand in rec.brand_used_id)
+                rec.sub_brand_used_id = valid_sub_brands
+            else:
+                # If no brands selected, clear all sub-brands
+                rec.sub_brand_used_id = False
 ########################################################################################
     def _format_timedelta(self, seconds):
         # Format seconds -> HH:MM:SS
