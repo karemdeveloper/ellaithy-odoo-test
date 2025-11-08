@@ -30,3 +30,4 @@ from . import res_complaint_wizard
 from . import crm_stage
 from . import penalty_wizard
 from . import crm_penalty_report
+from . import mail_activity
