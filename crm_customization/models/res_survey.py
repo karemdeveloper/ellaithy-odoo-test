@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 
 class ResSurvey(models.Model):
     _name = 'res.survey'
@@ -6,7 +6,7 @@ class ResSurvey(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'name'
 
-    name = fields.Char(string="Survey Name", tracking=True)
+    name = fields.Char(string="Survey Name", tracking=True, readonly=True, copy=False, default='New')
     partner_id = fields.Many2one('res.partner', string="Customer")
     comment = fields.Text(string='Comment')
 
@@ -49,3 +49,11 @@ class ResSurvey(models.Model):
     q6_person_name = fields.Char(
         string="في حالة الإجابة بنعم، أذكر اسم الشخص",
     )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Generate sequence for survey name on creation"""
+        for vals in vals_list:
+            if vals.get('name', 'New') == 'New':
+                vals['name'] = self.env['ir.sequence'].next_by_code('res.survey') or 'New'
+        return super(ResSurvey, self).create(vals_list)
