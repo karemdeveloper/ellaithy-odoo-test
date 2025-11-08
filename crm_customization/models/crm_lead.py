@@ -42,7 +42,26 @@ class CrmLead(models.Model):
         ('new', 'New'),
         ('trade_in', 'Trade In'),
         ('used', 'Used'),
+        ('service', 'Service'),
     ], string='Opportunity Type', tracking=True)
+    
+    opportunity_type_display = fields.Char(
+        string='Type',
+        compute='_compute_opportunity_type_display',
+        store=False
+    )
+    
+    @api.depends('opportunity_type')
+    def _compute_opportunity_type_display(self):
+        """Display opportunity type as short code"""
+        type_map = {
+            'new': 'N',
+            'used': 'U',
+            'trade_in': 'T',
+            'service': 'S',
+        }
+        for rec in self:
+            rec.opportunity_type_display = type_map.get(rec.opportunity_type, '')
 
     ###################################################################################
     @api.onchange('area_name')

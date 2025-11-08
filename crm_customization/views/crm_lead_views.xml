@@ -72,8 +72,19 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="phone" display="full" options="{}" widget="phone"/>
+                <field name="opportunity_type"/>
+                <field name="opportunity_type_display"/>
             </xpath>
             <xpath expr="//field[@name='activity_ids']" position="replace"/>
+            
+            <!-- Add opportunity type badge in kanban card -->
+            <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/div[1]/div[1]/strong[1]" position="before">
+                <span t-if="record.opportunity_type_display.raw_value" 
+                      class="badge rounded-pill text-bg-info me-1"
+                      t-att-title="record.opportunity_type.value">
+                    <t t-esc="record.opportunity_type_display.value"/>
+                </span>
+            </xpath>
 
             <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/footer[1]" position="after">
                 <a type="object"
