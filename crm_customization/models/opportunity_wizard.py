@@ -226,7 +226,22 @@ class OpportunityWizard(models.TransientModel):
     def action_distribute(self):
         """Button action to create a CRM Opportunity and assign next salesperson"""
         self.ensure_one()
-        salesperson = self._get_next_salesperson()
+        
+        # Check if partner already has a salesperson assigned
+        if self.partner_id.user_id:
+            # Use the existing salesperson from partner
+            salesperson = self.partner_id.user_id
+            _logger.info("Partner id=%s already has salesperson id=%s. Reusing existing assignment.", 
+                        self.partner_id.id, salesperson.id)
+        else:
+            # Get next salesperson from distribution logic
+            salesperson = self._get_next_salesperson()
+            
+            # Save this salesperson to the partner for future use
+            if salesperson:
+                self.partner_id.write({'user_id': salesperson.id})
+                _logger.info("Assigned new salesperson id=%s to partner id=%s", 
+                            salesperson.id, self.partner_id.id)
 
         partner_name = self.partner_id.name or 'Unknown'
         # ✅ Use actual field names from res.brand and res.sub.brand
