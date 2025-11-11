@@ -74,7 +74,7 @@
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="phone" display="full" options="{}" widget="phone"/>
                 <field name="opportunity_type"/>
-                <!-- <field name="opportunity_type_display"/> -->
+                <field name="opportunity_type_display" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='activity_ids']" position="replace"/>
             
