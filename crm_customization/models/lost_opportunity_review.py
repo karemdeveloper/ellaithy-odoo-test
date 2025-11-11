@@ -13,6 +13,7 @@ class LostOpportunityReview(models.Model):
                        default='New', tracking=True)
     review_date = fields.Date(string='Review Date', required=True, default=fields.Date.today, 
                               tracking=True)
+    partner_id = fields.Many2one('res.partner', string='Customer', tracking=True)
     line_ids = fields.One2many('lost.opportunity.review.line', 'review_id', 
                                string='Review Lines')
     total_lost_count = fields.Integer(string='Total Lost Today', 
