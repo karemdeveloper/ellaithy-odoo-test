@@ -17,6 +17,7 @@
                     <!-- Next Stage field - only visible when opportunities are in New stage -->
                     <field name="next_stage_id" 
                            invisible="show_next_stage == False"
+                           required="feedback2 =='answered'"
                            options="{'no_create': True, 'no_create_edit': True}"/>
                 </group>
                 <footer>
