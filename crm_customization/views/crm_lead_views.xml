@@ -27,6 +27,7 @@
             <xpath expr="//form[1]/sheet[1]/div[not(@name)][1]/h2[1]/div[1]/label[1]" position="replace"/>
 
             <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="opportunity_type_display"/>
                 <field name="area_name"/>
                 <field name="branch_name"/>
                 <field name="opportunity_type" invisible="1"/>
@@ -73,7 +74,7 @@
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="phone" display="full" options="{}" widget="phone"/>
                 <field name="opportunity_type"/>
-                <field name="opportunity_type_display"/>
+                <!-- <field name="opportunity_type_display"/> -->
             </xpath>
             <xpath expr="//field[@name='activity_ids']" position="replace"/>
             
