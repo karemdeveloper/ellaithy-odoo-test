@@ -209,7 +209,7 @@ class LostOpportunityReviewLine(models.Model):
     # Related fields for convenience
     lead_name = fields.Char(related='lead_id.name', string='Opportunity Name', readonly=True)
     lead_stage = fields.Char(related='lead_id.stage_id.name', string='Stage', readonly=True)
-    lost_reason = fields.Char(related='lead_id.lost_reason', string='Lost Reason', readonly=True)
+    lost_reason_id = fields.Many2one('crm.lost.reason', related='lead_id.lost_reason_id', string='Lost Reason', readonly=True)
 
     @api.onchange('lead_id')
     def _onchange_lead_id(self):

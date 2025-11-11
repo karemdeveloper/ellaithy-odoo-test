@@ -56,7 +56,7 @@
                                     <field name="contact_name"/>
                                     <field name="salesperson_id"/>
                                     <field name="phone_primary"/>
-                                    <field name="lost_reason"/>
+                                    <field name="lost_reason_id"/>
                                     <field name="feedback" required="1"/>
                                     <field name="notes"/>
                                 </tree>
@@ -71,7 +71,7 @@
                                         <group>
                                             <field name="phone_primary"/>
                                             <field name="lead_stage"/>
-                                            <field name="lost_reason"/>
+                                            <field name="lost_reason_id"/>
                                             <field name="feedback" required="1"/>
                                         </group>
                                     </group>
@@ -129,7 +129,7 @@
                 <field name="contact_name"/>
                 <field name="salesperson_id"/>
                 <field name="phone_primary"/>
-                <field name="lost_reason"/>
+                <field name="lost_reason_id"/>
                 <field name="feedback"/>
             </tree>
         </field>
@@ -153,7 +153,7 @@
                         <group>
                             <field name="phone_primary"/>
                             <field name="lead_stage"/>
-                            <field name="lost_reason"/>
+                            <field name="lost_reason_id"/>
                             <field name="feedback" required="1"/>
                         </group>
                     </group>
