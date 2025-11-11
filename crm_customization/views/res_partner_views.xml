@@ -101,11 +101,10 @@
                        nolabel="1"
                        colspan="2"/>
             </xpath>
-            <xpath expr="//field[@name='mobile']" position="after">
-               <field name="user_id"/>
-            </xpath>
+            
 
             <xpath expr="//form[1]/sheet[1]/group[1]/group[2]/div[3]" position="after">
+                <field name="user_id"/>
                 <field name="company_type" groups="crm_customization.group_crm_customer"/>
                 <field name="area_id" groups="crm_customization.group_crm_customer" required="1"/>
                 <field name="branch_id" groups="crm_customization.group_crm_customer" required="1"/>
