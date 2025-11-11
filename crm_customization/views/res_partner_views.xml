@@ -101,6 +101,9 @@
                        nolabel="1"
                        colspan="2"/>
             </xpath>
+            <xpath expr="//field[@name='mobile']" position="after">
+               <field name="user_id"/>
+            </xpath>
 
             <xpath expr="//form[1]/sheet[1]/group[1]/group[2]/div[3]" position="after">
                 <field name="company_type" groups="crm_customization.group_crm_customer"/>
@@ -112,10 +115,20 @@
                 <field name="is_opportunity" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='lang']" position="replace"/>
-            <xpath expr="//page[@name='sales_purchases']" position="replace"/>
-            <xpath expr="//page[@name='contact_addresses']" position="replace"/>
-            <xpath expr="//page[@name='accounting_disabled']" position="replace"/>
-            <xpath expr="//page[@name='accounting']" position="replace"/>
+            
+            <!-- Add groups to pages instead of replacing them -->
+            <xpath expr="//page[@name='sales_purchases']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
+            <xpath expr="//page[@name='contact_addresses']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
+            <xpath expr="//page[@name='accounting_disabled']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
+            <xpath expr="//page[@name='accounting']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
 
             <xpath expr="//field[@name='company_type']" position="attributes">
                 <attribute name="string">Customer Type</attribute>
