@@ -19,7 +19,7 @@
                             <field name="call_type"/>
                         </group>
 
-                        <group invisible="opportunity_type=='used'">
+                        <group invisible="opportunity_type in ('used', 'service')">
                             <separator string="New" colspan="2"/>
                             <field name="brand_id2" widget="many2many_tags"
                                    options="{'no_create': True, 'no_create_edit': True}"/>
@@ -29,7 +29,7 @@
 
 
                         </group>
-                        <group invisible="opportunity_type=='new'">
+                        <group invisible="opportunity_type in ('new', 'service')">
                             <separator string="Used" colspan="2"/>
 
                             <field name="brand_used_id" widget="many2many_tags"

@@ -27,7 +27,7 @@ class OpportunityWizard(models.TransientModel):
         ('trade_in', 'Trade In'),
         ('used', 'Used'),
         ('service', 'Service'),
-    ], string='Opportunity Type', tracking=True)
+    ], string='Opportunity Type', tracking=True,default='new')
     sub_brand_id = fields.Many2one('res.sub.brand', string="Sub Brand", required=False)
     sub_brand_id2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=False)
     sub_brand_used_id = fields.Many2many(
