@@ -21,7 +21,7 @@ class InActiveRequest(models.Model):
         """Set state to Approved"""
         for rec in self:
             rec.state = 'approved'
-            member = self.env['crm.team.member'].search([('user_id', '=', rec.create_uid.id)], limit=1)
+            member = self.env['crm.team.member'].sudo().search([('user_id', '=', rec.create_uid.id)], limit=1)
             if member:
                 member.state = 'inactive'
                 if rec.date_to:
