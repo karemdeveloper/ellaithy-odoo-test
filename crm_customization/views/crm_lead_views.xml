@@ -78,7 +78,7 @@
             <xpath expr="//field[@name='activity_ids']" position="replace"/>
             
             <!-- Add opportunity type badge in kanban card -->
-            <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/div[1]/div[1]/strong[1]" position="before">
+            <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/footer[1]" position="before">
                 <span t-if="record.opportunity_type_display.raw_value" 
                       class="badge rounded-pill text-bg-info me-1"
                       t-att-title="record.opportunity_type.value">

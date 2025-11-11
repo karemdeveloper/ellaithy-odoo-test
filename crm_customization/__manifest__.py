@@ -10,6 +10,7 @@
         'security/ir.model.access.csv',
         'data/cron_check_inactive.xml',
         'data/survey_sequence.xml',
+        'data/lost_opportunity_review_sequence.xml',
         'security/groups.xml',
         'views/res_partner_views.xml',
         'views/res_area_views.xml',
@@ -39,6 +40,7 @@
         'views/res_complaint_wizard_view.xml',
         'views/crm_stage_views.xml',
         'views/crm_penalty_wizard_view.xml',
+        'views/lost_opportunity_review_views.xml',
         'reports/crm_penalty_report_template.xml',
     ],
     'assets': {
