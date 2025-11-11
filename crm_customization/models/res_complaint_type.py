@@ -7,5 +7,6 @@ class ResComplaintType(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string="Name")
-    department_id=fields.Many2one('res.department',string='Department')
+    department_id = fields.Many2one('res.department', string='Department')
+    sla_duration = fields.Char(string='SLA Duration', help='Expected time to resolve this type of complaint')
 

@@ -8,6 +8,8 @@
         <field name="arch" type="xml">
             <list>
                 <field name="name"/>
+                <field name="department_id"/>
+                <field name="sla_duration"/>
             </list>
         </field>
     </record>
@@ -21,6 +23,7 @@
                     <group>
                         <field name="name"/>
                         <field name="department_id"/>
+                        <field name="sla_duration" placeholder="e.g., 5 (days)"/>
                     </group>
                 </sheet>
                  <!-- Attachment preview -->

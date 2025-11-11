@@ -10,12 +10,18 @@
                 <field name="date"/>
                 <field name="customer_id"/>
                 <field name="primary_phone"/>
+                <field name="salesperson_id"/>
                 <field name="complaint_reason_id"/>
+                <field name="complaint_type_id"/>
                 <field name="branch_id"/>
                 <field name="department"/>
-                <field name="solved_by"/>
-                <field name="validity"/>
+                <field name="assigned_to_ids" widget="many2many_tags"/>
+                <field name="sla_duration"/>
+                <field name="complaint_duration"/>
+                <field name="sla_difference"/>
+                <field name="days_since_creation"/>
                 <field name="solving_date"/>
+                <field name="complaint_state" widget="badge" decoration-info="complaint_state=='new'" decoration-warning="complaint_state=='under_investigate'" decoration-success="complaint_state=='solved'"/>
             </list>
         </field>
     </record>
@@ -44,23 +50,30 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="date"/>
-                            <field name="customer_id"/>
+                            <field name="date" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="customer_id" readonly="complaint_state == 'under_investigate'"/>
                             <field name="primary_phone" readonly="1"/>
-                            <field name="complaint_reason_id"/>
-                            <field name="complaint_type_id"/>
+                            <field name="salesperson_id" readonly="1"/>
+                            <field name="complaint_reason_id" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="complaint_type_id" readonly="complaint_state == 'under_investigate'"/>
                         </group>
                         <group>
-                            <field name="branch_id"/>
-                            <field name="department"/>
-                            <field name="escalation_line_id"/>
-                            <field name="solved_by"/>
-                            <field name="validity"/>
+                            <field name="branch_id" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="department" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="assigned_to_ids" widget="many2many_tags" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="escalation_line_id" readonly="complaint_state == 'under_investigate'"/>
                         </group>
                     </group>
                     <group>
-                        <field name="solving_date" readonly="1"/>
-                        <field name="complaint_duration"/>
+                        <group>
+                            <field name="sla_duration" readonly="1"/>
+                            <field name="complaint_duration" readonly="1"/>
+                            <field name="sla_difference" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="solving_date" readonly="1"/>
+                            <field name="days_since_creation" readonly="1"/>
+                        </group>
                     </group>
                 </sheet>
                 <!-- Attachment preview -->

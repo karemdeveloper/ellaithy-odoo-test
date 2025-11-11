@@ -10,25 +10,22 @@
                         <group>
                             <field name="date"/>
                             <field name="customer_id"/>
-                            <field name="primary_phone"/>
+                            <field name="primary_phone" readonly="1"/>
+                            <field name="salesperson_id" readonly="1"/>
                             <field name="complaint_reason_id"/>
                             <field name="complaint_type_id"/>
                         </group>
                         <group>
                             <field name="branch_id"/>
                             <field name="department"/>
+                            <field name="assigned_to_ids" widget="many2many_tags"/>
                             <field name="escalation_line_id"/>
-                            <field name="solved_by" invisible="1"/>
-                            <field name="validity"/>
+                            <field name="sla_duration" readonly="1"/>
                         </group>
-                    </group>
-                    <group>
-                        <field name="solving_date" invisible="1"/>
-                        <field name="complaint_duration" invisible="1"/>
                     </group>
                 </sheet>
                 <footer>
-                    <button name="action_confirm" string="Save" type="object" class="btn-primary"/>
+                    <button name="action_confirm" string="Create Complaint" type="object" class="btn-primary"/>
                     <button string="Cancel" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
