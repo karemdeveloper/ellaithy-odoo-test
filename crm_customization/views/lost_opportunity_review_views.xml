@@ -24,11 +24,11 @@
             <form string="Lost Opportunity Review">
                 <header>
                     <button name="action_pick_randomly" string="Pick Randomly (10%)" type="object" 
-                            class="oe_highlight" attrs="{'invisible': [('state', '=', 'done')]}"/>
+                            class="oe_highlight" invisible="state == 'done'"/>
                     <button name="action_mark_done" string="Mark as Done" type="object" 
-                            class="oe_highlight" attrs="{'invisible': [('state', '=', 'done')]}"/>
+                            class="oe_highlight" invisible="state == 'done'"/>
                     <button name="action_reset_to_draft" string="Reset to Draft" type="object" 
-                            attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                            invisible="state != 'done'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
                 </header>
                 <sheet>
