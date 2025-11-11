@@ -42,6 +42,14 @@ class ResComplaintWizard(models.TransientModel):
         else:
             self.department = False
 ##########################################################
+    @api.onchange('department')
+    def _onchange_department_wizard(self):
+        """Auto-fill assigned_to_ids when department is selected"""
+        if self.department and self.department.department_user:
+            self.assigned_to_ids = [(6, 0, self.department.department_user.ids)]
+        else:
+            self.assigned_to_ids = [(5, 0, 0)]  # Clear assigned users
+
     def action_confirm(self):
         """ Create complaint record """
         self.ensure_one()

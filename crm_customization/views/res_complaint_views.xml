@@ -7,6 +7,7 @@
         <field name="model">res.complaint</field>
         <field name="arch" type="xml">
             <list>
+                <field name="name"/>
                 <field name="date"/>
                 <field name="customer_id"/>
                 <field name="primary_phone"/>
@@ -48,20 +49,25 @@
                 </header>
 
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
                     <group>
                         <group>
-                            <field name="date" readonly="complaint_state == 'under_investigate'"/>
-                            <field name="customer_id" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="date" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="customer_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
                             <field name="primary_phone" readonly="1"/>
                             <field name="salesperson_id" readonly="1"/>
-                            <field name="complaint_reason_id" readonly="complaint_state == 'under_investigate'"/>
-                            <field name="complaint_type_id" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="complaint_reason_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="complaint_type_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
                         </group>
                         <group>
-                            <field name="branch_id" readonly="complaint_state == 'under_investigate'"/>
-                            <field name="department" readonly="complaint_state == 'under_investigate'"/>
-                            <field name="assigned_to_ids" widget="many2many_tags" readonly="complaint_state == 'under_investigate'"/>
-                            <field name="escalation_line_id" readonly="complaint_state == 'under_investigate'"/>
+                            <field name="branch_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="department" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="assigned_to_ids" widget="many2many_tags" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="escalation_line_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
                         </group>
                     </group>
                     <group>

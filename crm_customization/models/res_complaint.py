@@ -6,6 +6,8 @@ class ResComplaint(models.Model):
     _description = 'Complaint'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
+    name = fields.Char(string='Complaint Reference', required=True, copy=False, readonly=True, 
+                       default='New', tracking=True)
     date = fields.Date(string='Date', tracking=True, default=fields.Date.context_today)
     customer_id = fields.Many2one('res.partner', string='Customer', tracking=True, required=True)
     primary_phone = fields.Char(related='customer_id.phone', string='Primary Phone', store=True, readonly=True)
@@ -48,6 +50,20 @@ class ResComplaint(models.Model):
         ('under_investigate', 'Under Investigate'),
         ('solved', 'Solved'),
     ], string='Complaint State', tracking=True, default='new')
+
+    @api.model
+    def create(self, vals):
+        if vals.get('name', 'New') == 'New':
+            vals['name'] = self.env['ir.sequence'].next_by_code('res.complaint') or 'New'
+        return super(ResComplaint, self).create(vals)
+
+    @api.onchange('department')
+    def _onchange_department(self):
+        """Auto-fill assigned_to_ids when department is selected"""
+        if self.department and self.department.department_user:
+            self.assigned_to_ids = [(6, 0, self.department.department_user.ids)]
+        else:
+            self.assigned_to_ids = [(5, 0, 0)]  # Clear assigned users
 
     @api.depends('date', 'solving_date')
     def _compute_complaint_duration(self):

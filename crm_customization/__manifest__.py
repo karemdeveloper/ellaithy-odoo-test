@@ -11,6 +11,7 @@
         'data/cron_check_inactive.xml',
         'data/survey_sequence.xml',
         'data/lost_opportunity_review_sequence.xml',
+        'data/complaint_sequence.xml',
         'security/groups.xml',
         'views/res_partner_views.xml',
         'views/res_area_views.xml',
