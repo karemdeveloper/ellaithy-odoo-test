@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Lost Opportunity Review Tree View -->
+    <!-- Lost Opportunity Review List View -->
     <record id="view_lost_opportunity_review_tree" model="ir.ui.view">
         <field name="name">lost.opportunity.review.tree</field>
         <field name="model">lost.opportunity.review</field>
         <field name="arch" type="xml">
-            <tree string="Lost Opportunity Reviews" decoration-muted="state=='done'" decoration-info="state=='in_progress'">
+            <list string="Lost Opportunity Reviews" decoration-muted="state=='done'" decoration-info="state=='in_progress'">
                 <field name="name"/>
                 <field name="review_date"/>
                 <field name="total_lost_count"/>
                 <field name="reviewed_count"/>
                 <field name="review_percentage" widget="percentage"/>
                 <field name="state" widget="badge" decoration-success="state=='done'" decoration-warning="state=='in_progress'" decoration-info="state=='draft'"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -50,7 +50,7 @@
                     <notebook>
                         <page string="Review Lines">
                             <field name="line_ids">
-                                <tree string="Lost Opportunities" editable="bottom" decoration-success="feedback=='valid'" decoration-danger="feedback=='not_valid'">
+                                <list string="Lost Opportunities" editable="bottom" decoration-success="feedback=='valid'" decoration-danger="feedback=='not_valid'">
                                     <field name="lead_id" options="{'no_create': True}"/>
                                     <field name="lead_name"/>
                                     <field name="contact_name"/>
@@ -59,7 +59,7 @@
                                     <field name="lost_reason_id"/>
                                     <field name="feedback" required="1"/>
                                     <field name="notes"/>
-                                </tree>
+                                </list>
                                 <form string="Review Line">
                                     <group>
                                         <group>
@@ -118,12 +118,12 @@
         </field>
     </record>
 
-    <!-- Lost Opportunity Review Line Tree View -->
+    <!-- Lost Opportunity Review Line List View -->
     <record id="view_lost_opportunity_review_line_tree" model="ir.ui.view">
         <field name="name">lost.opportunity.review.line.tree</field>
         <field name="model">lost.opportunity.review.line</field>
         <field name="arch" type="xml">
-            <tree string="Review Lines" decoration-success="feedback=='valid'" decoration-danger="feedback=='not_valid'">
+            <list string="Review Lines" decoration-success="feedback=='valid'" decoration-danger="feedback=='not_valid'">
                 <field name="review_id"/>
                 <field name="lead_name"/>
                 <field name="contact_name"/>
@@ -131,7 +131,7 @@
                 <field name="phone_primary"/>
                 <field name="lost_reason_id"/>
                 <field name="feedback"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -193,7 +193,7 @@
     <record id="action_lost_opportunity_review" model="ir.actions.act_window">
         <field name="name">Lost Opportunity Reviews</field>
         <field name="res_model">lost.opportunity.review</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create a Lost Opportunity Review
@@ -207,7 +207,7 @@
     <record id="action_lost_opportunity_review_line" model="ir.actions.act_window">
         <field name="name">Review Lines</field>
         <field name="res_model">lost.opportunity.review.line</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!-- Menu Items -->

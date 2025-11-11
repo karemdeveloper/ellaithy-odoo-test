@@ -174,7 +174,7 @@ class LostOpportunityReview(models.Model):
             'type': 'ir.actions.act_window',
             'name': 'Select Lost Opportunities',
             'res_model': 'crm.lead',
-            'view_mode': 'tree',
+            'view_mode': 'list',
             'domain': domain,
             'target': 'new',
             'context': {'review_id': self.id}
