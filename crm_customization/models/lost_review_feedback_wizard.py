@@ -84,10 +84,10 @@ class LostReviewFeedbackWizardLine(models.TransientModel):
 
     wizard_id = fields.Many2one('lost.review.feedback.wizard', string='Wizard', required=True, ondelete='cascade')
     review_line_id = fields.Many2one('lost.opportunity.review.line', string='Review Line')
-    lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True, readonly=True)
-    contact_name = fields.Char(string='Customer Name', readonly=True)
-    salesperson_id = fields.Many2one('res.users', string='Salesperson', readonly=True)
-    phone_primary = fields.Char(string='Phone', readonly=True)
+    lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True)
+    contact_name = fields.Char(string='Customer Name')
+    salesperson_id = fields.Many2one('res.users', string='Salesperson')
+    phone_primary = fields.Char(string='Phone')
     feedback = fields.Selection([
         ('valid', 'Valid'),
         ('not_valid', 'Not Valid')
