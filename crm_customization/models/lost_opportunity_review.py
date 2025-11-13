@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
 from datetime import date
 import random
 
@@ -11,15 +12,21 @@ class LostOpportunityReview(models.Model):
 
     name = fields.Char(string='Review Reference', required=True, copy=False, readonly=True, 
                        default='New', tracking=True)
+    date_from = fields.Date(string='Date From', required=True, default=fields.Date.today, 
+                           tracking=True)
+    date_to = fields.Date(string='Date To', required=True, default=fields.Date.today, 
+                         tracking=True)
     review_date = fields.Date(string='Review Date', required=True, default=fields.Date.today, 
                               tracking=True)
     partner_id = fields.Many2one('res.partner', string='Customer', tracking=True)
     line_ids = fields.One2many('lost.opportunity.review.line', 'review_id', 
                                string='Review Lines')
-    total_lost_count = fields.Integer(string='Total Lost Today', 
+    total_lost_count = fields.Integer(string='Total Lost in Period', 
                                        compute='_compute_lost_counts', store=True)
     reviewed_count = fields.Integer(string='Reviewed Count', 
                                     compute='_compute_lost_counts', store=True)
+    ten_percent_count = fields.Integer(string='10% Count', 
+                                       compute='_compute_lost_counts', store=True)
     review_percentage = fields.Float(string='Review Percentage (%)', 
                                      compute='_compute_lost_counts', store=True)
     state = fields.Selection([
@@ -34,52 +41,81 @@ class LostOpportunityReview(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('lost.opportunity.review') or 'New'
         return super(LostOpportunityReview, self).create(vals)
 
-    @api.depends('line_ids', 'review_date')
+    @api.onchange('date_from', 'date_to')
+    def _onchange_dates(self):
+        """Auto-load lost opportunities when dates change"""
+        # Only auto-load for existing records (records that have been saved)
+        if self.id and self.date_from and self.date_to and self.state != 'done':
+            # Auto-load opportunities when dates change
+            self._load_opportunities()
+
+    @api.depends('line_ids', 'date_from', 'date_to')
     def _compute_lost_counts(self):
-        """Compute total lost opportunities and reviewed count for the day"""
+        """Compute total lost opportunities and reviewed count for the date range"""
         for record in self:
-            # Get count of lost opportunities for the review date
+            if not record.date_from or not record.date_to:
+                record.total_lost_count = 0
+                record.ten_percent_count = 0
+                record.reviewed_count = 0
+                record.review_percentage = 0
+                continue
+            
+            # Get lost stages
             lost_stages = self.env['crm.stage'].search([('is_lost', '=', True)])
+            
+            # Build base domain
+            domain = [
+                ('date_closed', '!=', False),
+                ('date_closed', '>=', f"{record.date_from} 00:00:00"),
+                ('date_closed', '<=', f"{record.date_to} 23:59:59"),
+            ]
+            
+            # Add stage condition
             if lost_stages:
-                total_lost = self.env['crm.lead'].search_count([
-                    ('stage_id', 'in', lost_stages.ids),
-                    ('date_closed', '>=', fields.Datetime.to_datetime(record.review_date)),
-                    ('date_closed', '<', fields.Datetime.to_datetime(
-                        fields.Date.add(record.review_date, days=1)))
-                ])
+                domain.append(('stage_id', 'in', lost_stages.ids))
             else:
-                # Fallback: search by probability = 0 (lost)
-                total_lost = self.env['crm.lead'].search_count([
-                    ('probability', '=', 0),
-                    ('active', '=', False),
-                    ('date_closed', '>=', fields.Datetime.to_datetime(record.review_date)),
-                    ('date_closed', '<', fields.Datetime.to_datetime(
-                        fields.Date.add(record.review_date, days=1)))
-                ])
+                # Fallback: search by lost_reason_id (if opportunity has lost reason, it's lost)
+                domain.append(('lost_reason_id', '!=', False))
+            
+            total_lost = self.env['crm.lead'].search_count(domain)
             
             record.total_lost_count = total_lost
+            record.ten_percent_count = max(1, int(total_lost * 0.1)) if total_lost > 0 else 0
             record.reviewed_count = len(record.line_ids)
             record.review_percentage = (record.reviewed_count / record.total_lost_count * 100) if record.total_lost_count > 0 else 0
 
+    @api.onchange('line_ids')
+    def _onchange_line_count(self):
+        """Warn if selecting more than 10% of lost opportunities"""
+        selected_count = len(self.line_ids.filtered(lambda l: l.selected))
+        if self.ten_percent_count > 0 and selected_count > self.ten_percent_count:
+            return {
+                'warning': {
+                    'title': 'Exceeding 10% Target',
+                    'message': f'You are selecting {selected_count} opportunities, but 10% of the total ({self.total_lost_count}) is only {self.ten_percent_count}.\n'
+                               f'You can proceed, but this exceeds the recommended target.'
+                }
+            }
+
     def action_pick_randomly(self):
-        """Pick 10% of today's lost opportunities randomly"""
+        """Pick 10% of period's lost opportunities randomly"""
         self.ensure_one()
         
         # Get lost stages (is_lost = True)
         lost_stages = self.env['crm.stage'].search([('is_lost', '=', True)])
         
-        # Build domain for today's lost opportunities
+        # Build domain for date range lost opportunities
         domain = [
-            ('date_closed', '>=', fields.Datetime.to_datetime(self.review_date)),
-            ('date_closed', '<', fields.Datetime.to_datetime(
-                fields.Date.add(self.review_date, days=1)))
+            ('date_closed', '!=', False),
+            ('date_closed', '>=', f"{self.date_from} 00:00:00"),
+            ('date_closed', '<=', f"{self.date_to} 23:59:59"),
         ]
         
         if lost_stages:
             domain.append(('stage_id', 'in', lost_stages.ids))
         else:
-            # Fallback to probability-based lost opportunities
-            domain.extend([('probability', '=', 0), ('active', '=', False)])
+            # Fallback: search by lost_reason_id
+            domain.append(('lost_reason_id', '!=', False))
         
         # Get all lost opportunities for today
         lost_opportunities = self.env['crm.lead'].search(domain)
@@ -147,6 +183,80 @@ class LostOpportunityReview(models.Model):
             }
         }
 
+    def _load_opportunities(self):
+        """Internal method to load lost opportunities"""
+        self.ensure_one()
+        
+        if not self.date_from or not self.date_to:
+            return
+        
+        # Get lost stages
+        lost_stages = self.env['crm.stage'].search([('is_lost', '=', True)])
+        
+        # Build domain for date range lost opportunities
+        domain = [
+            ('date_closed', '!=', False),
+            ('date_closed', '>=', f"{self.date_from} 00:00:00"),
+            ('date_closed', '<=', f"{self.date_to} 23:59:59"),
+        ]
+        
+        if lost_stages:
+            domain.append(('stage_id', 'in', lost_stages.ids))
+        else:
+            # Fallback: search by lost_reason_id
+            domain.append(('lost_reason_id', '!=', False))
+        
+        # Get all lost opportunities in period
+        lost_opportunities = self.env['crm.lead'].search(domain)
+        
+        # Clear existing lines
+        self.line_ids.unlink()
+        
+        if lost_opportunities:
+            # Create lines for all lost opportunities (readonly, with tick checkbox)
+            for opportunity in lost_opportunities:
+                self.env['lost.opportunity.review.line'].create({
+                    'review_id': self.id,
+                    'lead_id': opportunity.id,
+                    'contact_name': opportunity.partner_id.name or opportunity.contact_name or 'N/A',
+                    'salesperson_id': opportunity.user_id.id if opportunity.user_id else False,
+                    'phone_primary': opportunity.phone or opportunity.mobile or 'N/A',
+                    'selected': False,  # Not selected by default
+                })
+            
+            # Update state to in_progress
+            if self.state == 'draft':
+                self.state = 'in_progress'
+
+    def action_load_lost_opportunities(self):
+        """Load all lost opportunities in the date range (button action)"""
+        self.ensure_one()
+        
+        self._load_opportunities()
+        
+        if not self.line_ids:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'No Lost Opportunities',
+                    'message': 'No lost opportunities found for this date range.',
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': f'{len(self.line_ids)} lost opportunities have been loaded. Please tick the ones to review.',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+
     def action_add_line(self):
         """Open a wizard to manually add lost opportunities to review"""
         self.ensure_one()
@@ -154,17 +264,18 @@ class LostOpportunityReview(models.Model):
         # Get lost stages
         lost_stages = self.env['crm.stage'].search([('is_lost', '=', True)])
         
-        # Build domain for today's lost opportunities
+        # Build domain for date range lost opportunities
         domain = [
-            ('date_closed', '>=', fields.Datetime.to_datetime(self.review_date)),
-            ('date_closed', '<', fields.Datetime.to_datetime(
-                fields.Date.add(self.review_date, days=1)))
+            ('date_closed', '!=', False),
+            ('date_closed', '>=', f"{self.date_from} 00:00:00"),
+            ('date_closed', '<=', f"{self.date_to} 23:59:59"),
         ]
         
         if lost_stages:
             domain.append(('stage_id', 'in', lost_stages.ids))
         else:
-            domain.extend([('probability', '=', 0), ('active', '=', False)])
+            # Fallback: search by lost_reason_id
+            domain.append(('lost_reason_id', '!=', False))
         
         # Get already reviewed lead IDs
         existing_lead_ids = self.line_ids.mapped('lead_id').ids
@@ -189,6 +300,29 @@ class LostOpportunityReview(models.Model):
         """Reset review to draft"""
         self.write({'state': 'draft'})
 
+    def action_create_feedback(self):
+        """Create feedback records for selected lines"""
+        self.ensure_one()
+        
+        # Get selected lines
+        selected_lines = self.line_ids.filtered(lambda l: l.selected)
+        
+        if not selected_lines:
+            raise UserError(_('Please select at least one opportunity to create feedback.'))
+        
+        # Open wizard to create feedback
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Create Feedback',
+            'res_model': 'lost.review.feedback.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_review_id': self.id,
+                'selected_line_ids': selected_lines.ids,  # Pass as custom context key
+            }
+        }
+
 
 class LostOpportunityReviewLine(models.Model):
     _name = 'lost.opportunity.review.line'
@@ -197,10 +331,11 @@ class LostOpportunityReviewLine(models.Model):
 
     review_id = fields.Many2one('lost.opportunity.review', string='Review', 
                                 required=True, ondelete='cascade')
-    lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True)
-    contact_name = fields.Char(string='Contact Name', required=True)
-    salesperson_id = fields.Many2one('res.users', string='Salesperson')
-    phone_primary = fields.Char(string='Phone Primary')
+    lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True, readonly=True)
+    selected = fields.Boolean(string='Select', default=False, help='Tick to include in feedback creation')
+    contact_name = fields.Char(string='Contact Name', required=True, readonly=True)
+    salesperson_id = fields.Many2one('res.users', string='Salesperson', readonly=True)
+    phone_primary = fields.Char(string='Phone Primary', readonly=True)
     feedback = fields.Selection([
         ('valid', 'Valid'),
         ('not_valid', 'Not Valid')

@@ -54,8 +54,9 @@ class ResComplaintWizard(models.TransientModel):
         """ Create complaint record and open email composer """
         self.ensure_one()
         
-        # Create the complaint record
-        complaint = self.env['res.complaint'].create({
+        # Create the complaint record using sudo to bypass record rules
+        # This allows creating complaints assigned to others without seeing them
+        complaint = self.env['res.complaint'].sudo().create({
             'date': self.date,
             'customer_id': self.customer_id.id,
             'complaint_reason_id': self.complaint_reason_id.id,
@@ -104,6 +105,7 @@ class ResComplaintWizard(models.TransientModel):
             ctx['default_email_to'] = ','.join(email_to_list)
 
         # Open the email composer (like Send Quotation in Sale)
+        # Return to close the wizard after sending email, user won't see the complaint
         return {
             'type': 'ir.actions.act_window',
             'name': 'Send Complaint Notification',

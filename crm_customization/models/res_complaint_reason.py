@@ -2,7 +2,7 @@ from odoo import models, fields,api
 
 class ResComplaintReason(models.Model):
     _name = 'res.complaint.reason'
-    _description = 'Complaint'
+    _description = 'Complaint Reason'
     _rec_name = 'name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
