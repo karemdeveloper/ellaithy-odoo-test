@@ -31,6 +31,7 @@
                 <field name="area_name"/>
                 <field name="branch_name"/>
                 <field name="opportunity_type" invisible="1"/>
+                <field name="service_id" invisible="opportunity_type != 'service'"/>
                 <field name="brand_name2" widget="many2many_tags"/>
                 <field name="sub_brand_name2" widget="many2many_tags" domain="[('brand', 'in', brand_name2)]"/>
                 <field name="brand_used_id" widget="many2many_tags" invisible="opportunity_type=='new'"/>

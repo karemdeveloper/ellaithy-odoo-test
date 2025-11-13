@@ -62,7 +62,7 @@ class ResComplaintWizard(models.TransientModel):
             'escalation_line_id': self.escalation_line_id.id if self.escalation_line_id else False,
             'assigned_to_ids': [(6, 0, self.assigned_to_ids.ids)],
             'complaint_type_id': self.complaint_type_id.id,
-            'complaint_state': 'new',
+            'complaint_state': 'under_investigate',
         })
 
         # Send email to assigned users

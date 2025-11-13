@@ -32,3 +32,4 @@ from . import penalty_wizard
 from . import crm_penalty_report
 from . import mail_activity
 from . import lost_opportunity_review
+from . import res_service

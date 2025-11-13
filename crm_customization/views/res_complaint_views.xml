@@ -17,6 +17,7 @@
                 <field name="branch_id"/>
                 <field name="department"/>
                 <field name="assigned_to_ids" widget="many2many_tags"/>
+                <field name="validity"/>
                 <field name="sla_duration"/>
                 <field name="complaint_duration"/>
                 <field name="sla_difference"/>
@@ -68,6 +69,7 @@
                             <field name="department" readonly="complaint_state in ['under_investigate', 'solved']"/>
                             <field name="assigned_to_ids" widget="many2many_tags" readonly="complaint_state in ['under_investigate', 'solved']"/>
                             <field name="escalation_line_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="validity"/>
                         </group>
                     </group>
                     <group>

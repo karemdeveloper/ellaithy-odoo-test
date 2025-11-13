@@ -1,5 +1,5 @@
-from odoo import models, fields,api
-from odoo.exceptions import UserError
+from odoo import models, fields, api
+from odoo.exceptions import UserError, ValidationError
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 import pytz
@@ -8,6 +8,7 @@ import math
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
+    
     branch_name = fields.Many2one('res.branch', string="Branch")
     area_name = fields.Many2one('res.area', string="Area")
     brand_name = fields.Many2one('res.brand', string="Brand", required=False)
@@ -45,6 +46,9 @@ class CrmLead(models.Model):
         ('service', 'Service'),
     ], string='Opportunity Type', tracking=True)
     
+    # Service field - only shown when opportunity_type is 'service'
+    service_id = fields.Many2one('res.service', string='Service', tracking=True)
+    
     opportunity_type_display = fields.Char(
         string='Type',
         compute='_compute_opportunity_type_display',
@@ -64,6 +68,24 @@ class CrmLead(models.Model):
             rec.opportunity_type_display = type_map.get(rec.opportunity_type, '')
 
     ###################################################################################
+    @api.constrains('phone', 'mobile')
+    def _check_phone_length(self):
+        """Validate that phone numbers have at least 11 digits"""
+        for record in self:
+            if record.phone:
+                phone_digits = ''.join(filter(str.isdigit, record.phone))
+                if len(phone_digits) < 11:
+                    raise ValidationError(
+                        f'Phone number must contain at least 11 digits. Current: {len(phone_digits)} digits'
+                    )
+            
+            if record.mobile:
+                mobile_digits = ''.join(filter(str.isdigit, record.mobile))
+                if len(mobile_digits) < 11:
+                    raise ValidationError(
+                        f'Mobile number must contain at least 11 digits. Current: {len(mobile_digits)} digits'
+                    )
+
     @api.onchange('area_name')
     def _onchange_area_name(self):
         for rec in self:

@@ -49,7 +49,13 @@ class ResComplaint(models.Model):
         ('new', 'New'),
         ('under_investigate', 'Under Investigate'),
         ('solved', 'Solved'),
-    ], string='Complaint State', tracking=True, default='new')
+    ], string='Complaint State', tracking=True, default='under_investigate')
+    
+    # Validity field - only in complaint model, not in wizard
+    validity = fields.Selection([
+        ('valid', 'Valid'),
+        ('not_valid', 'Not Valid')
+    ], string='Validity', tracking=True)
 
     @api.model
     def create(self, vals):

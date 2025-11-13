@@ -56,6 +56,24 @@ class ResPartner(models.Model):
 
     #########################################################################################
 
+    @api.constrains('phone', 'mobile')
+    def _check_phone_length(self):
+        """Validate that phone numbers have at least 11 digits"""
+        for record in self:
+            if record.phone:
+                phone_digits = ''.join(filter(str.isdigit, record.phone))
+                if len(phone_digits) < 11:
+                    raise ValidationError(
+                        f'Phone number must contain at least 11 digits. Current: {len(phone_digits)} digits'
+                    )
+            
+            if record.mobile:
+                mobile_digits = ''.join(filter(str.isdigit, record.mobile))
+                if len(mobile_digits) < 11:
+                    raise ValidationError(
+                        f'Mobile number must contain at least 11 digits. Current: {len(mobile_digits)} digits'
+                    )
+
     @api.onchange('area_id')
     def _onchange_area_id(self):
         for rec in self:

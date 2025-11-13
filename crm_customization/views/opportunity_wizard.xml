@@ -11,6 +11,7 @@
                         <group>
                             <field name="name"/>
                             <field name="opportunity_type"/>
+                            <field name="service_id" invisible="opportunity_type != 'service'" options="{'no_create': True, 'no_create_edit': True}"/>
                             <field name="area_id" options="{'no_create': True, 'no_create_edit': True}"/>
                             <field name="branch_id" options="{'no_create': True, 'no_create_edit': True}"/>
                             <field name="source_id" options="{'no_create': True, 'no_create_edit': True}"/>
