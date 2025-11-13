@@ -49,6 +49,10 @@ class CrmLead(models.Model):
     # Service field - only shown when opportunity_type is 'service'
     service_id = fields.Many2one('res.service', string='Service', tracking=True)
     
+    # Won wizard fields
+    chassis_number = fields.Char(string='Chassis Number', tracking=True)
+    sale_order_id = fields.Many2one('sale.order', string='Sales Order', tracking=True)
+    
     opportunity_type_display = fields.Char(
         string='Type',
         compute='_compute_opportunity_type_display',
@@ -159,7 +163,7 @@ class CrmLead(models.Model):
             rec.sla_duration = self._format_timedelta(delta)
 ##########################################################################################
     def action_open_feedback_wizard(self):
-        """Open the wizard for selected leads"""
+        """Open the feedback wizard for selected leads"""
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'crm.feedback.wizard',
@@ -167,6 +171,20 @@ class CrmLead(models.Model):
             'target': 'new',
             'context': {
                 'default_lead_ids': [(6, 0, self.ids)],
+            }
+        }
+
+    def action_open_won_wizard(self):
+        """Open the won wizard to mark opportunity as won"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Mark as Won',
+            'res_model': 'opportunity.won.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'active_id': self.id,
             }
         }
 

@@ -28,5 +28,6 @@ access_crm_penalty_wizard,crm.penalty.wizard,model_crm_penalty_wizard,,1,1,1,1
 access_lost_opportunity_review,lost.opportunity.review,model_lost_opportunity_review,,1,1,1,1
 access_lost_opportunity_review_line,lost.opportunity.review.line,model_lost_opportunity_review_line,,1,1,1,1
 access_res_service,res.service,model_res_service,,1,1,1,1
+access_opportunity_won_wizard,opportunity.won.wizard,model_opportunity_won_wizard,,1,1,1,1
 
 

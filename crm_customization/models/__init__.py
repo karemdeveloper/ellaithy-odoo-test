@@ -1,3 +1,4 @@
+from . import res_users
 from . import res_partner
 from . import res_area
 from . import res_branch
@@ -33,3 +34,4 @@ from . import crm_penalty_report
 from . import mail_activity
 from . import lost_opportunity_review
 from . import res_service
+from . import opportunity_won_wizard

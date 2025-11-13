@@ -79,6 +79,14 @@
             </xpath>
             <xpath expr="//field[@name='activity_ids']" position="replace"/>
             
+            <!-- Remove priority stars -->
+            <xpath expr="//field[@name='priority']" position="replace"/>
+            
+            <!-- Remove partner name (client name) from kanban card -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            
             <!-- Add opportunity type badge in kanban card -->
             <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/footer[1]" position="before">
                 <span t-if="record.opportunity_type_display.raw_value" 
@@ -95,6 +103,13 @@
                    t-att-title="'Add Feedback'">
                     <i class="fa fa-comment"></i>
                     Add Feedback
+                </a>
+                <a type="object"
+                   name="action_open_won_wizard"
+                   class="btn btn-success btn-sm mt-1"
+                   t-att-title="'Mark as Won'">
+                    <i class="fa fa-check"></i>
+                    Won
                 </a>
                 <a type="action"
                    name="%(crm.crm_lead_lost_action)d"

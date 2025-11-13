@@ -37,9 +37,9 @@ class ResComplaint(models.Model):
     sla_duration = fields.Char(related='complaint_type_id.sla_duration', string='SLA Duration', 
                                store=True, readonly=True)
     
-    # Difference between SLA duration and Complaint duration
-    sla_difference = fields.Char(string='Difference (Complaint - SLA)', 
-                                 compute='_compute_sla_difference', store=True)
+    # Late days (Complaint duration - SLA duration)
+    late_days = fields.Integer(string='Late Days', 
+                               compute='_compute_late_days', store=True)
     
     # Difference between created on and today
     days_since_creation = fields.Integer(string='Days Since Creation', 
@@ -83,20 +83,21 @@ class ResComplaint(models.Model):
                 record.complaint_duration = 0
     
     @api.depends('complaint_duration', 'sla_duration')
-    def _compute_sla_difference(self):
-        """Calculate difference between complaint duration and SLA duration"""
+    def _compute_late_days(self):
+        """Calculate late days (complaint duration - SLA duration)"""
         for record in self:
             if record.sla_duration and record.complaint_duration:
                 try:
                     # Try to parse SLA duration as integer (days)
                     sla_days = int(record.sla_duration)
                     difference = record.complaint_duration - sla_days
-                    record.sla_difference = f"{difference} days"
+                    # If zero or negative, set to 0
+                    record.late_days = max(0, difference)
                 except ValueError:
-                    # If SLA is not a number, just show the text
-                    record.sla_difference = f"{record.complaint_duration} days (SLA: {record.sla_duration})"
+                    # If SLA is not a number, set to 0
+                    record.late_days = 0
             else:
-                record.sla_difference = "N/A"
+                record.late_days = 0
     
     @api.depends('create_date')
     def _compute_days_since_creation(self):

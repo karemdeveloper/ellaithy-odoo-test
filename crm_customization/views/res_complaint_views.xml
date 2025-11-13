@@ -20,7 +20,7 @@
                 <field name="validity"/>
                 <field name="sla_duration"/>
                 <field name="complaint_duration"/>
-                <field name="sla_difference"/>
+                <field name="late_days"/>
                 <field name="days_since_creation"/>
                 <field name="solving_date"/>
                 <field name="complaint_state" widget="badge" decoration-info="complaint_state=='new'" decoration-warning="complaint_state=='under_investigate'" decoration-success="complaint_state=='solved'"/>
@@ -76,7 +76,7 @@
                         <group>
                             <field name="sla_duration" readonly="1"/>
                             <field name="complaint_duration" readonly="1"/>
-                            <field name="sla_difference" readonly="1"/>
+                            <field name="late_days" readonly="1"/>
                         </group>
                         <group>
                             <field name="solving_date" readonly="1"/>
