@@ -12,6 +12,7 @@
         'data/survey_sequence.xml',
         'data/lost_opportunity_review_sequence.xml',
         'data/complaint_sequence.xml',
+        'data/complaint_email_templates.xml',
         'security/groups.xml',
         'views/res_partner_views.xml',
         'views/res_area_views.xml',

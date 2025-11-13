@@ -36,6 +36,12 @@
                 <header>
                     <field name="complaint_state" widget="statusbar" statusbar_visible="new,under_investigate,solved"/>
 
+                    <button name="action_send_complaint_email"
+                            string="Send Email"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-envelope"/>
+
                     <button name="action_under_investigate"
                             string="Start Investigation"
                             type="object"

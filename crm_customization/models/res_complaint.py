@@ -123,3 +123,52 @@ class ResComplaint(models.Model):
             record.message_post(
                 body=f"Complaint marked as <b>Solved</b>. Duration: {record.complaint_duration} days.")
         return True
+
+    def action_send_complaint_email(self):
+        """Open email composer to send/resend complaint notification"""
+        self.ensure_one()
+        
+        # Prepare email recipients
+        partner_ids = []
+        email_to_list = []
+        
+        # Add assigned users' emails
+        for user in self.assigned_to_ids:
+            if user.partner_id:
+                partner_ids.append(user.partner_id.id)
+        
+        # Add department alias email if exists
+        if self.department.alias_email:
+            email_to_list.append(self.department.alias_email)
+
+        # Get email template from complaint type
+        template_id = self.complaint_type_id.email_template_id
+        
+        if not template_id:
+            # If no template is set, use default one
+            template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
+        
+        # Prepare email composer context
+        ctx = {
+            'default_model': 'res.complaint',
+            'default_res_ids': [self.id],
+            'default_use_template': bool(template_id),
+            'default_template_id': template_id.id if template_id else False,
+            'default_composition_mode': 'comment',
+            'default_partner_ids': partner_ids,
+            'force_email': True,
+        }
+        
+        # Add department alias to email_to
+        if email_to_list:
+            ctx['default_email_to'] = ','.join(email_to_list)
+
+        # Open the email composer
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Send Complaint Notification',
+            'res_model': 'mail.compose.message',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': ctx,
+        }

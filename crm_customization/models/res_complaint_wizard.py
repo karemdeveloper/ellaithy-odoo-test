@@ -50,9 +50,11 @@ class ResComplaintWizard(models.TransientModel):
         else:
             self.assigned_to_ids = [(5, 0, 0)]  # Clear assigned users
 
-    def action_confirm(self):
-        """ Create complaint record """
+    def action_send_and_create(self):
+        """ Create complaint record and open email composer """
         self.ensure_one()
+        
+        # Create the complaint record
         complaint = self.env['res.complaint'].create({
             'date': self.date,
             'customer_id': self.customer_id.id,
@@ -65,44 +67,48 @@ class ResComplaintWizard(models.TransientModel):
             'complaint_state': 'under_investigate',
         })
 
-        # Send email to assigned users
-        if self.assigned_to_ids:
-            for user in self.assigned_to_ids:
-                if user.email:
-                    mail_values = {
-                        'subject': f'New Complaint Assigned to You',
-                        'body_html': f"""
-                                  <p>Hello {user.name},</p>
-                                  <p>A new complaint has been assigned to you.</p>
-                                  <ul>
-                                      <li><b>Customer:</b> {self.customer_id.name}</li>
-                                      <li><b>Complaint Type:</b> {self.complaint_type_id.name or ''}</li>
-                                      <li><b>Date:</b> {self.date}</li>
-                                      <li><b>Reason:</b> {self.complaint_reason_id.name or ''}</li>
-                                      <li><b>Department:</b> {self.department.name or ''}</li>
-                                      <li><b>SLA Duration:</b> {self.sla_duration or 'N/A'}</li>
-                                  </ul>
-                                  <p>You can view the complaint in the system for more details.</p>
-                                  <p>Best regards,<br/>Complaint Management System</p>
-                              """,
-                        'email_to': user.email,
-                        'email_from': self.env.user.email or 'noreply@example.com',
-                    }
+        # Prepare email recipients
+        partner_ids = []
+        email_to_list = []
+        
+        # Add assigned users' emails
+        for user in self.assigned_to_ids:
+            if user.partner_id:
+                partner_ids.append(user.partner_id.id)
+        
+        # Add department alias email if exists
+        if self.department.alias_email:
+            email_to_list.append(self.department.alias_email)
 
-                    mail = self.env['mail.mail'].create(mail_values)
-                    mail.send()
+        # Get email template from complaint type
+        template_id = self.complaint_type_id.email_template_id
+        
+        if not template_id:
+            # If no template is set, create a default one
+            template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
+        
+        # Prepare email composer context
+        ctx = {
+            'default_model': 'res.complaint',
+            'default_res_ids': [complaint.id],
+            'default_use_template': bool(template_id),
+            'default_template_id': template_id.id if template_id else False,
+            'default_composition_mode': 'comment',
+            'default_partner_ids': partner_ids,
+            'force_email': True,
+            'complaint_wizard_send': True,
+        }
+        
+        # Add department alias to CC or email_to
+        if email_to_list:
+            ctx['default_email_to'] = ','.join(email_to_list)
 
-                    complaint.message_post(
-                        body=f"📩 Notification email sent to {user.name} ({user.email}) "
-                             f"for new complaint assignment.",
-                        subject=f"New Complaint Assigned",
-                        message_type='notification',
-                    )
-
+        # Open the email composer (like Send Quotation in Sale)
         return {
             'type': 'ir.actions.act_window',
-            'res_model': 'res.complaint',
-            'res_id': complaint.id,
+            'name': 'Send Complaint Notification',
+            'res_model': 'mail.compose.message',
             'view_mode': 'form',
-            'target': 'current',
+            'target': 'new',
+            'context': ctx,
         }

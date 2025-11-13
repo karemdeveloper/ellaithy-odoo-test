@@ -10,6 +10,7 @@
                 <field name="name"/>
                 <field name="department_id"/>
                 <field name="sla_duration"/>
+                <field name="email_template_id"/>
             </list>
         </field>
     </record>
@@ -24,6 +25,7 @@
                         <field name="name"/>
                         <field name="department_id"/>
                         <field name="sla_duration" placeholder="e.g., 5 (days)"/>
+                        <field name="email_template_id"/>
                     </group>
                 </sheet>
                  <!-- Attachment preview -->
