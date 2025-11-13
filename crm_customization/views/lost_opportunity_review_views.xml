@@ -10,8 +10,13 @@
                 <field name="review_date"/>
                 <field name="partner_id"/>
                 <field name="total_lost_count"/>
+                <field name="ten_percent_count" string="10% Target"/>
+                <field name="selected_count" 
+                       decoration-success="selection_status == 'at' or selection_status == 'under'" 
+                       decoration-danger="selection_status == 'over'"
+                       string="✓ Selected"/>
+                <field name="selection_status" column_invisible="1"/>
                 <field name="reviewed_count"/>
-                <field name="review_percentage" widget="percentage"/>
                 <field name="state" widget="badge" decoration-success="state=='done'" decoration-warning="state=='in_progress'" decoration-info="state=='draft'"/>
             </list>
         </field>
@@ -51,9 +56,13 @@
                         </group>
                         <group>
                             <field name="total_lost_count"/>
-                            <field name="reviewed_count"/>
-                            <field name="ten_percent_count" string="10% Count (Target)"/>
-
+                            <field name="ten_percent_count" string="10% Target"/>
+                            <field name="selected_count" 
+                                   decoration-success="selection_status == 'at' or selection_status == 'under'" 
+                                   decoration-danger="selection_status == 'over'"
+                                   string="✓ Selected (for Feedback)"/>
+                            <field name="selection_status" invisible="1"/>
+                            <!-- <field name="reviewed_count"/> -->
                             <!-- <field name="review_percentage" widget="percentage"/> -->
                         </group>
                     </group>

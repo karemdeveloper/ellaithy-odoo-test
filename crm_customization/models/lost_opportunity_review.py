@@ -25,10 +25,17 @@ class LostOpportunityReview(models.Model):
                                        compute='_compute_lost_counts', store=True)
     reviewed_count = fields.Integer(string='Reviewed Count', 
                                     compute='_compute_lost_counts', store=True)
+    selected_count = fields.Integer(string='Selected Count', 
+                                     compute='_compute_selected_count', store=False)
     ten_percent_count = fields.Integer(string='10% Count', 
                                        compute='_compute_lost_counts', store=True)
     review_percentage = fields.Float(string='Review Percentage (%)', 
                                      compute='_compute_lost_counts', store=True)
+    selection_status = fields.Selection([
+        ('under', 'Under Target'),
+        ('at', 'At Target'),
+        ('over', 'Over Target')
+    ], string='Selection Status', compute='_compute_selected_count', store=False)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('in_progress', 'In Progress'),
@@ -84,18 +91,23 @@ class LostOpportunityReview(models.Model):
             record.reviewed_count = len(record.line_ids)
             record.review_percentage = (record.reviewed_count / record.total_lost_count * 100) if record.total_lost_count > 0 else 0
 
-    @api.onchange('line_ids')
-    def _onchange_line_count(self):
-        """Warn if selecting more than 10% of lost opportunities"""
-        selected_count = len(self.line_ids.filtered(lambda l: l.selected))
-        if self.ten_percent_count > 0 and selected_count > self.ten_percent_count:
-            return {
-                'warning': {
-                    'title': 'Exceeding 10% Target',
-                    'message': f'You are selecting {selected_count} opportunities, but 10% of the total ({self.total_lost_count}) is only {self.ten_percent_count}.\n'
-                               f'You can proceed, but this exceeds the recommended target.'
-                }
-            }
+    @api.depends('line_ids.selected', 'ten_percent_count')
+    def _compute_selected_count(self):
+        """Compute selected count and status"""
+        for record in self:
+            selected_count = len(record.line_ids.filtered(lambda l: l.selected))
+            record.selected_count = selected_count
+            
+            # Determine status based on target
+            if record.ten_percent_count > 0:
+                if selected_count > record.ten_percent_count:
+                    record.selection_status = 'over'
+                elif selected_count == record.ten_percent_count:
+                    record.selection_status = 'at'
+                else:
+                    record.selection_status = 'under'
+            else:
+                record.selection_status = 'under'
 
     def action_pick_randomly(self):
         """Pick 10% of period's lost opportunities randomly"""
