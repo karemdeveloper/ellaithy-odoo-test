@@ -44,6 +44,7 @@
         'views/crm_penalty_wizard_view.xml',
         'views/lost_opportunity_review_views.xml',
         'views/lost_review_feedback_wizard_view.xml',
+        'views/lost_opportunity_feedback_views.xml',
         'views/res_service_views.xml',
         'views/opportunity_won_wizard_view.xml',
         'reports/crm_penalty_report_template.xml',

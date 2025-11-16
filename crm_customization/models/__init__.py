@@ -34,5 +34,6 @@ from . import crm_penalty_report
 from . import mail_activity
 from . import lost_opportunity_review
 from . import lost_review_feedback_wizard
+from . import lost_opportunity_feedback
 from . import res_service
 from . import opportunity_won_wizard

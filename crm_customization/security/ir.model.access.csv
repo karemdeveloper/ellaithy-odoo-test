@@ -29,6 +29,7 @@ access_lost_opportunity_review,lost.opportunity.review,model_lost_opportunity_re
 access_lost_opportunity_review_line,lost.opportunity.review.line,model_lost_opportunity_review_line,,1,1,1,1
 access_lost_review_feedback_wizard,lost.review.feedback.wizard,model_lost_review_feedback_wizard,,1,1,1,1
 access_lost_review_feedback_wizard_line,lost.review.feedback.wizard.line,model_lost_review_feedback_wizard_line,,1,1,1,1
+access_lost_opportunity_feedback,lost.opportunity.feedback,model_lost_opportunity_feedback,,1,1,1,1
 access_res_service,res.service,model_res_service,,1,1,1,1
 access_opportunity_won_wizard,opportunity.won.wizard,model_opportunity_won_wizard,,1,1,1,1
 

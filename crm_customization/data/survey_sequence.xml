@@ -11,5 +11,16 @@
             <field name="number_next">1</field>
             <field name="implementation">standard</field>
         </record>
+
+        <!-- Lost Opportunity Feedback Sequence -->
+        <record id="seq_lost_opportunity_feedback" model="ir.sequence">
+            <field name="name">Lost Opportunity Feedback Sequence</field>
+            <field name="code">lost.opportunity.feedback</field>
+            <field name="prefix">LOF</field>
+            <field name="padding">5</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+            <field name="implementation">standard</field>
+        </record>
     </data>
 </odoo>

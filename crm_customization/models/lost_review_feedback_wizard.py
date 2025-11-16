@@ -45,16 +45,21 @@ class LostReviewFeedbackWizard(models.TransientModel):
         if not self.feedback_line_ids:
             raise UserError(_('No feedback lines to create.'))
         
-        created_count = 0
+        created_feedbacks = self.env['lost.opportunity.feedback']
         for line in self.feedback_line_ids:
-            # Create CRM feedback
-            self.env['crm.feedback'].create({
+            # Create Lost Opportunity Feedback
+            feedback = self.env['lost.opportunity.feedback'].create({
+                'review_id': self.review_id.id,
                 'lead_id': line.lead_id.id,
-                'feedback2': line.feedback,
-                'date': fields.Date.today(),
+                'contact_name': line.contact_name,
                 'salesperson_id': line.salesperson_id.id if line.salesperson_id else False,
-                'notes': line.description if line.feedback == 'not_valid' else '',
+                'phone_primary': line.phone_primary,
+                'feedback': line.feedback,
+                'description': line.description if line.feedback == 'not_valid' else '',
+                'date': fields.Date.today(),
+                'state': 'draft',
             })
+            created_feedbacks |= feedback
             
             # Update the review line with feedback
             if line.review_line_id:
@@ -62,19 +67,15 @@ class LostReviewFeedbackWizard(models.TransientModel):
                     'feedback': line.feedback,
                     'notes': line.description if line.feedback == 'not_valid' else ''
                 })
-            
-            created_count += 1
         
+        # Return action to show created feedbacks
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Success',
-                'message': f'{created_count} feedback records have been created.',
-                'type': 'success',
-                'sticky': False,
-                'next': {'type': 'ir.actions.act_window_close'},
-            }
+            'type': 'ir.actions.act_window',
+            'name': 'Created Feedback',
+            'res_model': 'lost.opportunity.feedback',
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', created_feedbacks.ids)],
+            'context': {'create': False},
         }
 
 
