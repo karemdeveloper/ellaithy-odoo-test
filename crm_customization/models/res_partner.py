@@ -118,7 +118,7 @@ class ResPartner(models.Model):
             'res_model': 'res.complaint.wizard',
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_customer_id': self.id},
+            'context': {'default_customer_id': self.id,'defult_state': 'under_investigate'},
         }
 
     def action_view_complaint(self):

@@ -49,7 +49,7 @@ class ResComplaint(models.Model):
         ('new', 'New'),
         ('under_investigate', 'Under Investigate'),
         ('solved', 'Solved'),
-    ], string='Complaint State', tracking=True, default='under_investigate')
+    ], string='Complaint State', tracking=True, default='new')
     
     # Validity field - only in complaint model, not in wizard
     validity = fields.Selection([
@@ -128,18 +128,27 @@ class ResComplaint(models.Model):
         """Open email composer to send/resend complaint notification"""
         self.ensure_one()
         
-        # Prepare email recipients
+        # Prepare email recipients based on department alias domain
         partner_ids = []
         email_to_list = []
         
-        # Add assigned users' emails
-        for user in self.assigned_to_ids:
-            if user.partner_id:
-                partner_ids.append(user.partner_id.id)
-        
         # Add department alias email if exists
-        if self.department.alias_email:
+        if self.department and self.department.alias_email:
             email_to_list.append(self.department.alias_email)
+            
+            # Extract domain from alias email (part after @)
+            if '@' in self.department.alias_email:
+                domain = self.department.alias_email.split('@')[1]
+                
+                # Find all users with the same email domain
+                users = self.env['res.users'].search([
+                    ('email', 'ilike', f'@{domain}')
+                ])
+                
+                # Add their partner IDs for notification
+                for user in users:
+                    if user.partner_id:
+                        partner_ids.append(user.partner_id.id)
 
         # Get email template from complaint type
         template_id = self.complaint_type_id.email_template_id

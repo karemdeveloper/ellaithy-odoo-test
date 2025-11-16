@@ -32,8 +32,6 @@ class ResComplaintWizard(models.TransientModel):
             res['customer_id'] = self.env.context.get('active_id')
         return res
 
-##########################################################
-
     @api.onchange('complaint_type_id')
     def _onchange_complaint_type_id(self):
         """Auto-fill department when complaint type is selected"""
@@ -41,14 +39,6 @@ class ResComplaintWizard(models.TransientModel):
             self.department = self.complaint_type_id.department_id
         else:
             self.department = False
-##########################################################
-    @api.onchange('department')
-    def _onchange_department_wizard(self):
-        """Auto-fill assigned_to_ids when department is selected"""
-        if self.department and self.department.department_user:
-            self.assigned_to_ids = [(6, 0, self.department.department_user.ids)]
-        else:
-            self.assigned_to_ids = [(5, 0, 0)]  # Clear assigned users
 
     def action_send_and_create(self):
         """ Create complaint record and open email composer """
@@ -63,23 +53,31 @@ class ResComplaintWizard(models.TransientModel):
             'branch_id': self.branch_id.id if self.branch_id else False,
             'department': self.department.id,
             'escalation_line_id': self.escalation_line_id.id if self.escalation_line_id else False,
-            'assigned_to_ids': [(6, 0, self.assigned_to_ids.ids)],
             'complaint_type_id': self.complaint_type_id.id,
             'complaint_state': 'under_investigate',
         })
 
-        # Prepare email recipients
+        # Prepare email recipients based on department alias domain
         partner_ids = []
         email_to_list = []
         
-        # Add assigned users' emails
-        for user in self.assigned_to_ids:
-            if user.partner_id:
-                partner_ids.append(user.partner_id.id)
-        
         # Add department alias email if exists
-        if self.department.alias_email:
+        if self.department and self.department.alias_email:
             email_to_list.append(self.department.alias_email)
+            
+            # Extract domain from alias email (part after @)
+            if '@' in self.department.alias_email:
+                domain = self.department.alias_email.split('@')[1]
+                
+                # Find all users with the same email domain
+                users = self.env['res.users'].search([
+                    ('email', 'ilike', f'@{domain}')
+                ])
+                
+                # Add their partner IDs for notification
+                for user in users:
+                    if user.partner_id:
+                        partner_ids.append(user.partner_id.id)
 
         # Get email template from complaint type
         template_id = self.complaint_type_id.email_template_id
@@ -100,7 +98,7 @@ class ResComplaintWizard(models.TransientModel):
             'complaint_wizard_send': True,
         }
         
-        # Add department alias to CC or email_to
+        # Add department alias to email_to
         if email_to_list:
             ctx['default_email_to'] = ','.join(email_to_list)
 
