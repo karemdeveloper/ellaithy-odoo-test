@@ -58,6 +58,8 @@ class CrmLead(models.Model):
         compute='_compute_opportunity_type_display',
         store=False
     )
+    ibs_closed_at = fields.Datetime(string='IBS Closed At', tracking=True, 
+                                     help='Date and time when the opportunity was marked as lost')
     
     @api.depends('opportunity_type')
     def _compute_opportunity_type_display(self):

@@ -15,9 +15,10 @@ class CrmLead(models.Model):
             raise ValueError("⚠️ مفيش stage فيها is_lost=True، أضف واحدة من إعدادات CRM.")
 
         for lead in self:
-            lead.write({
+            lead.sudo().write({
                 'lost_reason_id': lost_reason_id or False,
                 'date_closed': fields.Datetime.now(),
+                'ibs_closed_at': fields.Datetime.now(),
                 'stage_id': lost_stage.id,
                 'active': True,
             })

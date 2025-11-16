@@ -6,6 +6,16 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
+            <!-- Add ibs_closed_at field -->
+            <xpath expr="//sheet/field[@name='active']" position="after">
+                <field name="ibs_closed_at" invisible="1"/>
+            </xpath>
+            
+            <!-- Add Lost ribbon inside sheet -->
+            <xpath expr="//sheet/div[@name='button_box']" position="after">
+                <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger" invisible="not ibs_closed_at"/>
+            </xpath>
+            
             <xpath expr="//button[@name='action_set_won_rainbowman']" position="attributes">
                 <attribute name="groups">crm_customization.group_crm_opportunity_stage</attribute>
             </xpath>
@@ -72,10 +82,17 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
         <field name="arch" type="xml">
+            <!-- Add lost ribbon at the very beginning of card template -->
+            <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/field[@name='name']" position="before">
+                <t t-set="lost_ribbon" t-value="record.ibs_closed_at.raw_value"/>
+                <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger" invisible="not ibs_closed_at"/>
+            </xpath>
+            
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="phone" display="full" options="{}" widget="phone"/>
                 <field name="opportunity_type" invisible="1"/>
                 <field name="opportunity_type_display" invisible="1"/>
+                <field name="ibs_closed_at" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='activity_ids']" position="replace"/>
             
@@ -89,11 +106,13 @@
             
             <!-- Add opportunity type badge in kanban card -->
             <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/footer[1]" position="before">
-                <span t-if="record.opportunity_type_display.raw_value" 
-                      class="badge rounded-pill text-bg-info me-1"
-                      t-att-title="record.opportunity_type.value">
-                    <t t-esc="record.opportunity_type_display.value"/>
-                </span>
+                <div class="d-flex gap-1 mb-1">
+                    <span t-if="record.opportunity_type_display.raw_value" 
+                          class="badge rounded-pill text-bg-info"
+                          t-att-title="record.opportunity_type.value">
+                        <t t-esc="record.opportunity_type_display.value"/>
+                    </span>
+                </div>
             </xpath>
 
             <xpath expr="//kanban[1]/templates[1]/t[@t-name='card']/footer[1]" position="after">

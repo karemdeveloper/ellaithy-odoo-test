@@ -72,9 +72,9 @@ class LostOpportunityReview(models.Model):
             
             # Build base domain
             domain = [
-                ('date_closed', '!=', False),
-                ('date_closed', '>=', f"{record.date_from} 00:00:00"),
-                ('date_closed', '<=', f"{record.date_to} 23:59:59"),
+                ('ibs_closed_at', '!=', False),
+                ('ibs_closed_at', '>=', f"{record.date_from} 00:00:00"),
+                ('ibs_closed_at', '<=', f"{record.date_to} 23:59:59"),
             ]
             
             # Add stage condition
@@ -118,9 +118,9 @@ class LostOpportunityReview(models.Model):
         
         # Build domain for date range lost opportunities
         domain = [
-            ('date_closed', '!=', False),
-            ('date_closed', '>=', f"{self.date_from} 00:00:00"),
-            ('date_closed', '<=', f"{self.date_to} 23:59:59"),
+            ('ibs_closed_at', '!=', False),
+            ('ibs_closed_at', '>=', f"{self.date_from} 00:00:00"),
+            ('ibs_closed_at', '<=', f"{self.date_to} 23:59:59"),
         ]
         
         if lost_stages:
@@ -207,9 +207,9 @@ class LostOpportunityReview(models.Model):
         
         # Build domain for date range lost opportunities
         domain = [
-            ('date_closed', '!=', False),
-            ('date_closed', '>=', f"{self.date_from} 00:00:00"),
-            ('date_closed', '<=', f"{self.date_to} 23:59:59"),
+            ('ibs_closed_at', '!=', False),
+            ('ibs_closed_at', '>=', f"{self.date_from} 00:00:00"),
+            ('ibs_closed_at', '<=', f"{self.date_to} 23:59:59"),
         ]
         
         if lost_stages:
@@ -278,9 +278,9 @@ class LostOpportunityReview(models.Model):
         
         # Build domain for date range lost opportunities
         domain = [
-            ('date_closed', '!=', False),
-            ('date_closed', '>=', f"{self.date_from} 00:00:00"),
-            ('date_closed', '<=', f"{self.date_to} 23:59:59"),
+            ('ibs_closed_at', '!=', False),
+            ('ibs_closed_at', '>=', f"{self.date_from} 00:00:00"),
+            ('ibs_closed_at', '<=', f"{self.date_to} 23:59:59"),
         ]
         
         if lost_stages:
