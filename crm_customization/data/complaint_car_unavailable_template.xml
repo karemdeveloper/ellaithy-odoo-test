@@ -8,12 +8,12 @@
         <field name="email_from">{{(object.create_uid.email_formatted or user.email_formatted) or ''}}</field>
         <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px; direction: rtl; text-align: right; font-family: Arial, sans-serif;">
-    <p style="margin: 0px; padding: 0px; font-size: 14px;">
-        استاذ / {{object.branch_id.manager_id.name or 'مدير الفرع'}}
-        <br/><br/>
-        تحية طيبة وبعد ,,,
-        <br/><br/>
-    </p>
+    <p style="font-size: 14px; margin-bottom: 15px;">
+                    استاذ /
+                    <t t-esc="object.branch_id.branch_manager.partner_id.name or 'مدير الفرع'"/>
+                    <br/><br/>
+                    تحية طيبة وبعد ,,,
+                </p>
     
     <p style="margin: 10px 0px; padding: 0px; font-size: 14px; line-height: 1.8;">
         وردنا اتصال من العميل لاحق الذكر يشكو من انه بعد اتمام الاتفاق مع استاذ <strong>{{object.salesperson_id.name or 'مسئول مبيعات'}}</strong> علي سيارة اخبره مسئول المبيعات بعدم توافر السيارة مما ادي الي استياء العميل<br/><br/><strong style="color: #d32f2f;">فبرجاء التواصل مع العميل وافادتنا باخر المستجدات.</strong>
@@ -62,7 +62,7 @@
     <p style="margin: 20px 0px 0px 0px; padding: 0px; font-size: 13px; color: #666;">
         مع خالص التحية والتقدير،
         <br/>
-        <strong>{{object.create_uid.name or 'نظام إدارة الشكاوى'}}</strong>
+                        <t t-esc="object.create_uid.name or 'نظام إدارة الشكاوى'"/>
     </p>
     
     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;"/>
