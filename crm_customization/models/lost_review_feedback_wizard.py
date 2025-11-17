@@ -27,8 +27,7 @@ class LostReviewFeedbackWizard(models.TransientModel):
                     feedback_lines.append((0, 0, {
                         'review_line_id': line.id,
                         'lead_id': line.lead_id.id,
-                        'contact_name': line.contact_name or '',
-                        'salesperson_id': line.salesperson_id.id if line.salesperson_id else False,
+                        'salesperson_id': line.lead_id.user_id.id if line.lead_id.user_id else False,
                         'phone_primary': line.phone_primary or '',
                         'feedback': 'valid',  # Default to valid
                     }))
@@ -51,13 +50,11 @@ class LostReviewFeedbackWizard(models.TransientModel):
             feedback = self.env['lost.opportunity.feedback'].create({
                 'review_id': self.review_id.id,
                 'lead_id': line.lead_id.id,
-                'contact_name': line.contact_name,
-                'salesperson_id': line.salesperson_id.id if line.salesperson_id else False,
                 'phone_primary': line.phone_primary,
                 'feedback': line.feedback,
                 'description': line.description if line.feedback == 'not_valid' else '',
                 'date': fields.Date.today(),
-                'state': 'draft',
+                'state': 'confirmed',  # Auto-confirm feedback
             })
             created_feedbacks |= feedback
             
@@ -67,6 +64,17 @@ class LostReviewFeedbackWizard(models.TransientModel):
                     'feedback': line.feedback,
                     'notes': line.description if line.feedback == 'not_valid' else ''
                 })
+        
+        # Check if we've reached the 10% target and auto-mark as done
+        if self.review_id:
+            # Count total feedbacks for this review
+            total_feedbacks = self.env['lost.opportunity.feedback'].search_count([
+                ('review_id', '=', self.review_id.id)
+            ])
+            
+            # If we've reached or exceeded the 10% target, mark as done
+            if total_feedbacks >= self.review_id.ten_percent_count and self.review_id.state != 'done':
+                self.review_id.write({'state': 'done'})
         
         # Return action to show created feedbacks
         return {
@@ -86,8 +94,7 @@ class LostReviewFeedbackWizardLine(models.TransientModel):
     wizard_id = fields.Many2one('lost.review.feedback.wizard', string='Wizard', required=True, ondelete='cascade')
     review_line_id = fields.Many2one('lost.opportunity.review.line', string='Review Line')
     lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True)
-    contact_name = fields.Char(string='Customer Name')
-    salesperson_id = fields.Many2one('res.users', string='Salesperson')
+    salesperson_id = fields.Many2one(related='lead_id.user_id', string='Salesperson', readonly=True)
     phone_primary = fields.Char(string='Phone')
     feedback = fields.Selection([
         ('valid', 'Valid'),

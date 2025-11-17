@@ -8,7 +8,6 @@
             <list string="Lost Opportunity Reviews" decoration-muted="state=='done'" decoration-info="state=='in_progress'">
                 <field name="name"/>
                 <field name="review_date"/>
-                <field name="partner_id"/>
                 <field name="total_lost_count"/>
                 <field name="ten_percent_count" string="10% Target"/>
                 <field name="selected_count" 
@@ -42,6 +41,11 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_feedbacks" type="object" class="oe_stat_button" icon="fa-comments">
+                            <field name="feedback_count" widget="statinfo" string="Feedbacks"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -52,7 +56,6 @@
                             <field name="date_from"/>
                             <field name="date_to"/>
                             <field name="review_date"/>
-                            <field name="partner_id"/>
                         </group>
                         <group>
                             <field name="total_lost_count"/>
@@ -222,11 +225,6 @@
         </field>
     </record>
 
-    <record id="action_lost_opportunity_review_line" model="ir.actions.act_window">
-        <field name="name">Review Lines</field>
-        <field name="res_model">lost.opportunity.review.line</field>
-        <field name="view_mode">list,form</field>
-    </record>
 
     <!-- Menu Items -->
     <menuitem id="menu_lost_opportunity_review_root"
@@ -239,11 +237,5 @@
               parent="menu_lost_opportunity_review_root"
               action="action_lost_opportunity_review"
               sequence="10"/>
-
-    <menuitem id="menu_lost_opportunity_review_line"
-              name="Review Lines"
-              parent="menu_lost_opportunity_review_root"
-              action="action_lost_opportunity_review_line"
-              sequence="20"/>
 
 </odoo>

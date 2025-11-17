@@ -18,7 +18,6 @@ class LostOpportunityReview(models.Model):
                          tracking=True)
     review_date = fields.Date(string='Review Date', required=True, default=fields.Date.today, 
                               tracking=True)
-    partner_id = fields.Many2one('res.partner', string='Customer', tracking=True)
     line_ids = fields.One2many('lost.opportunity.review.line', 'review_id', 
                                string='Review Lines')
     total_lost_count = fields.Integer(string='Total Lost in Period', 
@@ -41,6 +40,7 @@ class LostOpportunityReview(models.Model):
         ('in_progress', 'In Progress'),
         ('done', 'Done')
     ], string='Status', default='draft', required=True, tracking=True)
+    feedback_count = fields.Integer(string='Feedback Count', compute='_compute_feedback_count')
 
     @api.model
     def create(self, vals):
@@ -51,10 +51,24 @@ class LostOpportunityReview(models.Model):
     @api.onchange('date_from', 'date_to')
     def _onchange_dates(self):
         """Auto-load lost opportunities when dates change"""
-        # Only auto-load for existing records (records that have been saved)
-        if self.id and self.date_from and self.date_to and self.state != 'done':
-            # Auto-load opportunities when dates change
-            self._load_opportunities()
+        # Auto-load for both new and existing records
+        if self.date_from and self.date_to and self.state != 'done':
+            # For new records (not yet saved), we can't create lines
+            # But for saved records, we auto-load
+            if self.id:
+                self._load_opportunities()
+    
+    def write(self, vals):
+        """Override write to auto-load when dates change"""
+        res = super(LostOpportunityReview, self).write(vals)
+        
+        # If dates changed and state is not done, auto-load opportunities
+        if ('date_from' in vals or 'date_to' in vals):
+            for record in self:
+                if record.state != 'done' and record.date_from and record.date_to:
+                    record._load_opportunities()
+        
+        return res
 
     @api.depends('line_ids', 'date_from', 'date_to')
     def _compute_lost_counts(self):
@@ -108,9 +122,16 @@ class LostOpportunityReview(models.Model):
                     record.selection_status = 'under'
             else:
                 record.selection_status = 'under'
+    
+    def _compute_feedback_count(self):
+        """Compute the number of feedbacks linked to this review"""
+        for record in self:
+            record.feedback_count = self.env['lost.opportunity.feedback'].search_count([
+                ('review_id', '=', record.id)
+            ])
 
     def action_pick_randomly(self):
-        """Pick 10% of period's lost opportunities randomly"""
+        """Pick 10% of period's lost opportunities randomly and open feedback wizard"""
         self.ensure_one()
         
         # Get lost stages (is_lost = True)
@@ -129,7 +150,7 @@ class LostOpportunityReview(models.Model):
             # Fallback: search by lost_reason_id
             domain.append(('lost_reason_id', '!=', False))
         
-        # Get all lost opportunities for today
+        # Get all lost opportunities for the period
         lost_opportunities = self.env['crm.lead'].search(domain)
         
         if not lost_opportunities:
@@ -138,7 +159,7 @@ class LostOpportunityReview(models.Model):
                 'tag': 'display_notification',
                 'params': {
                     'title': 'No Lost Opportunities',
-                    'message': 'No lost opportunities found for this date.',
+                    'message': 'No lost opportunities found for this date range.',
                     'type': 'warning',
                     'sticky': False,
                 }
@@ -148,11 +169,13 @@ class LostOpportunityReview(models.Model):
         total_count = len(lost_opportunities)
         pick_count = max(1, int(total_count * 0.1))  # At least 1 if there are any
         
-        # Get already reviewed lead IDs
-        existing_lead_ids = self.line_ids.mapped('lead_id').ids
+        # Get already reviewed lead IDs (leads that already have feedback)
+        existing_feedback_lead_ids = self.env['lost.opportunity.feedback'].search([
+            ('review_id', '=', self.id)
+        ]).mapped('lead_id').ids
         
         # Filter out already reviewed opportunities
-        available_opportunities = lost_opportunities.filtered(lambda l: l.id not in existing_lead_ids)
+        available_opportunities = lost_opportunities.filtered(lambda l: l.id not in existing_feedback_lead_ids)
         
         if not available_opportunities:
             return {
@@ -160,7 +183,7 @@ class LostOpportunityReview(models.Model):
                 'tag': 'display_notification',
                 'params': {
                     'title': 'All Reviewed',
-                    'message': 'All lost opportunities for this date have already been added for review.',
+                    'message': 'All lost opportunities for this period have already been reviewed.',
                     'type': 'info',
                     'sticky': False,
                 }
@@ -170,28 +193,39 @@ class LostOpportunityReview(models.Model):
         selected_count = min(pick_count, len(available_opportunities))
         selected_opportunities = random.sample(list(available_opportunities), selected_count)
         
-        # Create review lines
+        # Create or update review lines and mark them as selected
+        created_lines = self.env['lost.opportunity.review.line']
         for opportunity in selected_opportunities:
-            self.env['lost.opportunity.review.line'].create({
-                'review_id': self.id,
-                'lead_id': opportunity.id,
-                'contact_name': opportunity.partner_id.name or opportunity.contact_name or 'N/A',
-                'salesperson_id': opportunity.user_id.id if opportunity.user_id else False,
-                'phone_primary': opportunity.phone or opportunity.mobile or 'N/A',
-            })
+            # Check if line already exists
+            existing_line = self.line_ids.filtered(lambda l: l.lead_id.id == opportunity.id)
+            if existing_line:
+                existing_line.write({'selected': True})
+                created_lines |= existing_line
+            else:
+                line = self.env['lost.opportunity.review.line'].create({
+                    'review_id': self.id,
+                    'lead_id': opportunity.id,
+                    'contact_name': opportunity.partner_id.name or opportunity.contact_name or 'N/A',
+                    'salesperson_id': opportunity.user_id.id if opportunity.user_id else False,
+                    'phone_primary': opportunity.phone or opportunity.mobile or 'N/A',
+                    'selected': True,  # Mark as selected
+                })
+                created_lines |= line
         
         # Update state to in_progress if it was draft
         if self.state == 'draft':
             self.state = 'in_progress'
         
+        # Open the feedback wizard directly with the selected lines
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Success',
-                'message': f'{selected_count} opportunities have been added for review.',
-                'type': 'success',
-                'sticky': False,
+            'type': 'ir.actions.act_window',
+            'name': 'Create Feedback (10% Random)',
+            'res_model': 'lost.review.feedback.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_review_id': self.id,
+                'selected_line_ids': created_lines.ids,
             }
         }
 
@@ -246,28 +280,11 @@ class LostOpportunityReview(models.Model):
         
         self._load_opportunities()
         
-        if not self.line_ids:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'No Lost Opportunities',
-                    'message': 'No lost opportunities found for this date range.',
-                    'type': 'warning',
-                    'sticky': False,
-                }
-            }
+        message = f'{len(self.line_ids)} lost opportunities have been loaded. Please tick the ones to review.' if self.line_ids else 'No lost opportunities found for this date range.'
+        message_type = 'success' if self.line_ids else 'warning'
         
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Success',
-                'message': f'{len(self.line_ids)} lost opportunities have been loaded. Please tick the ones to review.',
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+        # Return True to refresh the view automatically
+        return True
 
     def action_add_line(self):
         """Open a wizard to manually add lost opportunities to review"""
@@ -333,6 +350,18 @@ class LostOpportunityReview(models.Model):
                 'default_review_id': self.id,
                 'selected_line_ids': selected_lines.ids,  # Pass as custom context key
             }
+        }
+    
+    def action_view_feedbacks(self):
+        """View feedbacks linked to this review"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Feedbacks',
+            'res_model': 'lost.opportunity.feedback',
+            'view_mode': 'list,form',
+            'domain': [('review_id', '=', self.id)],
+            'context': {'default_review_id': self.id}
         }
 
 
