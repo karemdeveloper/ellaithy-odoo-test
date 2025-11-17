@@ -41,6 +41,7 @@
                             <field name="date"/>
                             <field name="review_id" readonly="1"/>
                             <field name="lead_id" options="{'no_create': True}"/>
+                            <field name="partner_id"/>
                             <field name="lead_name"/>
                         </group>
                         <group>
