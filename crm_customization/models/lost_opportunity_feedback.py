@@ -13,7 +13,7 @@ class LostOpportunityFeedback(models.Model):
     lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True, tracking=True)
     salesperson_id = fields.Many2one(related='lead_id.user_id', string='Salesperson', 
                                      store=True, readonly=True, tracking=True)
-    phone_primary = fields.Char(string='Phone',related='lead_id.phone', store=True, readonly=True, tracking=True)
+    phone_primary = fields.Char(string='Phone',related='partner_id.phone', store=True, readonly=True, tracking=True)
     feedback = fields.Selection([
         ('valid', 'Valid'),
         ('not_valid', 'Not Valid')
