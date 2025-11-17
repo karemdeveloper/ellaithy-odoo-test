@@ -80,15 +80,8 @@ class LostReviewFeedbackWizard(models.TransientModel):
             if total_feedbacks >= self.review_id.ten_percent_count and self.review_id.state != 'done':
                 self.review_id.write({'state': 'done'})
         
-        # Return action to show created feedbacks
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Created Feedback',
-            'res_model': 'lost.opportunity.feedback',
-            'view_mode': 'list,form',
-            'domain': [('id', 'in', created_feedbacks.ids)],
-            'context': {'create': False},
-        }
+        # Close the wizard and refresh the review form
+        return {'type': 'ir.actions.act_window_close'}
 
 
 class LostReviewFeedbackWizardLine(models.TransientModel):
