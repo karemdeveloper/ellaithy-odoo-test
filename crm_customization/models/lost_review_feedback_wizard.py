@@ -16,6 +16,11 @@ class LostReviewFeedbackWizard(models.TransientModel):
         """Pre-fill lines from context"""
         res = super().default_get(fields_list)
         
+        # Get review_id from context
+        review_id = self.env.context.get('default_review_id')
+        if review_id:
+            res['review_id'] = review_id
+        
         # Get selected line IDs from context
         selected_line_ids = self.env.context.get('selected_line_ids', [])
         if selected_line_ids:
@@ -23,11 +28,10 @@ class LostReviewFeedbackWizard(models.TransientModel):
             
             feedback_lines = []
             for line in lines:
-                if line.lead_id:  # Ensure lead_id exists
+                if line.exists() and line.lead_id and line.lead_id.id:  # Ensure line and lead exist
                     feedback_lines.append((0, 0, {
                         'review_line_id': line.id,
                         'lead_id': line.lead_id.id,
-                        'salesperson_id': line.lead_id.user_id.id if line.lead_id.user_id else False,
                         'phone_primary': line.phone_primary or '',
                         'feedback': 'valid',  # Default to valid
                     }))
@@ -92,10 +96,10 @@ class LostReviewFeedbackWizardLine(models.TransientModel):
     _description = 'Feedback Wizard Line'
 
     wizard_id = fields.Many2one('lost.review.feedback.wizard', string='Wizard', required=True, ondelete='cascade')
-    review_line_id = fields.Many2one('lost.opportunity.review.line', string='Review Line')
-    lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True)
-    salesperson_id = fields.Many2one(related='lead_id.user_id', string='Salesperson', readonly=True)
-    phone_primary = fields.Char(string='Phone')
+    review_line_id = fields.Many2one('lost.opportunity.review.line', string='Review Line', readonly=True)
+    lead_id = fields.Many2one('crm.lead', string='Opportunity', required=True, readonly=True)
+    salesperson_id = fields.Many2one(related='lead_id.user_id', string='Salesperson', readonly=True, store=False)
+    phone_primary = fields.Char(string='Phone', readonly=True)
     feedback = fields.Selection([
         ('valid', 'Valid'),
         ('not_valid', 'Not Valid')
