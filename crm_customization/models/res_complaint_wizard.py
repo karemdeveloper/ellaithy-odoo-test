@@ -39,6 +39,14 @@ class ResComplaintWizard(models.TransientModel):
             self.department = self.complaint_type_id.department_id
         else:
             self.department = False
+    
+    @api.onchange('department')
+    def _onchange_department(self):
+        """Auto-fill assigned_to_ids when department is selected"""
+        if self.department and self.department.department_user:
+            self.assigned_to_ids = [(6, 0, self.department.department_user.ids)]
+        else:
+            self.assigned_to_ids = [(5, 0, 0)]  # Clear assigned users
 
     def action_send_and_create(self):
         """ Create complaint record and open email composer """
@@ -53,6 +61,7 @@ class ResComplaintWizard(models.TransientModel):
             'branch_id': self.branch_id.id if self.branch_id else False,
             'department': self.department.id,
             'escalation_line_id': self.escalation_line_id.id if self.escalation_line_id else False,
+            'assigned_to_ids': [(6, 0, self.assigned_to_ids.ids)],
             'complaint_type_id': self.complaint_type_id.id,
             'complaint_state': 'under_investigate',
         })
