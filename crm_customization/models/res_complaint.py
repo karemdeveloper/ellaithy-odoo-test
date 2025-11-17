@@ -43,7 +43,7 @@ class ResComplaint(models.Model):
     
     # Difference between created on and today
     days_since_creation = fields.Integer(string='Days Since Creation', 
-                                         compute='_compute_days_since_creation', store=True)
+                                         compute='_compute_days_since_creation')
     
     complaint_state = fields.Selection([
         ('new', 'New'),
