@@ -42,10 +42,22 @@ class LostOpportunityReview(models.Model):
     ], string='Status', default='draft', required=True, tracking=True)
     feedback_count = fields.Integer(string='Feedback Count', compute='_compute_feedback_count')
 
+    @api.constrains('date_from', 'date_to')
+    def _check_dates_overlap(self):
+        """Constraint to prevent overlapping date ranges"""
+        for record in self:
+            if record.date_from and record.date_to:
+                record._check_date_overlap(record.date_from, record.date_to, exclude_id=record.id)
+
     @api.model
     def create(self, vals):
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('lost.opportunity.review') or 'New'
+        
+        # Check for overlapping periods
+        if vals.get('date_from') and vals.get('date_to'):
+            self._check_date_overlap(vals.get('date_from'), vals.get('date_to'))
+        
         return super(LostOpportunityReview, self).create(vals)
 
     @api.onchange('date_from', 'date_to')
@@ -53,13 +65,25 @@ class LostOpportunityReview(models.Model):
         """Auto-load lost opportunities when dates change"""
         # Auto-load for both new and existing records
         if self.date_from and self.date_to and self.state != 'done':
-            # For new records (not yet saved), we can't create lines
-            # But for saved records, we auto-load
+            # Check for overlapping periods before loading
             if self.id:
+                # For existing records, exclude self from overlap check
+                self._check_date_overlap(self.date_from, self.date_to, exclude_id=self.id)
                 self._load_opportunities()
+            else:
+                # For new records, check overlap
+                self._check_date_overlap(self.date_from, self.date_to)
     
     def write(self, vals):
         """Override write to auto-load when dates change"""
+        # Check for overlapping periods if dates are being changed
+        if 'date_from' in vals or 'date_to' in vals:
+            for record in self:
+                date_from = vals.get('date_from', record.date_from)
+                date_to = vals.get('date_to', record.date_to)
+                if date_from and date_to:
+                    record._check_date_overlap(date_from, date_to, exclude_id=record.id)
+        
         res = super(LostOpportunityReview, self).write(vals)
         
         # If dates changed and state is not done, auto-load opportunities
@@ -69,6 +93,42 @@ class LostOpportunityReview(models.Model):
                     record._load_opportunities()
         
         return res
+    
+    def _check_date_overlap(self, date_from, date_to, exclude_id=None):
+        """Check if the date range overlaps with any existing review"""
+        # Convert to date objects if strings
+        if isinstance(date_from, str):
+            date_from = fields.Date.from_string(date_from)
+        if isinstance(date_to, str):
+            date_to = fields.Date.from_string(date_to)
+        
+        # Validate date_from <= date_to
+        if date_from > date_to:
+            raise ValidationError(_('Date From cannot be later than Date To.'))
+        
+        # Build domain to find overlapping reviews
+        # Two periods overlap if: period1_start <= period2_end AND period1_end >= period2_start
+        domain = [
+            ('date_from', '<=', date_to),
+            ('date_to', '>=', date_from),
+        ]
+        
+        # Exclude current record if editing
+        if exclude_id:
+            domain.append(('id', '!=', exclude_id))
+        
+        overlapping_reviews = self.env['lost.opportunity.review'].search(domain, limit=1)
+        
+        if overlapping_reviews:
+            raise ValidationError(_(
+                'Cannot create or modify review with overlapping date period.\n\n'
+                'An existing review "%s" already covers dates from %s to %s.\n\n'
+                'Please choose a different date range that does not overlap with existing reviews.'
+            ) % (
+                overlapping_reviews.name,
+                overlapping_reviews.date_from.strftime('%Y-%m-%d'),
+                overlapping_reviews.date_to.strftime('%Y-%m-%d')
+            ))
 
     @api.depends('line_ids', 'date_from', 'date_to')
     def _compute_lost_counts(self):
