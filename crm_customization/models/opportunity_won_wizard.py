@@ -5,8 +5,8 @@ class OpportunityWonWizard(models.TransientModel):
     _name = 'opportunity.won.wizard'
     _description = 'Mark Opportunity as Won'
 
-    chassis_number = fields.Char(string='Chassis Number', required=True)
-    sale_order_id = fields.Many2one('sale.order', string='Sales Order', required=True)
+    chassis_number = fields.Char(string='Chassis/Serial Number', required=True)
+    sale_order_id = fields.Char(string='Sales Order', required=True)
     lead_id = fields.Many2one('crm.lead', string='Opportunity')
 
     @api.model
@@ -23,7 +23,7 @@ class OpportunityWonWizard(models.TransientModel):
         if self.lead_id:
             self.lead_id.write({
                 'chassis_number': self.chassis_number,
-                'sale_order_id': self.sale_order_id.id,
+                'sale_order_id': self.sale_order_id,
             })
             # Mark as won
             self.lead_id.action_set_won_rainbowman()

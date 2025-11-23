@@ -45,6 +45,10 @@ class ResComplaint(models.Model):
     days_since_creation = fields.Integer(string='Days Since Creation', 
                                          compute='_compute_days_since_creation')
     
+    # Creation late days (Days Since Creation - SLA Duration)
+    creation_late_days = fields.Integer(string='Creation Late Days',
+                                        compute='_compute_creation_late_days')
+    
     complaint_state = fields.Selection([
         ('new', 'New'),
         ('under_investigate', 'Under Investigate'),
@@ -109,6 +113,23 @@ class ResComplaint(models.Model):
                 record.days_since_creation = (today - created_date).days
             else:
                 record.days_since_creation = 0
+    
+    @api.depends('days_since_creation', 'sla_duration')
+    def _compute_creation_late_days(self):
+        """Calculate creation late days (days since creation - SLA duration)"""
+        for record in self:
+            if record.sla_duration and record.days_since_creation:
+                try:
+                    # Try to parse SLA duration as integer (days)
+                    sla_days = int(record.sla_duration)
+                    difference = record.days_since_creation - sla_days
+                    # If zero or negative, set to 0
+                    record.creation_late_days = max(0, difference)
+                except ValueError:
+                    # If SLA is not a number, set to 0
+                    record.creation_late_days = 0
+            else:
+                record.creation_late_days = 0
 
     def action_under_investigate(self):
         for record in self:
