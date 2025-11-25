@@ -85,39 +85,57 @@ class ResComplaintWizard(models.TransientModel):
                 
                 # Add their partner IDs for notification
                 for user in users:
-                    if user.partner_id:
+                    if user.partner_id and user.partner_id.email:
                         partner_ids.append(user.partner_id.id)
+        
+        # Also add assigned users to recipients
+        for user in self.assigned_to_ids:
+            if user.partner_id and user.partner_id.email and user.partner_id.id not in partner_ids:
+                partner_ids.append(user.partner_id.id)
 
         # Get email template from complaint type
         template_id = self.complaint_type_id.email_template_id
         
         if not template_id:
-            # If no template is set, create a default one
+            # If no template is set, use default one
             template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
         
-        # Prepare email composer context
-        ctx = {
-            'default_model': 'res.complaint',
-            'default_res_ids': [complaint.id],
-            'default_use_template': bool(template_id),
-            'default_template_id': template_id.id if template_id else False,
-            'default_composition_mode': 'comment',
-            'default_partner_ids': partner_ids,
-            'force_email': True,
-            'complaint_wizard_send': True,
-        }
+        # Send email automatically using template
+        if template_id:
+            # Create email values
+            email_values = {}
+            
+            # Add additional recipients if needed
+            if email_to_list:
+                email_values['email_to'] = ','.join(email_to_list)
+            
+            if partner_ids:
+                email_values['recipient_ids'] = [(4, pid) for pid in partner_ids]
+            
+            # Send the email immediately
+            template_id.send_mail(
+                complaint.id,
+                force_send=True,
+                email_values=email_values,
+                notif_layout='mail.mail_notification_light'
+            )
+            
+            # Post message in chatter
+            complaint.message_post(
+                body="Complaint notification email has been sent to the assigned team.",
+                subject=f"Email Sent: {complaint.name}",
+                message_type='notification',
+                subtype_xmlid='mail.mt_comment'
+            )
         
-        # Add department alias to email_to
-        if email_to_list:
-            ctx['default_email_to'] = ','.join(email_to_list)
-
-        # Open the email composer (like Send Quotation in Sale)
-        # Return to close the wizard after sending email, user won't see the complaint
+        # Return success message
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'Send Complaint Notification',
-            'res_model': 'mail.compose.message',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': ctx,
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': 'Complaint created and notification email sent successfully.',
+                'type': 'success',
+                'sticky': False,
+            }
         }
