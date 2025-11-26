@@ -110,7 +110,7 @@ class ResComplaintWizard(models.TransientModel):
             'default_res_ids': [complaint.id],
             'default_use_template': bool(template_id),
             'default_template_id': template_id.id if template_id else False,
-            'default_composition_mode': 'mass_mail',  # mass_mail mode sends actual emails
+            'default_composition_mode': 'comment',  # mass_mail mode sends actual emails
             'default_partner_ids': partner_ids,
             'force_email': True,
             'complaint_wizard_send': True,
