@@ -162,15 +162,6 @@ class ResComplaint(models.Model):
             partner_ids = []
             partners_without_email = []
             
-            # Add customer as first recipient (only if has email)
-            if self.customer_id:
-                if self.customer_id.email:
-                    partner_ids.append(self.customer_id.id)
-                    _logger.info(f"✓ Added customer to recipients: {self.customer_id.name} ({self.customer_id.email})")
-                else:
-                    partners_without_email.append(self.customer_id.name)
-                    _logger.warning(f"✗ Customer {self.customer_id.name} has no email address!")
-            
             # Add entire department team (all users with matching email domain)
             if self.department and self.department.alias_email:
                 _logger.info(f"Department alias email: {self.department.alias_email}")
@@ -212,7 +203,7 @@ class ResComplaint(models.Model):
             
             # Get email_from from template (rendered for this complaint)
             email_from = False
-            if template_id and template_id.email_from:
+            if template_id and hasattr(template_id, 'email_from') and template_id.email_from:
                 email_from = template_id._render_field('email_from', [self.id])[self.id]
                 _logger.info(f"Template email_from rendered: {email_from}")
             
@@ -220,7 +211,7 @@ class ResComplaint(models.Model):
             # Use 'comment' mode for proper template rendering in wizard
             ctx = {
                 'default_model': 'res.complaint',
-                'default_res_id': self.id,
+                'default_res_ids': str([self.id]),  # Must be string representation
                 'default_use_template': bool(template_id),
                 'default_template_id': template_id.id if template_id else False,
                 'default_composition_mode': 'comment',  # comment mode renders template in wizard
@@ -231,7 +222,7 @@ class ResComplaint(models.Model):
             
             _logger.info("Composer context:")
             _logger.info(f"  - Model: {ctx['default_model']}")
-            _logger.info(f"  - Res ID: {ctx['default_res_id']}")
+            _logger.info(f"  - Res IDs: {ctx['default_res_ids']}")
             _logger.info(f"  - Mode: {ctx['default_composition_mode']}")
             _logger.info(f"  - Template ID: {ctx['default_template_id']}")
             _logger.info(f"  - Partner IDs count: {len(ctx['default_partner_ids'])}")
@@ -239,7 +230,7 @@ class ResComplaint(models.Model):
             _logger.info("✓ Opening email composer...")
             _logger.info("=" * 80)
 
-            # Open the email composer with rendered template
+            # Open the email composer
             return {
                 'type': 'ir.actions.act_window',
                 'name': 'Send Complaint Notification',
