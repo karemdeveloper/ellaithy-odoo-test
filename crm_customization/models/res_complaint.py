@@ -158,13 +158,18 @@ class ResComplaint(models.Model):
             _logger.info(f"Customer: {self.customer_id.name} (ID: {self.customer_id.id})")
             _logger.info(f"Department: {self.department.name}")
             
-            # Prepare email recipients
+            # Prepare email recipients - only partners with valid emails
             partner_ids = []
+            partners_without_email = []
             
-            # Add customer as first recipient
+            # Add customer as first recipient (only if has email)
             if self.customer_id:
-                partner_ids.append(self.customer_id.id)
-                _logger.info(f"✓ Added customer to recipients: {self.customer_id.name} ({self.customer_id.email})")
+                if self.customer_id.email:
+                    partner_ids.append(self.customer_id.id)
+                    _logger.info(f"✓ Added customer to recipients: {self.customer_id.name} ({self.customer_id.email})")
+                else:
+                    partners_without_email.append(self.customer_id.name)
+                    _logger.warning(f"✗ Customer {self.customer_id.name} has no email address!")
             
             # Add entire department team (all users with matching email domain)
             if self.department and self.department.alias_email:
@@ -174,19 +179,26 @@ class ResComplaint(models.Model):
                     domain = self.department.alias_email.split('@')[1]
                     _logger.info(f"Extracted domain: {domain}")
                     
-                    # Find all users with the same email domain
+                    # Find all users with the same email domain and valid email
                     users = self.env['res.users'].search([
-                        ('email', 'ilike', f'@{domain}')
+                        ('email', 'ilike', f'@{domain}'),
+                        ('email', '!=', False)
                     ])
                     _logger.info(f"Found {len(users)} users with domain @{domain}")
                     
-                    # Add their partner IDs to recipients
+                    # Add their partner IDs to recipients (only if partner has email)
                     for user in users:
                         if user.partner_id and user.partner_id.id not in partner_ids:
-                            partner_ids.append(user.partner_id.id)
-                            _logger.info(f"  ✓ Added: {user.name} ({user.email})")
+                            if user.partner_id.email:
+                                partner_ids.append(user.partner_id.id)
+                                _logger.info(f"  ✓ Added: {user.name} ({user.email})")
+                            else:
+                                partners_without_email.append(user.name)
+                                _logger.warning(f"  ✗ Skipped {user.name} - no email on partner record")
 
-            _logger.info(f"Total recipients: {len(partner_ids)}")
+            _logger.info(f"Total recipients with valid emails: {len(partner_ids)}")
+            if partners_without_email:
+                _logger.warning(f"Partners skipped (no email): {', '.join(partners_without_email)}")
             _logger.info(f"Partner IDs: {partner_ids}")
 
             # Get email template from complaint type
@@ -196,42 +208,61 @@ class ResComplaint(models.Model):
                 # If no template is set, use default one
                 template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
             
-            _logger.info(f"Email template: {template_id.name if template_id else 'None'}")
+            _logger.info(f"Email template: {template_id.display_name if template_id else 'None'}")
             
-            # Prepare email composer context
-            # Use 'mass_mail' mode to ensure mail.mail records are created
-            ctx = {
-                'default_model': 'res.complaint',
-                'default_res_ids': str([self.id]),  # res_ids expects string representation
-                'default_use_template': bool(template_id),
-                'default_template_id': template_id.id if template_id else False,
-                'default_composition_mode': 'mass_mail',  # mass_mail explicitly creates mail.mail records
-                'default_partner_ids': partner_ids,  # Customer + department team
-                'default_force_send': True,  # Send emails immediately instead of queuing
-                'default_auto_delete': False,  # Keep mail records for troubleshooting
-                'force_email': True,  # Force sending as email, not just notification
-            }
+            # Send individual emails to avoid bulk email limits
+            # Mail servers often reject emails with 30+ recipients
+            _logger.info("Sending individual emails to each recipient...")
+            emails_sent = 0
+            emails_failed = 0
             
-            _logger.info("Composer context:")
-            _logger.info(f"  - Model: {ctx['default_model']}")
-            _logger.info(f"  - Res IDs: {ctx['default_res_ids']}")
-            _logger.info(f"  - Mode: {ctx['default_composition_mode']}")
-            _logger.info(f"  - Template ID: {ctx['default_template_id']}")
-            _logger.info(f"  - Partner IDs: {ctx['default_partner_ids']}")
-            _logger.info(f"  - Force Send: {ctx['default_force_send']}")
-            _logger.info(f"  - Auto Delete: {ctx['default_auto_delete']}")
-            _logger.info(f"  - Force Email: {ctx['force_email']}")
-            _logger.info("✓ Opening email composer...")
+            for partner_id in partner_ids:
+                try:
+                    partner = self.env['res.partner'].browse(partner_id)
+                    _logger.info(f"Sending to: {partner.name} ({partner.email})")
+                    
+                    # Use template to send email
+                    if template_id:
+                        template_id.send_mail(
+                            self.id,
+                            force_send=True,
+                            email_values={
+                                'email_to': partner.email,
+                                'recipient_ids': [(4, partner_id)],
+                            }
+                        )
+                    else:
+                        # Fallback: create mail.mail directly
+                        self.env['mail.mail'].sudo().create({
+                            'email_to': partner.email,
+                            'recipient_ids': [(4, partner_id)],
+                            'subject': f'Complaint {self.name}',
+                            'body_html': f'<p>Complaint notification for {self.name}</p>',
+                            'model': 'res.complaint',
+                            'res_id': self.id,
+                        }).send()
+                    
+                    emails_sent += 1
+                    _logger.info(f"  ✓ Sent successfully")
+                    
+                except Exception as e:
+                    emails_failed += 1
+                    _logger.error(f"  ✗ Failed to send: {str(e)}")
+            
             _logger.info("=" * 80)
-
-            # Open the email composer
+            _logger.info(f"Email Summary: {emails_sent} sent, {emails_failed} failed")
+            _logger.info("=" * 80)
+            
+            # Return success message
             return {
-                'type': 'ir.actions.act_window',
-                'name': 'Send Complaint Notification',
-                'res_model': 'mail.compose.message',
-                'view_mode': 'form',
-                'target': 'new',
-                'context': ctx,
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Emails Sent',
+                    'message': f'{emails_sent} emails sent successfully for complaint {self.name}.',
+                    'type': 'success',
+                    'sticky': False,
+                }
             }
             
         except Exception as e:
