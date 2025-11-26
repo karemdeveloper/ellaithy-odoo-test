@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <!-- Document Readiness Inquiry Complaint Email Template (Arabic) -->
-    <record id="email_template_complaint_doc_readiness_inquiry" model="mail.template">
+    <record id="email_template_complaint_doc_readiness_inquiry"
+        model="mail.template">
         <field name="name">Complaint: Document Readiness Inquiry (Arabic)</field>
-        <field name="model_id" ref="model_res_complaint"/>
+        <field name="model_id"
+            ref="model_res_complaint" />
         <field name="subject">افادة في جاهزية اوراق</field>
         <field name="email_from">{{(object.create_uid.email_formatted or user.email_formatted) or ''}}</field>
-        <field name="body_html" type="html">
+        <field name="body_html"
+            type="html">
             <div style="margin: 0px; padding: 0px; direction: rtl; text-align: right; font-family: Arial, sans-serif;">
                 <p style="margin: 0px; padding: 0px; font-size: 14px; font-weight: bold;">
                     السادة ادارة الاوراق
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                     تحية طيبة وبعد ,,,
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                 </p>
 
                 <p style="margin: 10px 0px; padding: 0px; font-size: 14px; line-height: 1.8;">
                     وردنا اتصال من العميل لاحق الذكر يستفسر عن موعد جاهزية الاوراق
                     حيث ان المعاد المتوقع هو
                     <strong style="color: #1976d2;">.....</strong>
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                     <strong style="color: #2196f3;">فبرجاء الافادة بموعد الجاهزية لابلاغ العميل.</strong>
                 </p>
 
@@ -34,42 +37,42 @@
                         <tr>
                             <td style="padding: 5px; font-weight: bold; width: 40%;">رقم الشكوى:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.name or ''"/>
+                                <t t-esc="object.name or ''" />
                             </td>
                         </tr>
 
                         <tr>
                             <td style="padding: 5px; font-weight: bold;">اسم العميل:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.customer_id.name or 'غير محدد'"/>
+                                <t t-esc="object.customer_id.name or 'غير محدد'" />
                             </td>
                         </tr>
 
                         <tr>
                             <td style="padding: 5px; font-weight: bold;">رقم الهاتف:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.primary_phone or 'غير محدد'"/>
+                                <t t-esc="object.primary_phone or 'غير محدد'" />
                             </td>
                         </tr>
 
                         <tr>
                             <td style="padding: 5px; font-weight: bold;">مسؤول المبيعات:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.salesperson_id.name or 'غير محدد'"/>
+                                <t t-esc="object.salesperson_id.name or 'غير محدد'" />
                             </td>
                         </tr>
 
                         <tr>
                             <td style="padding: 5px; font-weight: bold;">الفرع:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.branch_id.branch_name or 'غير محدد'"/>
+                                <t t-esc="object.branch_id.branch_name or 'غير محدد'" />
                             </td>
                         </tr>
 
                         <tr>
                             <td style="padding: 5px; font-weight: bold;">القسم:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.department.name or 'غير محدد'"/>
+                                <t t-esc="object.department.name or 'غير محدد'" />
                             </td>
                         </tr>
 
@@ -77,7 +80,7 @@
                             <td style="padding: 5px; font-weight: bold;">تاريخ الاستفسار:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
                                 <t t-if="object.date">
-                                    <t t-esc="format_date(object.date)"/>
+                                    <t t-esc="format_date(object.date)" />
                                 </t>
                                 <t t-else="">غير محدد</t>
                             </td>
@@ -87,7 +90,7 @@
                             <td style="padding: 5px; font-weight: bold;">تاريخ الإبلاغ:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
                                 <t t-if="object.create_date">
-                                    <t t-esc="format_datetime(object.create_date, tz='Africa/Cairo', dt_format='dd/MM/yyyy - hh:mm a')"/>
+                                    <t t-esc="format_datetime(object.create_date, tz='Africa/Cairo', dt_format='dd/MM/yyyy - hh:mm a')" />
                                 </t>
                                 <t t-else="">غير محدد</t>
                             </td>
@@ -101,7 +104,7 @@
                         <tr>
                             <td style="padding: 5px; font-weight: bold;">مدة الـ SLA:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.sla_duration or 'غير محدد'"/>
+                                <t t-esc="object.sla_duration or 'غير محدد'" />
                                 يوم
                             </td>
                         </tr>
@@ -109,7 +112,7 @@
                         <tr>
                             <td style="padding: 5px; font-weight: bold;">سبب الاستفسار:</td>
                             <td style="padding: 5px; border: 1px solid #ddd;">
-                                <t t-esc="object.complaint_reason_id.name or 'غير محدد'"/>
+                                <t t-esc="object.complaint_reason_id.name or 'غير محدد'" />
                             </td>
                         </tr>
 
@@ -149,24 +152,25 @@
 
                 <div style="margin: 20px 0px; text-align: center;">
                     <a href="/web#id={{object.id}}&amp;model=res.complaint&amp;view_type=form"
-                       style="padding: 10px 20px; font-size: 14px; color: #FFFFFF; background-color: #2196f3; border: none; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">
+                        style="padding: 10px 20px; font-size: 14px; color: #FFFFFF; background-color: #2196f3; border: none; border-radius: 4px; text-decoration: none; display: inline-block; font-weight: bold;">
                         عرض تفاصيل الاستفسار
                     </a>
                 </div>
 
                 <p style="margin: 20px 0px 0px 0px; padding: 0px; font-size: 13px; color: #666;">
                     مع خالص التحية والتقدير،
-                    <br/>
-                    <t t-esc="object.create_uid.name or 'نظام إدارة الشكاوى'"/>
+                    <br />
+                    <t t-esc="object.create_uid.name or 'نظام إدارة الشكاوى'" />
                 </p>
 
-                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;"/>
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
 
                 <p style="margin: 0px; padding: 0px; font-size: 11px; color: #999; text-align: center;">
                     هذه رسالة تلقائية من نظام إدارة الشكاوى - يرجى عدم الرد على هذا البريد مباشرة
                 </p>
             </div>
         </field>
-        <field name="auto_delete" eval="False"/>
+        <field name="auto_delete"
+            eval="False" />
     </record>
 </odoo>

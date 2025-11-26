@@ -168,8 +168,13 @@ class ResComplaint(models.Model):
                 
                 # Add their partner IDs for notification
                 for user in users:
-                    if user.partner_id:
+                    if user.partner_id and user.partner_id.email:
                         partner_ids.append(user.partner_id.id)
+        
+        # Also add assigned users to recipients
+        for user in self.assigned_to_ids:
+            if user.partner_id and user.partner_id.email and user.partner_id.id not in partner_ids:
+                partner_ids.append(user.partner_id.id)
 
         # Get email template from complaint type
         template_id = self.complaint_type_id.email_template_id
@@ -178,27 +183,51 @@ class ResComplaint(models.Model):
             # If no template is set, use default one
             template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
         
-        # Prepare email composer context
-        ctx = {
-            'default_model': 'res.complaint',
-            'default_res_ids': [self.id],
-            'default_use_template': bool(template_id),
-            'default_template_id': template_id.id if template_id else False,
-            'default_composition_mode': 'comment',
-            'default_partner_ids': partner_ids,
-            'force_email': True,
-        }
+        # Send email automatically using template
+        if template_id:
+            # Collect all recipient emails
+            all_emails = []
+            
+            # Add department alias email
+            if email_to_list:
+                all_emails.extend(email_to_list)
+            
+            # Add assigned users' emails
+            for user in self.assigned_to_ids:
+                if user.email:
+                    all_emails.append(user.email)
+            
+            # Remove duplicates
+            all_emails = list(set(all_emails))
+            
+            # Create email values
+            email_values = {}
+            if all_emails:
+                email_values['email_to'] = ','.join(all_emails)
+            
+            # Send the email immediately
+            template_id.send_mail(
+                self.id,
+                force_send=True,
+                email_values=email_values
+            )
+            
+            # Post message in chatter
+            self.message_post(
+                body="Complaint notification email has been resent to the assigned team.",
+                subject=f"Email Resent: {self.name}",
+                message_type='notification',
+                subtype_xmlid='mail.mt_comment'
+            )
         
-        # Add department alias to email_to
-        if email_to_list:
-            ctx['default_email_to'] = ','.join(email_to_list)
-
-        # Open the email composer
+        # Return success message
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'Send Complaint Notification',
-            'res_model': 'mail.compose.message',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': ctx,
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': 'Complaint notification email sent successfully.',
+                'type': 'success',
+                'sticky': False,
+            }
         }
