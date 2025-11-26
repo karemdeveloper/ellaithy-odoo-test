@@ -124,32 +124,32 @@ class ResComplaintWizard(models.TransientModel):
                 email_from = template_id._render_field('email_from', [complaint.id])[complaint.id]
                 _logger.info(f"Template email_from rendered: {email_from}")
             
-            # Prepare email composer context
-            # Use 'comment' mode for proper template rendering in wizard
+            final_email_from = email_from or self.env.user.email_formatted
+            
+            # SOLUTION: Use mass_mail mode which properly handles email_from
+            # This mode creates mail.mail records directly with the correct email_from
             ctx = {
                 'default_model': 'res.complaint',
                 'default_res_ids': str([complaint.id]),  # Must be string representation
                 'default_use_template': bool(template_id),
                 'default_template_id': template_id.id if template_id else False,
-                'default_composition_mode': 'comment',  # comment mode renders template in wizard
+                'default_composition_mode': 'mass_mail',  # mass_mail properly handles email_from
                 'default_partner_ids': partner_ids,  # All recipients
-                'default_email_from': email_from or self.env.user.email_formatted,  # Use template's email_from
-                'default_author_id': self.env.user.partner_id.id,  # Set author explicitly
-                'mail_post_autofollow': False,  # Prevent auto-follow behavior
-                'force_email': True,  # Force sending as email
+                'default_email_from': final_email_from,  # This will be used in mail.mail creation
+                'default_author_id': self.env.user.partner_id.id,
             }
             
-            _logger.info("Composer context:")
+            _logger.info("Composer context (mass_mail mode):")
             _logger.info(f"  - Model: {ctx['default_model']}")
             _logger.info(f"  - Res IDs: {ctx['default_res_ids']}")
             _logger.info(f"  - Mode: {ctx['default_composition_mode']}")
             _logger.info(f"  - Template ID: {ctx['default_template_id']}")
             _logger.info(f"  - Partner IDs count: {len(ctx['default_partner_ids'])}")
-            _logger.info(f"  - Email From: {ctx['default_email_from']}")
+            _logger.info(f"  - Email From: {final_email_from}")
             _logger.info("✓ Opening email composer...")
             _logger.info("=" * 80)
 
-            # Open the email composer with rendered template
+            # Open the email composer
             return {
                 'type': 'ir.actions.act_window',
                 'name': 'Send Complaint Notification',
