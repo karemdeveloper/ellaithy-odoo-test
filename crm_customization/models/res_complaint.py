@@ -210,59 +210,43 @@ class ResComplaint(models.Model):
             
             _logger.info(f"Email template: {template_id.display_name if template_id else 'None'}")
             
-            # Send individual emails to avoid bulk email limits
-            # Mail servers often reject emails with 30+ recipients
-            _logger.info("Sending individual emails to each recipient...")
-            emails_sent = 0
-            emails_failed = 0
+            # Get email_from from template (rendered for this complaint)
+            email_from = False
+            if template_id and template_id.email_from:
+                email_from = template_id._render_field('email_from', [self.id])[self.id]
+                _logger.info(f"Template email_from rendered: {email_from}")
             
-            for partner_id in partner_ids:
-                try:
-                    partner = self.env['res.partner'].browse(partner_id)
-                    _logger.info(f"Sending to: {partner.name} ({partner.email})")
-                    
-                    # Use template to send email
-                    if template_id:
-                        template_id.send_mail(
-                            self.id,
-                            force_send=True,
-                            email_values={
-                                'email_to': partner.email,
-                                'recipient_ids': [(4, partner_id)],
-                            }
-                        )
-                    else:
-                        # Fallback: create mail.mail directly
-                        self.env['mail.mail'].sudo().create({
-                            'email_to': partner.email,
-                            'recipient_ids': [(4, partner_id)],
-                            'subject': f'Complaint {self.name}',
-                            'body_html': f'<p>Complaint notification for {self.name}</p>',
-                            'model': 'res.complaint',
-                            'res_id': self.id,
-                        }).send()
-                    
-                    emails_sent += 1
-                    _logger.info(f"  ✓ Sent successfully")
-                    
-                except Exception as e:
-                    emails_failed += 1
-                    _logger.error(f"  ✗ Failed to send: {str(e)}")
+            # Prepare email composer context
+            # Use 'comment' mode for proper template rendering in wizard
+            ctx = {
+                'default_model': 'res.complaint',
+                'default_res_id': self.id,
+                'default_use_template': bool(template_id),
+                'default_template_id': template_id.id if template_id else False,
+                'default_composition_mode': 'comment',  # comment mode renders template in wizard
+                'default_partner_ids': partner_ids,  # All recipients
+                'default_email_from': email_from or self.env.user.email_formatted,  # Use template's email_from
+                'force_email': True,  # Force sending as email
+            }
             
+            _logger.info("Composer context:")
+            _logger.info(f"  - Model: {ctx['default_model']}")
+            _logger.info(f"  - Res ID: {ctx['default_res_id']}")
+            _logger.info(f"  - Mode: {ctx['default_composition_mode']}")
+            _logger.info(f"  - Template ID: {ctx['default_template_id']}")
+            _logger.info(f"  - Partner IDs count: {len(ctx['default_partner_ids'])}")
+            _logger.info(f"  - Email From: {ctx['default_email_from']}")
+            _logger.info("✓ Opening email composer...")
             _logger.info("=" * 80)
-            _logger.info(f"Email Summary: {emails_sent} sent, {emails_failed} failed")
-            _logger.info("=" * 80)
-            
-            # Return success message
+
+            # Open the email composer with rendered template
             return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Emails Sent',
-                    'message': f'{emails_sent} emails sent successfully for complaint {self.name}.',
-                    'type': 'success',
-                    'sticky': False,
-                }
+                'type': 'ir.actions.act_window',
+                'name': 'Send Complaint Notification',
+                'res_model': 'mail.compose.message',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': ctx,
             }
             
         except Exception as e:
