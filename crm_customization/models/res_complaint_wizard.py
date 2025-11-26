@@ -119,44 +119,45 @@ class ResComplaintWizard(models.TransientModel):
             _logger.info(f"Email template: {template_id.display_name if template_id else 'None'}")
             
             # Get email_from from template (rendered for this complaint)
+            # OR use current user's email as fallback
             email_from = False
             if template_id and hasattr(template_id, 'email_from') and template_id.email_from:
                 email_from = template_id._render_field('email_from', [complaint.id])[complaint.id]
                 _logger.info(f"Template email_from rendered: {email_from}")
             
             final_email_from = email_from or self.env.user.email_formatted
+            _logger.info(f"Final email_from to use: {final_email_from}")
             
-            # SOLUTION: Use mass_mail mode which properly handles email_from
-            # This mode creates mail.mail records directly with the correct email_from
-            ctx = {
-                'default_model': 'res.complaint',
-                'default_res_ids': str([complaint.id]),  # Must be string representation
-                'default_use_template': bool(template_id),
-                'default_template_id': template_id.id if template_id else False,
-                'default_composition_mode': 'mass_mail',  # mass_mail properly handles email_from
-                'default_partner_ids': partner_ids,  # All recipients
-                'default_email_from': final_email_from,  # This will be used in mail.mail creation
-                'default_author_id': self.env.user.partner_id.id,
-            }
+            # Create composer wizard programmatically
+            composer = self.env['mail.compose.message'].with_context(
+                default_model='res.complaint',
+                default_res_ids=str([complaint.id]),
+                default_composition_mode='mass_mail',
+                default_partner_ids=partner_ids,
+            ).create({
+                'model': 'res.complaint',
+                'res_ids': str([complaint.id]),
+                'composition_mode': 'mass_mail',
+                'template_id': template_id.id if template_id else False,
+                'partner_ids': [(6, 0, partner_ids)],
+                'email_from': final_email_from,  # Explicitly set AFTER template
+                'author_id': self.env.user.partner_id.id,
+            })
             
-            _logger.info("Composer context (mass_mail mode):")
-            _logger.info(f"  - Model: {ctx['default_model']}")
-            _logger.info(f"  - Res IDs: {ctx['default_res_ids']}")
-            _logger.info(f"  - Mode: {ctx['default_composition_mode']}")
-            _logger.info(f"  - Template ID: {ctx['default_template_id']}")
-            _logger.info(f"  - Partner IDs count: {len(ctx['default_partner_ids'])}")
-            _logger.info(f"  - Email From: {final_email_from}")
+            _logger.info(f"Composer created with ID: {composer.id}")
+            _logger.info(f"Composer email_from: {composer.email_from}")
+            _logger.info(f"Composer partner_ids count: {len(composer.partner_ids)}")
             _logger.info("✓ Opening email composer...")
             _logger.info("=" * 80)
 
-            # Open the email composer
+            # Open the created composer wizard
             return {
                 'type': 'ir.actions.act_window',
                 'name': 'Send Complaint Notification',
                 'res_model': 'mail.compose.message',
+                'res_id': composer.id,
                 'view_mode': 'form',
                 'target': 'new',
-                'context': ctx,
             }
             
         except Exception as e:
