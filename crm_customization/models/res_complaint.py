@@ -199,8 +199,7 @@ class ResComplaint(models.Model):
             template_id.send_mail(
                 self.id,
                 force_send=True,
-                email_values=email_values,
-                notif_layout='mail.mail_notification_light'
+                email_values=email_values
             )
             
             # Post message in chatter
