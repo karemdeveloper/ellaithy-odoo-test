@@ -9,6 +9,7 @@
             <xpath expr="//field[@name='crm_team_id']" position="after">
                 <field name="shift" widget="many2many_tags" invisible="1"/>
                 <field name="state"/>
+                <field name="team_leader" invisible="1"/>
                 <field name="date_to" invisible="1"/>
 
             </xpath>

@@ -5,16 +5,38 @@ from datetime import timedelta
 import logging
 import pytz
 
-
 _logger = logging.getLogger(__name__)
+
 
 class OpportunityWizard(models.TransientModel):
     _name = 'opportunity.wizard'
     _description = 'Opportunity Wizard'
 
     name = fields.Char(string="Opportunity Name", required=True)
-    brand_id = fields.Many2one('res.brand', string="Brand", required=True)
-    sub_brand_id = fields.Many2one('res.sub.brand', string="Sub Brand", required=True)
+    brand_id = fields.Many2one('res.brand', string="Brand", required=False)
+    brand_id2 = fields.Many2many('res.brand', string="Brand(s)", required=False)
+    brand_used_id = fields.Many2many(
+        'res.brand',
+        'opportunity_wizard_used_brand_rel',
+        'wizard_id',
+        'brand_id',
+        string="Used Brand(s)"
+    )
+    opportunity_type = fields.Selection([
+        ('new', 'New'),
+        ('trade_in', 'Trade In'),
+        ('used', 'Used'),
+        ('service', 'Service'),
+    ], string='Opportunity Type', tracking=True,default='new')
+    sub_brand_id = fields.Many2one('res.sub.brand', string="Sub Brand", required=False)
+    sub_brand_id2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=False)
+    sub_brand_used_id = fields.Many2many(
+        'res.sub.brand',
+        'opportunity_wizard_used_sub_brand_rel',
+        'wizard_id',
+        'sub_brand_id',
+        string="Used Sub Brand(s)"
+    )
     area_id = fields.Many2one('res.area', string="Area")
     branch_id = fields.Many2one('res.branch', string="Branch")
     source_id = fields.Many2one('res.source', string="Source", required=True)
@@ -22,6 +44,9 @@ class OpportunityWizard(models.TransientModel):
     partner_id = fields.Many2one('res.partner', string="Customer")
     marketing_offer = fields.Many2one('marketing.offers', string='Marketing Offer')
     call_type = fields.Many2one('call.type', string='Call Type')
+    model = fields.Char(string="Model")
+    kilometers = fields.Char(string="Kilometers")
+    service_id = fields.Many2one('res.service', string='Service')
 
     @api.model
     def default_get(self, fields):
@@ -33,8 +58,32 @@ class OpportunityWizard(models.TransientModel):
             res['name'] = partner.name
             res['area_id'] = partner.area_id.id
             res['branch_id'] = partner.branch_id.id
+            res['source_id'] = partner.crm_source_id.id
         return res
-#################################################################################
+
+    @api.onchange('brand_id2')
+    def _onchange_brand_id2(self):
+        """Clear sub-brands when brands change (New section)"""
+        if self.brand_id2:
+            # Keep only sub-brands that belong to selected brands
+            valid_sub_brands = self.sub_brand_id2.filtered(lambda sb: sb.brand in self.brand_id2)
+            self.sub_brand_id2 = valid_sub_brands
+        else:
+            # If no brands selected, clear all sub-brands
+            self.sub_brand_id2 = False
+
+    @api.onchange('brand_used_id')
+    def _onchange_brand_used_id(self):
+        """Clear sub-brands when brands change (Used section)"""
+        if self.brand_used_id:
+            # Keep only sub-brands that belong to selected brands
+            valid_sub_brands = self.sub_brand_used_id.filtered(lambda sb: sb.brand in self.brand_used_id)
+            self.sub_brand_used_id = valid_sub_brands
+        else:
+            # If no brands selected, clear all sub-brands
+            self.sub_brand_used_id = False
+
+    #################################################################################
 
     def _get_next_salesperson(self):
         """Determine the next salesperson for the selected branch (Round Robin).
@@ -89,7 +138,8 @@ class OpportunityWizard(models.TransientModel):
         # log details of matched sequences (from/to)
         for seq in sequences:
             _logger.info("  -> seq id=%s sales_person=%s from=%.4f to=%.4f",
-                         seq.id, getattr(seq.sales_person, 'login', getattr(seq.sales_person, 'name', seq.sales_person.id)),
+                         seq.id,
+                         getattr(seq.sales_person, 'login', getattr(seq.sales_person, 'name', seq.sales_person.id)),
                          float(seq.from_date) if seq.from_date is not None else None,
                          float(seq.to_date) if seq.to_date is not None else None)
 
@@ -104,7 +154,8 @@ class OpportunityWizard(models.TransientModel):
             _logger.info("Fallback: found %d active sequence(s) for branch (no shift filter).", len(sequences))
             for seq in sequences:
                 _logger.info("  -> fallback seq id=%s sales_person=%s from=%.4f to=%.4f",
-                             seq.id, getattr(seq.sales_person, 'login', getattr(seq.sales_person, 'name', seq.sales_person.id)),
+                             seq.id,
+                             getattr(seq.sales_person, 'login', getattr(seq.sales_person, 'name', seq.sales_person.id)),
                              float(seq.from_date) if seq.from_date is not None else None,
                              float(seq.to_date) if seq.to_date is not None else None)
 
@@ -143,7 +194,9 @@ class OpportunityWizard(models.TransientModel):
 
         # Extra safety: if for any reason next_seq doesn't have a sales_person or is invalid, search forward for first valid
         if not next_seq.sales_person:
-            _logger.warning("Chosen sequence id=%s has no sales_person. Searching for next valid sequence with sales_person.", getattr(next_seq, 'id', None))
+            _logger.warning(
+                "Chosen sequence id=%s has no sales_person. Searching for next valid sequence with sales_person.",
+                getattr(next_seq, 'id', None))
             found = False
             for seq in sequences:
                 if seq.sales_person:
@@ -161,32 +214,53 @@ class OpportunityWizard(models.TransientModel):
             # save the sequence id we used (so next time we pick the following row)
             config.set_param(param_key, str(next_seq.id))
             _logger.info("Selected salesperson id=%s (user=%s) from sequence id=%s. Saved last_sequence_id=%s",
-                         next_salesperson.id, getattr(next_salesperson, 'login', getattr(next_salesperson, 'name', next_salesperson.id)),
+                         next_salesperson.id,
+                         getattr(next_salesperson, 'login', getattr(next_salesperson, 'name', next_salesperson.id)),
                          next_seq.id, next_seq.id)
         else:
             _logger.warning("Next sequence found but it has no sales_person. Returning False.")
             return False
 
         _logger.info("===== _get_next_salesperson END (selected user id=%s) =====", next_salesperson.id)
-        return next_salesperson####################################################################################
+        return next_salesperson  ####################################################################################
+
     def action_distribute(self):
         """Button action to create a CRM Opportunity and assign next salesperson"""
         self.ensure_one()
+        
+        # Check if partner already has a salesperson assigned
+        if self.partner_id.user_id:
+            # Use the existing salesperson from partner
+            salesperson = self.partner_id.user_id
+            _logger.info("Partner id=%s already has salesperson id=%s. Reusing existing assignment.", 
+                        self.partner_id.id, salesperson.id)
+        else:
+            # Get next salesperson from distribution logic
+            salesperson = self._get_next_salesperson()
+            
+            # Save this salesperson to the partner for future use
+            if salesperson:
+                self.partner_id.write({'user_id': salesperson.id})
+                _logger.info("Assigned new salesperson id=%s to partner id=%s", 
+                            salesperson.id, self.partner_id.id)
 
-        salesperson = self._get_next_salesperson()
         partner_name = self.partner_id.name or 'Unknown'
-        brand_name = self.brand_id.brand_name or 'NoBrand'
-        sub_brand_name = self.sub_brand_id.sub_brand_name or 'NoSubBrand'
+        # ✅ Use actual field names from res.brand and res.sub.brand
+        sub_brand_names = self.sub_brand_id2.mapped('sub_brand_name')
+        brand_names = self.brand_id2.mapped('brand_name')
 
+        brand_name_str = ', '.join(brand_names) if brand_names else 'NoBrand'
+        sub_brand_name_str = ', '.join(sub_brand_names) if sub_brand_names else 'NoSubBrand'
+
+        # count existing leads
         existing_leads_count = self.env['crm.lead'].search_count([
             ('partner_id', '=', self.partner_id.id),
-            ('brand_name', '=', self.brand_id.id),
-            ('sub_brand_name', '=', self.sub_brand_id.id),
+            ('brand_name2', 'in', self.brand_id2.ids),
+            ('sub_brand_name2', 'in', self.sub_brand_id2.ids),
         ]) + 1
 
-        seq_number = str(existing_leads_count).zfill(3)  # 001, 002, 003...
-
-        sequence_str = f"{partner_name}/{brand_name}/{sub_brand_name}/{seq_number}"
+        seq_number = str(existing_leads_count).zfill(3)
+        sequence_str = f"{partner_name}/{brand_name_str}/{sub_brand_name_str}/{seq_number}"
 
         lead = self.env['crm.lead'].create({
             'name': sequence_str,
@@ -196,13 +270,27 @@ class OpportunityWizard(models.TransientModel):
             'partner_id': self.partner_id.id,
             'branch_name': self.branch_id.id if self.branch_id else False,
             'area_name': self.area_id.id if self.area_id else False,
-            'brand_name': self.brand_id.id if self.brand_id else False,
-            'sub_brand_name': self.sub_brand_id.id if self.sub_brand_id else False,
             'source_name': self.source_id.id,
             'user_id': salesperson.id if salesperson else False,
             'type': 'opportunity',
-
+            'brand_name2': [(6, 0, self.brand_id2.ids)],
+            'sub_brand_name2': [(6, 0, self.sub_brand_id2.ids)],
+            'brand_used_id': [(6, 0, self.brand_used_id.ids)],
+            'sub_brand_used_id': [(6, 0, self.sub_brand_used_id.ids)],
+            'model': self.model,
+            'opportunity_type': self.opportunity_type,
+            'kilometers': self.kilometers,
+            'service_id': self.service_id.id if self.service_id else False,
         })
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Opportunity',
+            'view_mode': 'form',
+            'res_model': 'crm.lead',
+            'res_id': lead.id,
+            'target': 'current',
+        }
 
         # if self.partner_id:
         #     self.partner_id.is_opportunity = True

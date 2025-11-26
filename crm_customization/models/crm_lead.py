@@ -1,26 +1,125 @@
-from odoo import models, fields,api
-from odoo.exceptions import UserError
+from odoo import models, fields, api
+from odoo.exceptions import UserError, ValidationError
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 import pytz
+import math
+
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
+    
     branch_name = fields.Many2one('res.branch', string="Branch")
     area_name = fields.Many2one('res.area', string="Area")
-    brand_name = fields.Many2one('res.brand', string="Brand", required=True)
+    brand_name = fields.Many2one('res.brand', string="Brand", required=False)
+    brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=False)
+
     source_name = fields.Many2one('res.source', string="Source")
     sales_team = fields.Many2one('crm.team', string="Sales team")
-    sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", required=True)
+    sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", )
+    sub_brand_name2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=False)
+
     sla_duration = fields.Char(string="SLA Duration", compute='_compute_sla_duration')
     marketing_offer=fields.Many2one('marketing.offers',string='Marketing offer')
     call_type=fields.Many2one('call.type',string='Call Type')
     feedback_ids = fields.One2many('crm.feedback', 'lead_id', string="Feedback Lines")
-###################################################################################
+    has_feedback = fields.Boolean(string="Has Feedback", default=False)
+    sub_brand_used_id = fields.Many2many(
+        'res.sub.brand',
+        'opportunity_used_sub_brand_rel',
+        'wizard_id',
+        'sub_brand_id',
+        string="Used Sub Brand(s)"
+    )
+    brand_used_id = fields.Many2many(
+        'res.brand',
+        'opportunity_used_brand_rel',
+        'wizard_id',
+        'brand_id',
+        string="Used Brand(s)")
+    model = fields.Char(string="Model")
+    kilometers = fields.Char(string="Kilometers")
+    opportunity_type = fields.Selection([
+        ('new', 'New'),
+        ('trade_in', 'Trade In'),
+        ('used', 'Used'),
+        ('service', 'Service'),
+    ], string='Opportunity Type', tracking=True)
+    
+    # Service field - only shown when opportunity_type is 'service'
+    service_id = fields.Many2one('res.service', string='Service', tracking=True)
+    
+    # Won wizard fields
+    chassis_number = fields.Char(string='Chassis/Serial Number', tracking=True)
+    sale_order_id = fields.Char(string='Sales Order', tracking=True)
+    
+    opportunity_type_display = fields.Char(
+        string='Type',
+        compute='_compute_opportunity_type_display',
+        store=False
+    )
+    ibs_closed_at = fields.Datetime(string='IBS Closed At', tracking=True, 
+                                     help='Date and time when the opportunity was marked as lost')
+    
+    @api.depends('opportunity_type')
+    def _compute_opportunity_type_display(self):
+        """Display opportunity type as short code"""
+        type_map = {
+            'new': 'N',
+            'used': 'U',
+            'trade_in': 'T',
+            'service': 'S',
+        }
+        for rec in self:
+            rec.opportunity_type_display = type_map.get(rec.opportunity_type, '')
+
+    ###################################################################################
+    @api.constrains('phone', 'mobile')
+    def _check_phone_length(self):
+        """Validate that phone numbers have at least 11 digits"""
+        for record in self:
+            if record.phone:
+                phone_digits = ''.join(filter(str.isdigit, record.phone))
+                if len(phone_digits) < 11:
+                    raise ValidationError(
+                        f'Phone number must contain at least 11 digits. Current: {len(phone_digits)} digits'
+                    )
+            
+            if record.mobile:
+                mobile_digits = ''.join(filter(str.isdigit, record.mobile))
+                if len(mobile_digits) < 11:
+                    raise ValidationError(
+                        f'Mobile number must contain at least 11 digits. Current: {len(mobile_digits)} digits'
+                    )
+
     @api.onchange('area_name')
     def _onchange_area_name(self):
         for rec in self:
             rec.branch_name = rec.area_name.branch_area.id if rec.area_name else False
+
+    @api.onchange('brand_name2')
+    def _onchange_brand_name2(self):
+        """Clear sub-brands when brands change (New section)"""
+        for rec in self:
+            if rec.brand_name2:
+                # Keep only sub-brands that belong to selected brands
+                valid_sub_brands = rec.sub_brand_name2.filtered(lambda sb: sb.brand in rec.brand_name2)
+                rec.sub_brand_name2 = valid_sub_brands
+            else:
+                # If no brands selected, clear all sub-brands
+                rec.sub_brand_name2 = False
+
+    @api.onchange('brand_used_id')
+    def _onchange_brand_used_id(self):
+        """Clear sub-brands when brands change (Used section)"""
+        for rec in self:
+            if rec.brand_used_id:
+                # Keep only sub-brands that belong to selected brands
+                valid_sub_brands = rec.sub_brand_used_id.filtered(lambda sb: sb.brand in rec.brand_used_id)
+                rec.sub_brand_used_id = valid_sub_brands
+            else:
+                # If no brands selected, clear all sub-brands
+                rec.sub_brand_used_id = False
 ########################################################################################
     def _format_timedelta(self, seconds):
         # Format seconds -> HH:MM:SS
@@ -66,7 +165,7 @@ class CrmLead(models.Model):
             rec.sla_duration = self._format_timedelta(delta)
 ##########################################################################################
     def action_open_feedback_wizard(self):
-        """Open the wizard for selected leads"""
+        """Open the feedback wizard for selected leads"""
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'crm.feedback.wizard',
@@ -76,3 +175,106 @@ class CrmLead(models.Model):
                 'default_lead_ids': [(6, 0, self.ids)],
             }
         }
+
+    def action_open_won_wizard(self):
+        """Open the won wizard to mark opportunity as won"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Mark as Won',
+            'res_model': 'opportunity.won.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'active_id': self.id,
+            }
+        }
+
+################################################################################################
+    late_days = fields.Integer(string="Late Days", compute='_compute_late_days', store=True)
+
+    @api.depends('sla_duration')
+    def _compute_late_days(self):
+        """Compute late_days as floor(total_hours / 9).
+        sla_duration is expected to be 'HH:MM:SS' (string).
+        """
+        for rec in self:
+            rec.late_days = 0
+            sd = rec.sla_duration or ''
+            # handle cases: empty, already in HH:MM:SS, or unexpected format
+            try:
+                parts = sd.split(':')
+                if len(parts) == 3:
+                    hh = float(parts[0])
+                    mm = float(parts[1])
+                    ss = float(parts[2])
+                    total_hours = hh + (mm / 60.0) + (ss / 3600.0)
+                elif len(parts) == 2:
+                    # sometimes could be "HH:MM"
+                    hh = float(parts[0])
+                    mm = float(parts[1])
+                    total_hours = hh + (mm / 60.0)
+                elif sd.strip() != '':
+                    # try to parse as float number of hours (e.g., "2.7")
+                    total_hours = float(sd)
+                else:
+                    total_hours = 0.0
+
+                # divide by 9 and take integer part (floor)
+                rec.late_days = int(math.floor(total_hours / 9.0))
+            except Exception:
+                # on any parse error, fallback to 0
+                rec.late_days = 0
+
+    def write(self, vals):
+        """Override write method to remove 'active' condition from date_closed logic"""
+        if vals.get('website'):
+            vals['website'] = self.env['res.partner']._clean_website(vals['website'])
+
+        now = self.env.cr.now()
+        stage_updated, stage_is_won = False, False
+        # stage change (or reset): update date_last_stage_update if at least one
+        # lead does not have the same stage
+        if 'stage_id' in vals:
+            stage_updated = any(lead.stage_id.id != vals['stage_id'] for lead in self)
+            if stage_updated:
+                vals['date_last_stage_update'] = now
+            if stage_updated and vals.get('stage_id'):
+                stage = self.env['crm.stage'].browse(vals['stage_id'])
+                if stage.is_won:
+                    vals.update({'probability': 100, 'automated_probability': 100})
+                    stage_is_won = True
+        # user change; update date_open if at least one lead does not
+        # have the same user
+        if 'user_id' in vals and not vals.get('user_id'):
+            vals['date_open'] = False
+        elif vals.get('user_id'):
+            user_updated = any(lead.user_id.id != vals['user_id'] for lead in self)
+            if user_updated:
+                vals['date_open'] = now
+
+        # CUSTOMIZED: stage change with new stage: update probability and date_closed
+        # Removed 'not vals.get('active', True)' condition - only set date_closed when probability >= 100
+        if vals.get('probability', 0) >= 100:
+            vals['date_closed'] = fields.Datetime.now()
+        elif vals.get('probability', 0) > 0:
+            vals['date_closed'] = False
+        elif stage_updated and not stage_is_won and not 'probability' in vals:
+            vals['date_closed'] = False
+
+        if any(field in ['active', 'stage_id'] for field in vals):
+            self._handle_won_lost(vals)
+
+        if not stage_is_won:
+            return super(CrmLead, self).write(vals)
+
+        # stage change between two won stages: does not change the date_closed
+        leads_already_won = self.filtered(lambda lead: lead.stage_id.is_won)
+        remaining = self - leads_already_won
+        if remaining:
+            result = super(CrmLead, remaining).write(vals)
+        if leads_already_won:
+            vals.pop('date_closed', False)
+            result = super(CrmLead, leads_already_won).write(vals)
+        return result
+################################################################################

@@ -7,6 +7,7 @@
         <field name="model">res.survey</field>
         <field name="arch" type="xml">
             <list>
+                <field name="name"/>
                 <field name="partner_id"/>
             </list>
         </field>
@@ -18,19 +19,23 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
                     <group>
                         <group>
                             <field name="partner_id"/>
                             <field name="q1_sales_person" widget="radio"/>
                             <field name="q2_paper_speed" widget="radio"/>
                             <field name="q3_insurance" widget="radio"/>
-
-
                         </group>
                         <group>
                             <field name="q4_used_car" widget="radio"/>
                             <field name="q5_offer_shown" widget="radio"/>
                             <field name="q6_tip_request" widget="radio"/>
+                            <field name="comment"/>
                         </group>
                     </group>
                 </sheet>

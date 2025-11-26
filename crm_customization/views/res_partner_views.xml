@@ -14,13 +14,22 @@
                         string="Surveys">
                     <field string="Surveys" name="survey_count" widget="statinfo"/>
                 </button>
+                <button name="action_view_complaint"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-comments">
+                    <field string="Complaints" name="complaint_count" widget="statinfo"/>
+                </button>
             </xpath>
             <xpath expr="//div[@name='warning_tax']" position="before">
                 <header>
                     <button string="Create opportunity" name="action_open_create_opportunity_wizard" type="object"/>
                     <button string="Create Survey" name="action_create_survey" type="object"/>
+                    <button name="action_create_complaint" type="object" string="New Complaint" class="oe_stat_button"
+                            icon="fa-plus"/>
                 </header>
             </xpath>
+
             <!-- Make Name mandatory  -->
             <field name="name" position="attributes">
                 <attribute name="required">1</attribute>
@@ -43,7 +52,7 @@
 
             <!-- category_id -->
             <xpath expr="//field[@name='category_id']" position="attributes">
-                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+                <attribute name="groups">crm_customization.group_crm_customer</attribute>
             </xpath>
 
 
@@ -58,7 +67,7 @@
 
             <!-- email -->
             <xpath expr="//field[@name='email']" position="attributes">
-                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+                <attribute name="groups">crm_customization.group_crm_customer</attribute>
             </xpath>
 
             <!-- function -->
@@ -82,17 +91,43 @@
 
             </xpath>
 
+            <!-- Add widget after phone field to show duplicate warning -->
+            <xpath expr="//field[@name='phone']" position="after">
+                <!-- Hidden field to store the Many2one relation -->
+                <field name="customer_already_exist_id" invisible="1"/>
+                <!-- Widget field for display -->
+                <field name="customer_already_exist_widget" 
+                       widget="open_existing_customer_button"
+                       nolabel="1"
+                       colspan="2"/>
+            </xpath>
+            
+
             <xpath expr="//form[1]/sheet[1]/group[1]/group[2]/div[3]" position="after">
+                <field name="user_id" string="Salesperson" options="{'no_create': True}"/>
                 <field name="company_type" groups="crm_customization.group_crm_customer"/>
                 <field name="area_id" groups="crm_customization.group_crm_customer" required="1"/>
                 <field name="branch_id" groups="crm_customization.group_crm_customer" required="1"/>
-                <field name="company_id" groups="crm_customization.group_crm_customer"/>
+                <field name="crm_source_id" groups="crm_customization.group_crm_customer" required="1"/>
+                <field name="company_id" groups="crm_customization.group_sales_customer"/>
+                <field name="company_custom_id" groups="crm_customization.group_crm_customer"/>
                 <field name="is_opportunity" invisible="1"/>
             </xpath>
-            <xpath expr="//page[@name='sales_purchases']" position="replace"/>
-            <xpath expr="//page[@name='contact_addresses']" position="replace"/>
-            <xpath expr="//page[@name='accounting_disabled']" position="replace"/>
-            <xpath expr="//page[@name='accounting']" position="replace"/>
+            <xpath expr="//field[@name='lang']" position="replace"/>
+            
+            <!-- Add groups to pages instead of replacing them -->
+            <xpath expr="//page[@name='sales_purchases']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
+            <xpath expr="//page[@name='contact_addresses']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
+            <xpath expr="//page[@name='accounting_disabled']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
+            <xpath expr="//page[@name='accounting']" position="attributes">
+                <attribute name="groups">crm_customization.group_sales_customer</attribute>
+            </xpath>
 
             <xpath expr="//field[@name='company_type']" position="attributes">
                 <attribute name="string">Customer Type</attribute>
@@ -129,6 +164,16 @@
         <field name="inherit_id" ref="base.view_res_partner_filter"/>
         <field name="arch" type="xml">
 
+            <!-- Move email field before name field -->
+            <xpath expr="//search[1]/field[@name='name']" position="before">
+                <xpath expr="//field[@name='phone_mobile_search']" position="move"/>
+            </xpath>
+
+            <!-- Remove filter_domain from email field -->
+            <xpath expr="//field[@name='phone_mobile_search']" position="attributes">
+                <attribute name="filter_domain"/>
+            </xpath>
+
             <xpath expr="//field [@name='parent_id'] " position="after">
                 <field name="type" filter_domain="[('type', 'ilike', self)]"/>
                 <field name="company_name" filter_domain="[('company_name', 'ilike', self)]"/>
@@ -152,5 +197,13 @@
     </record>
 
 
-</odoo>
+<!--    <record id="action_open_customer_form" model="ir.actions.act_window">-->
+<!--        <field name="name">Open Existing Customer</field>-->
+<!--        <field name="res_model">res.partner</field>-->
+<!--        <field name="view_mode">form</field>-->
+<!--        <field name="target">current</field>-->
+<!--    </record>-->
 
+
+
+</odoo>

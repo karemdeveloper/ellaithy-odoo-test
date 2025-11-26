@@ -21,7 +21,7 @@ class InActiveRequest(models.Model):
         """Set state to Approved"""
         for rec in self:
             rec.state = 'approved'
-            member = self.env['crm.team.member'].search([('user_id', '=', rec.create_uid.id)], limit=1)
+            member = self.env['crm.team.member'].sudo().search([('user_id', '=', rec.create_uid.id)], limit=1)
             if member:
                 member.state = 'inactive'
                 if rec.date_to:
@@ -31,3 +31,12 @@ class InActiveRequest(models.Model):
         """Set state to Refused"""
         for rec in self:
             rec.state = 'refused'
+###################################################################
+
+    team_leader = fields.Many2one('res.users', string="Team Leader", compute='_compute_team_leader', store=True)
+
+    @api.depends('create_uid')
+    def _compute_team_leader(self):
+        for rec in self:
+            member = self.env['crm.team.member'].search([('user_id', '=', rec.create_uid.id)], limit=1)
+            rec.team_leader = member.team_leader.id if member else False

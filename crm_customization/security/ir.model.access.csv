@@ -8,6 +8,11 @@ access_res_day,res.day,model_res_day,,1,1,1,1
 access_res_shift,res.shift,model_res_shift,,1,1,1,1
 access_res_question,res.question,model_res_question,,1,1,1,1
 access_res_answer,res.answer,model_res_answer,,1,1,1,1
+access_res_department,res.department,model_res_department,,1,1,1,1
+access_res_complaint,res.complaint,model_res_complaint,,1,1,1,1
+access_res_complaint_reason,res.complaint.reason,model_res_complaint_reason,,1,1,1,1
+access_res_complaint_type,res.complaint.type,model_res_complaint_type,,1,1,1,1
+access_res_escalation,'res.escalation,model_res_escalation,,1,1,1,1
 access_res_survey,res.survey,model_res_survey,,1,1,1,1
 access_marketing_offers,marketing.offers,model_marketing_offers,,1,1,1,1
 access_call_type,call.type,model_call_type,,1,1,1,1
@@ -18,6 +23,14 @@ access_inactive_request,inactive.request,model_inactive_request,,1,1,1,1
 access_res_company_custom,res.company.custom,model_res_company_custom,,1,1,1,1
 access_opportunity_wizard,opportunity.wizard,model_opportunity_wizard,,1,1,1,1
 access_crm_feedback_wizard,crm.feedback.wizard,model_crm_feedback_wizard,,1,1,1,1
-
+access_res_complaint_wizard,res.complaint.wizard,model_res_complaint_wizard,,1,1,1,1
+access_crm_penalty_wizard,crm.penalty.wizard,model_crm_penalty_wizard,,1,1,1,1
+access_lost_opportunity_review,lost.opportunity.review,model_lost_opportunity_review,,1,1,1,1
+access_lost_opportunity_review_line,lost.opportunity.review.line,model_lost_opportunity_review_line,,1,1,1,1
+access_lost_review_feedback_wizard,lost.review.feedback.wizard,model_lost_review_feedback_wizard,,1,1,1,1
+access_lost_review_feedback_wizard_line,lost.review.feedback.wizard.line,model_lost_review_feedback_wizard_line,,1,1,1,1
+access_lost_opportunity_feedback,lost.opportunity.feedback,model_lost_opportunity_feedback,,1,1,1,1
+access_res_service,res.service,model_res_service,,1,1,1,1
+access_opportunity_won_wizard,opportunity.won.wizard,model_opportunity_won_wizard,,1,1,1,1
 
 
