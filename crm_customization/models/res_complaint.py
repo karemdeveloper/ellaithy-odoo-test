@@ -185,15 +185,25 @@ class ResComplaint(models.Model):
         
         # Send email automatically using template
         if template_id:
+            # Collect all recipient emails
+            all_emails = []
+            
+            # Add department alias email
+            if email_to_list:
+                all_emails.extend(email_to_list)
+            
+            # Add assigned users' emails
+            for user in self.assigned_to_ids:
+                if user.email:
+                    all_emails.append(user.email)
+            
+            # Remove duplicates
+            all_emails = list(set(all_emails))
+            
             # Create email values
             email_values = {}
-            
-            # Add additional recipients if needed
-            if email_to_list:
-                email_values['email_to'] = ','.join(email_to_list)
-            
-            if partner_ids:
-                email_values['recipient_ids'] = [(4, pid) for pid in partner_ids]
+            if all_emails:
+                email_values['email_to'] = ','.join(all_emails)
             
             # Send the email immediately
             template_id.send_mail(
