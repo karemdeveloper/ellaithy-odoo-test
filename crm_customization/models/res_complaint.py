@@ -207,6 +207,8 @@ class ResComplaint(models.Model):
                 'default_template_id': template_id.id if template_id else False,
                 'default_composition_mode': 'mass_mail',  # mass_mail explicitly creates mail.mail records
                 'default_partner_ids': partner_ids,  # Customer + department team
+                'default_force_send': True,  # Send emails immediately instead of queuing
+                'default_auto_delete': False,  # Keep mail records for troubleshooting
                 'force_email': True,  # Force sending as email, not just notification
             }
             
@@ -216,6 +218,8 @@ class ResComplaint(models.Model):
             _logger.info(f"  - Mode: {ctx['default_composition_mode']}")
             _logger.info(f"  - Template ID: {ctx['default_template_id']}")
             _logger.info(f"  - Partner IDs: {ctx['default_partner_ids']}")
+            _logger.info(f"  - Force Send: {ctx['default_force_send']}")
+            _logger.info(f"  - Auto Delete: {ctx['default_auto_delete']}")
             _logger.info(f"  - Force Email: {ctx['force_email']}")
             _logger.info("✓ Opening email composer...")
             _logger.info("=" * 80)
