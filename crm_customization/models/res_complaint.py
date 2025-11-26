@@ -217,6 +217,8 @@ class ResComplaint(models.Model):
                 'default_composition_mode': 'comment',  # comment mode renders template in wizard
                 'default_partner_ids': partner_ids,  # All recipients
                 'default_email_from': email_from or self.env.user.email_formatted,  # Use template's email_from
+                'default_author_id': self.env.user.partner_id.id,  # Set author explicitly
+                'mail_post_autofollow': False,  # Prevent auto-follow behavior
                 'force_email': True,  # Force sending as email
             }
             
