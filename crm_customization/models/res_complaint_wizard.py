@@ -118,13 +118,13 @@ class ResComplaintWizard(models.TransientModel):
             _logger.info(f"Email template: {template_id.name if template_id else 'None'}")
             
             # Prepare email composer context
-            # Use 'comment' mode to send external emails (mass_mail is for batch sending to different records)
+            # Use 'mass_mail' mode to ensure mail.mail records are created
             ctx = {
                 'default_model': 'res.complaint',
                 'default_res_ids': str([complaint.id]),  # res_ids expects string representation
                 'default_use_template': bool(template_id),
                 'default_template_id': template_id.id if template_id else False,
-                'default_composition_mode': 'comment',  # comment mode with partner_ids sends external emails
+                'default_composition_mode': 'mass_mail',  # mass_mail explicitly creates mail.mail records
                 'default_partner_ids': partner_ids,  # Customer + department team
                 'force_email': True,  # Force sending as email, not just notification
             }
