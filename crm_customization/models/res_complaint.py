@@ -153,6 +153,15 @@ class ResComplaint(models.Model):
         partner_ids = []
         email_to_list = []
         
+        # Add customer as first recipient
+        if self.customer_id:
+            partner_ids.append(self.customer_id.id)
+        
+        # # Add assigned users as recipients
+        # for user in self.assigned_to_ids:
+        #     if user.partner_id and user.partner_id.id not in partner_ids:
+        #         partner_ids.append(user.partner_id.id)
+        
         # Add department alias email if exists
         if self.department and self.department.alias_email:
             email_to_list.append(self.department.alias_email)
