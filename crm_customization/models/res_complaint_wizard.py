@@ -1,7 +1,4 @@
 from odoo import models, fields, api
-import logging
-
-_logger = logging.getLogger(__name__)
 
 class ResComplaintWizard(models.TransientModel):
     _name = 'res.complaint.wizard'
@@ -55,116 +52,72 @@ class ResComplaintWizard(models.TransientModel):
         """ Create complaint record and open email composer """
         self.ensure_one()
         
-        try:
-            _logger.info("=" * 80)
-            _logger.info("Creating complaint and preparing email...")
-            _logger.info(f"Customer: {self.customer_id.name} (ID: {self.customer_id.id})")
-            _logger.info(f"Department: {self.department.name}")
-            
-            # Create the complaint record using sudo to bypass record rules
-            complaint = self.env['res.complaint'].sudo().create({
-                'date': self.date,
-                'customer_id': self.customer_id.id,
-                'complaint_reason_id': self.complaint_reason_id.id,
-                'branch_id': self.branch_id.id if self.branch_id else False,
-                'department': self.department.id,
-                'escalation_line_id': self.escalation_line_id.id if self.escalation_line_id else False,
-                'assigned_to_ids': [(6, 0, self.assigned_to_ids.ids)],
-                'complaint_type_id': self.complaint_type_id.id,
-                'complaint_state': 'under_investigate',
-            })
-            _logger.info(f"✓ Complaint created: {complaint.name} (ID: {complaint.id})")
+        # Create the complaint record using sudo to bypass record rules
+        # This allows creating complaints assigned to others without seeing them
+        complaint = self.env['res.complaint'].sudo().create({
+            'date': self.date,
+            'customer_id': self.customer_id.id,
+            'complaint_reason_id': self.complaint_reason_id.id,
+            'branch_id': self.branch_id.id if self.branch_id else False,
+            'department': self.department.id,
+            'escalation_line_id': self.escalation_line_id.id if self.escalation_line_id else False,
+            'assigned_to_ids': [(6, 0, self.assigned_to_ids.ids)],
+            'complaint_type_id': self.complaint_type_id.id,
+            'complaint_state': 'under_investigate',
+        })
 
-            # Prepare email recipients - only partners with valid emails
-            partner_ids = []
-            partners_without_email = []
+        # Prepare email recipients based on department alias domain
+        partner_ids = []
+        email_to_list = []
+        
+        # Add department alias email if exists
+        if self.department and self.department.alias_email:
+            email_to_list.append(self.department.alias_email)
             
-            # Add entire department team (all users with matching email domain)
-            if self.department and self.department.alias_email:
-                _logger.info(f"Department alias email: {self.department.alias_email}")
-                # Extract domain from alias email (part after @)
-                if '@' in self.department.alias_email:
-                    domain = self.department.alias_email.split('@')[1]
-                    _logger.info(f"Extracted domain: {domain}")
-                    
-                    # Find all users with the same email domain and valid email
-                    users = self.env['res.users'].search([
-                        ('email', 'ilike', f'@{domain}'),
-                        ('email', '!=', False)
-                    ])
-                    _logger.info(f"Found {len(users)} users with domain @{domain}")
-                    
-                    # Add their partner IDs to recipients (only if partner has email)
-                    for user in users:
-                        if user.partner_id and user.partner_id.id not in partner_ids:
-                            if user.partner_id.email:
-                                partner_ids.append(user.partner_id.id)
-                                _logger.info(f"  ✓ Added: {user.name} ({user.email})")
-                            else:
-                                partners_without_email.append(user.name)
-                                _logger.warning(f"  ✗ Skipped {user.name} - no email on partner record")
+            # Extract domain from alias email (part after @)
+            if '@' in self.department.alias_email:
+                domain = self.department.alias_email.split('@')[1]
+                
+                # Find all users with the same email domain
+                users = self.env['res.users'].search([
+                    ('email', 'ilike', f'@{domain}')
+                ])
+                
+                # Add their partner IDs for notification
+                for user in users:
+                    if user.partner_id:
+                        partner_ids.append(user.partner_id.id)
 
-            _logger.info(f"Total recipients with valid emails: {len(partner_ids)}")
-            if partners_without_email:
-                _logger.warning(f"Partners skipped (no email): {', '.join(partners_without_email)}")
-            _logger.info(f"Partner IDs: {partner_ids}")
+        # Get email template from complaint type
+        template_id = self.complaint_type_id.email_template_id
+        
+        if not template_id:
+            # If no template is set, create a default one
+            template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
+        
+        # Prepare email composer context
+        ctx = {
+            'default_model': 'res.complaint',
+            'default_res_ids': [complaint.id],
+            'default_use_template': bool(template_id),
+            'default_template_id': template_id.id if template_id else False,
+            'default_composition_mode': 'comment',
+            'default_partner_ids': partner_ids,
+            'force_email': True,
+            'complaint_wizard_send': True,
+        }
+        
+        # Add department alias to email_to
+        if email_to_list:
+            ctx['default_email_to'] = ','.join(email_to_list)
 
-            # Get email template from complaint type
-            template_id = self.complaint_type_id.email_template_id
-            
-            if not template_id:
-                # If no template is set, use default one
-                template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
-            
-            _logger.info(f"Email template: {template_id.display_name if template_id else 'None'}")
-            
-            # Get email_from from template (rendered for this complaint)
-            # OR use current user's email as fallback
-            email_from = False
-            if template_id and hasattr(template_id, 'email_from') and template_id.email_from:
-                email_from = template_id._render_field('email_from', [complaint.id])[complaint.id]
-                _logger.info(f"Template email_from rendered: {email_from}")
-            
-            final_email_from = email_from or self.env.user.email_formatted
-            _logger.info(f"Final email_from to use: {final_email_from}")
-            
-            # Send emails using template's send_mail method
-            # This properly handles template rendering and bulk sending
-            _logger.info("Sending emails via template.send_mail()...")
-            
-            # Open composer wizard with force_email_from to ensure correct sender
-            _logger.info("Opening composer with forced email_from...")
-            
-            ctx = {
-                'default_model': 'res.complaint',
-                'default_res_ids': str([complaint.id]),
-                'default_template_id': template_id.id if template_id else False,
-                'default_composition_mode': 'comment',  # Changed to 'comment' for manual review
-                'default_partner_ids': partner_ids,
-                'default_force_email_from': final_email_from,  # Our custom field
-                'default_email_from': final_email_from,  # Also set default
-            }
-            
-            _logger.info(f"Context: force_email_from = {final_email_from}")
-            _logger.info(f"Context: partner_ids count = {len(partner_ids)}")
-            _logger.info("✓ Opening email composer with forced email_from...")
-            _logger.info("=" * 80)
-            
-            return {
-                'type': 'ir.actions.act_window',
-                'name': 'Send Complaint Notification',
-                'res_model': 'mail.compose.message',
-                'view_mode': 'form',
-                'target': 'new',
-                'context': ctx,
-            }
-            
-        except Exception as e:
-            _logger.error("=" * 80)
-            _logger.error(f"ERROR in complaint creation:")
-            _logger.error(f"Error type: {type(e).__name__}")
-            _logger.error(f"Error message: {str(e)}")
-            _logger.error("=" * 80)
-            import traceback
-            _logger.error(traceback.format_exc())
-            raise
+        # Open the email composer (like Send Quotation in Sale)
+        # Return to close the wizard after sending email, user won't see the complaint
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Send Complaint Notification',
+            'res_model': 'mail.compose.message',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': ctx,
+        }
