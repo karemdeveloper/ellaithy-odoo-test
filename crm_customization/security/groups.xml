@@ -60,7 +60,15 @@
         <field name="name">Leads: Only show my team's leads</field>
         <field name="model_id" ref="crm.model_crm_lead"/>
         <field name="groups" eval="[(4, ref('group_sale_team_leader'))]"/>
-        <field name="domain_force">[('team_id.user_id', '=', user.id)]</field>
+        <field name="domain_force">['|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id)]</field>
+    </record>
+
+    <!-- Partner/Contact Rule for Team Leader -->
+    <record id="partner_team_leader_rule" model="ir.rule">
+        <field name="name">Partner: Only show my team's contacts</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('group_sale_team_leader'))]"/>
+        <field name="domain_force">['|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id)]</field>
     </record>
 
     <!-- Complaint Groups -->

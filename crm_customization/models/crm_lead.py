@@ -265,6 +265,18 @@ class CrmLead(models.Model):
         if any(field in ['active', 'stage_id'] for field in vals):
             self._handle_won_lost(vals)
 
+        # Sync user_id changes to related partner
+        if 'user_id' in vals:
+            for lead in self:
+                if lead.partner_id:
+                    partner_vals = {'user_id': vals['user_id']}
+                    # Also sync team_id if the user has changed
+                    if vals.get('user_id'):
+                        user = self.env['res.users'].browse(vals['user_id'])
+                        if user.sale_team_id:
+                            partner_vals['team_id'] = user.sale_team_id.id
+                    lead.partner_id.write(partner_vals)
+
         if not stage_is_won:
             return super(CrmLead, self).write(vals)
 
