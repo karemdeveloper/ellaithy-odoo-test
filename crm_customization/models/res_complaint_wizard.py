@@ -132,44 +132,31 @@ class ResComplaintWizard(models.TransientModel):
             # This properly handles template rendering and bulk sending
             _logger.info("Sending emails via template.send_mail()...")
             
-            if template_id:
-                # Use template's send_mail method with custom email_values
-                # to ensure correct email_from and recipients
-                mail_id = template_id.send_mail(
-                    complaint.id,
-                    force_send=True,  # Send immediately
-                    email_values={
-                        'email_from': final_email_from,  # Force our email_from
-                        'recipient_ids': [(4, pid) for pid in partner_ids],  # Add all recipients
-                    },
-                )
-                
-                _logger.info(f"Template sent mail with ID: {mail_id}")
-                
-                # Check what was actually created
-                if mail_id:
-                    mail = self.env['mail.mail'].browse(mail_id)
-                    _logger.info(f"Created mail.mail ID {mail.id}:")
-                    _logger.info(f"  email_from: {mail.email_from}")
-                    _logger.info(f"  email_to: {mail.email_to}")
-                    _logger.info(f"  recipient_ids: {mail.recipient_ids.ids}")
-                    _logger.info(f"  state: {mail.state}")
-            else:
-                _logger.warning("No template found, cannot send emails")
+            # Open composer wizard with force_email_from to ensure correct sender
+            _logger.info("Opening composer with forced email_from...")
             
-            _logger.info("✓ Email sending completed!")
+            ctx = {
+                'default_model': 'res.complaint',
+                'default_res_ids': str([complaint.id]),
+                'default_template_id': template_id.id if template_id else False,
+                'default_composition_mode': 'comment',  # Changed to 'comment' for manual review
+                'default_partner_ids': partner_ids,
+                'default_force_email_from': final_email_from,  # Our custom field
+                'default_email_from': final_email_from,  # Also set default
+            }
+            
+            _logger.info(f"Context: force_email_from = {final_email_from}")
+            _logger.info(f"Context: partner_ids count = {len(partner_ids)}")
+            _logger.info("✓ Opening email composer with forced email_from...")
             _logger.info("=" * 80)
             
-            # Return success message
             return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Success',
-                    'message': f'Complaint notification sent to {len(partner_ids)} recipients',
-                    'type': 'success',
-                    'sticky': False,
-                }
+                'type': 'ir.actions.act_window',
+                'name': 'Send Complaint Notification',
+                'res_model': 'mail.compose.message',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': ctx,
             }
             
         except Exception as e:
