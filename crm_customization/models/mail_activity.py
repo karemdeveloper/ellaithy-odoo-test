@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from datetime import datetime, time
 
 
 class MailActivity(models.Model):
@@ -11,4 +12,25 @@ class MailActivity(models.Model):
         index=True,
         default=fields.Datetime.now
     )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to handle datetime/date comparison issue"""
+        # Call parent's parent (models.Model) to skip the problematic filtering
+        activities = super(models.Model, self).create(vals_list)
+
+        # Replicate the parent logic but with datetime comparison
+        # Convert Date.today() to datetime for proper comparison
+        today_datetime = fields.Datetime.to_datetime(
+            datetime.combine(fields.Date.today(), time.max)
+        )
+
+        todo_activities = activities.filtered(
+            lambda act: act.active and act.date_deadline and act.date_deadline <= today_datetime
+        )
+
+        if todo_activities:
+            todo_activities.action_feedback_schedule_next()
+
+        return activities
 
