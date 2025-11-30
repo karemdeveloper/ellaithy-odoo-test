@@ -21,7 +21,7 @@ class CrmLead(models.Model):
 
     sla_duration = fields.Char(string="SLA Duration", compute='_compute_sla_duration')
     marketing_offer=fields.Many2one('marketing.offers',string='Marketing offer')
-    call_type=fields.Many2one('call.type',string='Call Type')
+    call_type=fields.Many2one('call.type',string='Call Type', required=True)
     feedback_ids = fields.One2many('crm.feedback', 'lead_id', string="Feedback Lines")
     has_feedback = fields.Boolean(string="Has Feedback", default=False)
     sub_brand_used_id = fields.Many2many(
