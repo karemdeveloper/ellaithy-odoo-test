@@ -60,16 +60,16 @@
         </field>
     </record>
 
-    <!-- Override standard CRM "All Documents" rule to respect branch restrictions -->
-    <record id="crm.crm_lead_rule_all" model="ir.rule">
+    <!-- Custom rule for "All Documents" group to respect branch restrictions -->
+    <record id="crm_lead_rule_all_documents_branch" model="ir.rule">
         <field name="name">Leads: All Documents (Branch Restricted)</field>
         <field name="model_id" ref="crm.model_crm_lead"/>
         <field name="groups" eval="[(4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
         <field name="domain_force">['|', '|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), '&amp;', ('user_id.branch_id', '!=', False), ('user_id.branch_id', '=', user.branch_id.id), '&amp;', ('branch_name', '!=', False), ('branch_name', '=', user.branch_id.id), '&amp;', ('team_id.branch_name', '!=', False), ('team_id.branch_name', '=', user.branch_id.id)]</field>
     </record>
 
-    <!-- Override standard Partner "All Contacts" rule to respect branch restrictions -->
-    <record id="base.res_partner_rule_private_group" model="ir.rule">
+    <!-- Custom rule for "All Contacts" to respect branch restrictions -->
+    <record id="partner_rule_all_documents_branch" model="ir.rule">
         <field name="name">Contacts: All Contacts (Branch Restricted)</field>
         <field name="model_id" ref="base.model_res_partner"/>
         <field name="groups" eval="[(4, ref('sales_team.group_sale_salesman_all_leads'))]"/>

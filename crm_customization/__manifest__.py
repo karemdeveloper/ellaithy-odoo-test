@@ -27,6 +27,7 @@
         'data/complaint_doc_request_delay_template.xml',
         'data/complaint_doc_readiness_inquiry_template.xml',
         'security/groups.xml',
+        'security/disable_standard_rules.xml',
         'views/res_partner_views.xml',
         'views/res_area_views.xml',
         'views/res_brand_views.xml',
