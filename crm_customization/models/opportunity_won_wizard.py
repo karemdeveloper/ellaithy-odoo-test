@@ -6,7 +6,7 @@ class OpportunityWonWizard(models.TransientModel):
     _description = 'Mark Opportunity as Won'
 
     chassis_number = fields.Char(string='Chassis/Serial Number', required=True)
-    sale_order_id = fields.Many2one('sale.order', string='Sales Order', required=True)
+    sale_order_id = fields.Char(string='Sales Order', required=True)
     lead_id = fields.Many2one('crm.lead', string='Opportunity')
 
     @api.model

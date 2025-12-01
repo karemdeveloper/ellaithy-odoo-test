@@ -51,7 +51,7 @@ class CrmLead(models.Model):
     
     # Won wizard fields
     chassis_number = fields.Char(string='Chassis/Serial Number', tracking=True)
-    sale_order_id = fields.Many2one('sale.order', string='Sales Order', tracking=True)
+    sale_order_id = fields.Char(string='Sales Order', tracking=True)
     
     opportunity_type_display = fields.Char(
         string='Type',
