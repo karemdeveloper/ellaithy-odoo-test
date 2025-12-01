@@ -84,8 +84,8 @@ class CrmLead(models.Model):
         """Check if opportunity was created within last 2 hours and is still in new stage"""
         from datetime import timedelta
 
-        # Get the "New" stage - typically the first stage
-        new_stage = self.env['crm.stage'].search([('sequence', '=', 1)], limit=1)
+        # Get the "New" stage - first stage with sequence 0
+        new_stage = self.env['crm.stage'].search([('sequence', '=', 0)], limit=1)
 
         for rec in self:
             if rec.create_date and new_stage:
@@ -102,7 +102,7 @@ class CrmLead(models.Model):
         from datetime import timedelta
 
         two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
-        new_stage = self.env['crm.stage'].search([('sequence', '=', 1)], limit=1)
+        new_stage = self.env['crm.stage'].search([('sequence', '=', 0)], limit=1)
 
         if (operator == '=' and value) or (operator == '!=' and not value):
             # Search for opportunities within 2 hours in new stage
