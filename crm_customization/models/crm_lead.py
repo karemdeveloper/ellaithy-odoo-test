@@ -58,8 +58,15 @@ class CrmLead(models.Model):
         compute='_compute_opportunity_type_display',
         store=False
     )
-    ibs_closed_at = fields.Datetime(string='IBS Closed At', tracking=True, 
+    ibs_closed_at = fields.Datetime(string='IBS Closed At', tracking=True,
                                      help='Date and time when the opportunity was marked as lost')
+
+    is_new_within_2hrs = fields.Boolean(
+        string='New Within 2 Hours',
+        compute='_compute_is_new_within_2hrs',
+        search='_search_is_new_within_2hrs',
+        help='Opportunity created within last 2 hours and still in new stage'
+    )
     
     @api.depends('opportunity_type')
     def _compute_opportunity_type_display(self):
@@ -72,6 +79,43 @@ class CrmLead(models.Model):
         }
         for rec in self:
             rec.opportunity_type_display = type_map.get(rec.opportunity_type, '')
+
+    def _compute_is_new_within_2hrs(self):
+        """Check if opportunity was created within last 2 hours and is still in new stage"""
+        from datetime import timedelta
+
+        # Get the "New" stage - typically the first stage
+        new_stage = self.env['crm.stage'].search([('sequence', '=', 1)], limit=1)
+
+        for rec in self:
+            if rec.create_date and new_stage:
+                two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+                rec.is_new_within_2hrs = (
+                    rec.create_date >= two_hours_ago and
+                    rec.stage_id == new_stage
+                )
+            else:
+                rec.is_new_within_2hrs = False
+
+    def _search_is_new_within_2hrs(self, operator, value):
+        """Search method for is_new_within_2hrs field"""
+        from datetime import timedelta
+
+        two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+        new_stage = self.env['crm.stage'].search([('sequence', '=', 1)], limit=1)
+
+        if (operator == '=' and value) or (operator == '!=' and not value):
+            # Search for opportunities within 2 hours in new stage
+            return [
+                ('create_date', '>=', two_hours_ago),
+                ('stage_id', '=', new_stage.id if new_stage else False)
+            ]
+        else:
+            # Search for opportunities NOT within 2 hours or not in new stage
+            return ['|',
+                ('create_date', '<', two_hours_ago),
+                ('stage_id', '!=', new_stage.id if new_stage else False)
+            ]
 
     ###################################################################################
     @api.constrains('phone', 'mobile')

@@ -182,6 +182,16 @@
                         context="{'group_by': 'has_feedback'}"/>
             </xpath>
 
+            <!-- Add filter for opportunities created within 2 hours in new stage -->
+            <xpath expr="//filter[@name='unassigned']" position="after">
+                <filter name="new_within_2hrs" string="New (Within 2 Hours)"
+                        domain="[('is_new_within_2hrs', '=', True)]"
+                        help="Opportunities created within last 2 hours and still in new stage"/>
+                <filter name="new_2hrs_no_action" string="2 Hours - No Action"
+                        domain="[('is_new_within_2hrs', '=', True), ('has_feedback', '=', False)]"
+                        help="Opportunities created within last 2 hours with no feedback/action taken"/>
+            </xpath>
+
         </field>
     </record>
 
