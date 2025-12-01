@@ -67,6 +67,13 @@ class CrmLead(models.Model):
         search='_search_is_new_within_2hrs',
         help='Opportunity created within last 2 hours and still in new stage'
     )
+
+    is_new_more_than_2hrs = fields.Boolean(
+        string='New More Than 2 Hours',
+        compute='_compute_is_new_more_than_2hrs',
+        search='_search_is_new_more_than_2hrs',
+        help='Opportunity created more than 2 hours ago and still in new stage'
+    )
     
     @api.depends('opportunity_type')
     def _compute_opportunity_type_display(self):
@@ -122,6 +129,50 @@ class CrmLead(models.Model):
                 ]
             else:
                 return [('create_date', '<', two_hours_ago)]
+
+    @api.depends('create_date', 'stage_id')
+    def _compute_is_new_more_than_2hrs(self):
+        """Check if opportunity was created more than 2 hours ago and is still in new stage"""
+        from datetime import timedelta
+
+        # Get the "New" stage - search by sequence, ordered
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        for rec in self:
+            if rec.create_date and new_stage:
+                two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+                rec.is_new_more_than_2hrs = (
+                    rec.create_date < two_hours_ago and
+                    rec.stage_id.id == new_stage.id
+                )
+            else:
+                rec.is_new_more_than_2hrs = False
+
+    def _search_is_new_more_than_2hrs(self, operator, value):
+        """Search method for is_new_more_than_2hrs field"""
+        from datetime import timedelta
+
+        two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+        # Get the first stage (New stage)
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        if (operator == '=' and value) or (operator == '!=' and not value):
+            # Search for opportunities more than 2 hours old in new stage
+            domain = [
+                ('create_date', '<', two_hours_ago),
+            ]
+            if new_stage:
+                domain.append(('stage_id', '=', new_stage.id))
+            return domain
+        else:
+            # Search for opportunities within 2 hours or not in new stage
+            if new_stage:
+                return ['|',
+                    ('create_date', '>=', two_hours_ago),
+                    ('stage_id', '!=', new_stage.id)
+                ]
+            else:
+                return [('create_date', '>=', two_hours_ago)]
 
     def debug_new_within_2hrs(self):
         """Debug method to test the filter logic"""
