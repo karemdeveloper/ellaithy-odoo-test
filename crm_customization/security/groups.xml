@@ -85,7 +85,7 @@
     <record id="inactive_request_rule_branch_manager" model="ir.rule">
         <field name="name">Inactive Request - Branch Manager Records</field>
         <field name="model_id" ref="model_inactive_request"/>
-        <field name="domain_force">[('create_uid.branch_id', '=', user.branch_id.id)]</field>
+        <field name="domain_force">['|', '|', ('create_uid', '=', user.id), ('team_leader', '=', user.id), ('create_uid.branch_id', '=', user.branch_id.id)]</field>
         <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
     </record>
 
@@ -93,14 +93,14 @@
         <field name="name">Leads: Branch Manager - All branch leads</field>
         <field name="model_id" ref="crm.model_crm_lead"/>
         <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
-        <field name="domain_force">['|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), ('user_id.branch_id', '=', user.branch_id.id)]</field>
+        <field name="domain_force">['|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), ('user_id.branch_id', '=', user.branch_id.id), ('branch_name', '=', user.branch_id.id), ('team_id.branch_name', '=', user.branch_id.id)]</field>
     </record>
 
     <record id="partner_branch_manager_rule" model="ir.rule">
         <field name="name">Partner: Branch Manager - All branch contacts</field>
         <field name="model_id" ref="base.model_res_partner"/>
         <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
-        <field name="domain_force">['|', '|', ('user_id', '=', user.id), ('user_id.sale_team_id.user_id', '=', user.id), ('user_id.branch_id', '=', user.branch_id.id)]</field>
+        <field name="domain_force">['|', '|', ('user_id', '=', user.id), ('user_id.sale_team_id.user_id', '=', user.id), '|', ('user_id.branch_id', '=', user.branch_id.id), ('branch_id', '=', user.branch_id.id)]</field>
     </record>
 
     <!-- Complaint Groups -->
