@@ -84,15 +84,15 @@ class CrmLead(models.Model):
         """Check if opportunity was created within last 2 hours and is still in new stage"""
         from datetime import timedelta
 
-        # Get the "New" stage - first stage with sequence 0
-        new_stage = self.env['crm.stage'].search([('sequence', '=', 0)], limit=1)
+        # Get the "New" stage - search by sequence, ordered
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
 
         for rec in self:
             if rec.create_date and new_stage:
                 two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
                 rec.is_new_within_2hrs = (
                     rec.create_date >= two_hours_ago and
-                    rec.stage_id == new_stage
+                    rec.stage_id.id == new_stage.id
                 )
             else:
                 rec.is_new_within_2hrs = False
@@ -102,20 +102,43 @@ class CrmLead(models.Model):
         from datetime import timedelta
 
         two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
-        new_stage = self.env['crm.stage'].search([('sequence', '=', 0)], limit=1)
+        # Get the first stage (New stage)
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
 
         if (operator == '=' and value) or (operator == '!=' and not value):
             # Search for opportunities within 2 hours in new stage
-            return [
+            domain = [
                 ('create_date', '>=', two_hours_ago),
-                ('stage_id', '=', new_stage.id if new_stage else False)
             ]
+            if new_stage:
+                domain.append(('stage_id', '=', new_stage.id))
+            return domain
         else:
             # Search for opportunities NOT within 2 hours or not in new stage
-            return ['|',
-                ('create_date', '<', two_hours_ago),
-                ('stage_id', '!=', new_stage.id if new_stage else False)
-            ]
+            if new_stage:
+                return ['|',
+                    ('create_date', '<', two_hours_ago),
+                    ('stage_id', '!=', new_stage.id)
+                ]
+            else:
+                return [('create_date', '<', two_hours_ago)]
+
+    def debug_new_within_2hrs(self):
+        """Debug method to test the filter logic"""
+        from datetime import timedelta
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        _logger.info(f"Two hours ago: {two_hours_ago}")
+        _logger.info(f"New stage: {new_stage.name if new_stage else 'Not found'} (ID: {new_stage.id if new_stage else 'N/A'})")
+
+        for rec in self:
+            _logger.info(f"Lead: {rec.name}, Created: {rec.create_date}, Stage: {rec.stage_id.name} (ID: {rec.stage_id.id})")
+            _logger.info(f"  Within 2hrs? {rec.create_date >= two_hours_ago if rec.create_date else False}")
+            _logger.info(f"  In new stage? {rec.stage_id.id == new_stage.id if new_stage else False}")
 
     ###################################################################################
     @api.constrains('phone', 'mobile')
