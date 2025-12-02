@@ -92,25 +92,81 @@
     </record>
 
     <!-- Branch Manager Rules -->
+    <!-- CRM Team Rule: Branch Manager can see all teams in their branch -->
+    <record id="crm_team_branch_manager_rule" model="ir.rule">
+        <field name="name">CRM Team: Branch Manager - All branch teams</field>
+        <field name="model_id" ref="sales_team.model_crm_team"/>
+        <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
+        <field name="domain_force">['|', '|',
+            ('user_id', '=', user.id),
+            ('branch_name', '=', user.branch_id.id),
+            ('member_ids.user_id.branch_id', '=', user.branch_id.id)
+        ]</field>
+    </record>
+
+    <!-- CRM Team Member Rule: Branch Manager can see all team members in their branch -->
+    <record id="crm_team_member_branch_manager_rule" model="ir.rule">
+        <field name="name">CRM Team Member: Branch Manager - All branch members</field>
+        <field name="model_id" ref="sales_team.model_crm_team_member"/>
+        <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
+        <field name="domain_force">['|', '|', '|',
+            ('user_id', '=', user.id),
+            ('crm_team_id.user_id', '=', user.id),
+            ('user_id.branch_id', '=', user.branch_id.id),
+            ('crm_team_id.branch_name', '=', user.branch_id.id)
+        ]</field>
+    </record>
+
+    <!-- Inactive Request Rule: Branch Manager can see all requests from their branch -->
     <record id="inactive_request_rule_branch_manager" model="ir.rule">
         <field name="name">Inactive Request - Branch Manager Records</field>
         <field name="model_id" ref="model_inactive_request"/>
-        <field name="domain_force">['|', '|', ('create_uid', '=', user.id), ('team_leader', '=', user.id), '&amp;', ('create_uid.branch_id', '!=', False), ('create_uid.branch_id', '=', user.branch_id.id)]</field>
+        <field name="domain_force">['|', '|', '|',
+            ('create_uid', '=', user.id),
+            ('team_leader', '=', user.id),
+            ('create_uid.branch_id', '=', user.branch_id.id),
+            ('team_leader.branch_id', '=', user.branch_id.id)
+        ]</field>
         <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
     </record>
 
+    <!-- Leads Rule: Branch Manager can see all leads in their branch -->
     <record id="crm_lead_branch_manager_rule" model="ir.rule">
         <field name="name">Leads: Branch Manager - All branch leads</field>
         <field name="model_id" ref="crm.model_crm_lead"/>
         <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
-        <field name="domain_force">['|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), '&amp;', '&amp;', ('user_id', '!=', False), ('user_id.branch_id', '!=', False), ('user_id.branch_id', '=', user.branch_id.id), '&amp;', '&amp;', ('branch_name', '!=', False), ('user_id.branch_id', '!=', False), ('branch_name', '=', user.branch_id.id), '&amp;', '&amp;', ('team_id.branch_name', '!=', False), ('user_id.branch_id', '!=', False), ('team_id.branch_name', '=', user.branch_id.id)]</field>
+        <field name="domain_force">['|', '|', '|', '|', '|',
+            ('user_id', '=', user.id),
+            ('team_id.user_id', '=', user.id),
+            ('user_id.branch_id', '=', user.branch_id.id),
+            ('branch_name', '=', user.branch_id.id),
+            ('team_id.branch_name', '=', user.branch_id.id),
+            ('team_id.member_ids.user_id.branch_id', '=', user.branch_id.id)
+        ]</field>
     </record>
 
+    <!-- Partner/Contacts Rule: Branch Manager can see all contacts in their branch -->
     <record id="partner_branch_manager_rule" model="ir.rule">
         <field name="name">Partner: Branch Manager - All branch contacts</field>
         <field name="model_id" ref="base.model_res_partner"/>
         <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
-        <field name="domain_force">['|', '|', '|', ('user_id', '=', user.id), ('user_id.sale_team_id.user_id', '=', user.id), '&amp;', '&amp;', ('user_id', '!=', False), ('user_id.branch_id', '!=', False), ('user_id.branch_id', '=', user.branch_id.id), '&amp;', '&amp;', ('branch_id', '!=', False), ('user_id.branch_id', '!=', False), ('branch_id', '=', user.branch_id.id)]</field>
+        <field name="domain_force">['|', '|', '|',
+            ('user_id', '=', user.id),
+            ('user_id.sale_team_id.user_id', '=', user.id),
+            ('user_id.branch_id', '=', user.branch_id.id),
+            ('branch_id', '=', user.branch_id.id)
+        ]</field>
+    </record>
+
+    <!-- Users Rule: Branch Manager can see all users in their branch -->
+    <record id="res_users_branch_manager_rule" model="ir.rule">
+        <field name="name">Users: Branch Manager - All branch users</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
+        <field name="domain_force">['|',
+            ('id', '=', user.id),
+            ('branch_id', '=', user.branch_id.id)
+        ]</field>
     </record>
 
     <!-- Complaint Groups -->
