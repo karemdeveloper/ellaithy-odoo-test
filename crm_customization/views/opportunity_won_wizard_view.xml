@@ -9,7 +9,7 @@
                 <sheet>
                     <group>
                         <field name="lead_id" invisible="1"/>
-                        <field name="chassis_number"/>
+                        <field name="chassis_number" string="Chassis/Serial Number"/>
                         <field name="sale_order_id"/>
                     </group>
                 </sheet>

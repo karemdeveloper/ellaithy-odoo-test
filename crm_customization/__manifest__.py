@@ -60,6 +60,7 @@
         'views/lost_opportunity_feedback_views.xml',
         'views/res_service_views.xml',
         'views/opportunity_won_wizard_view.xml',
+        'views/mail_activity_views.xml',
         'reports/crm_penalty_report_template.xml',
     ],
     'assets': {

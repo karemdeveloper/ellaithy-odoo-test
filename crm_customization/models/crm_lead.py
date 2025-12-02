@@ -21,7 +21,7 @@ class CrmLead(models.Model):
 
     sla_duration = fields.Char(string="SLA Duration", compute='_compute_sla_duration')
     marketing_offer=fields.Many2one('marketing.offers',string='Marketing offer')
-    call_type=fields.Many2one('call.type',string='Call Type')
+    call_type=fields.Many2one('call.type',string='Call Type', required=True)
     feedback_ids = fields.One2many('crm.feedback', 'lead_id', string="Feedback Lines")
     has_feedback = fields.Boolean(string="Has Feedback", default=False)
     sub_brand_used_id = fields.Many2many(
@@ -58,8 +58,22 @@ class CrmLead(models.Model):
         compute='_compute_opportunity_type_display',
         store=False
     )
-    ibs_closed_at = fields.Datetime(string='IBS Closed At', tracking=True, 
+    ibs_closed_at = fields.Datetime(string='IBS Closed At', tracking=True,
                                      help='Date and time when the opportunity was marked as lost')
+
+    is_new_within_2hrs = fields.Boolean(
+        string='New Within 2 Hours',
+        compute='_compute_is_new_within_2hrs',
+        search='_search_is_new_within_2hrs',
+        help='Opportunity created within last 2 hours and still in new stage'
+    )
+
+    is_new_more_than_2hrs = fields.Boolean(
+        string='New More Than 2 Hours',
+        compute='_compute_is_new_more_than_2hrs',
+        search='_search_is_new_more_than_2hrs',
+        help='Opportunity created more than 2 hours ago and still in new stage'
+    )
     
     @api.depends('opportunity_type')
     def _compute_opportunity_type_display(self):
@@ -72,6 +86,110 @@ class CrmLead(models.Model):
         }
         for rec in self:
             rec.opportunity_type_display = type_map.get(rec.opportunity_type, '')
+
+    def _compute_is_new_within_2hrs(self):
+        """Check if opportunity was created within last 2 hours and is still in new stage"""
+        from datetime import timedelta
+
+        # Get the "New" stage - search by sequence, ordered
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        for rec in self:
+            if rec.create_date and new_stage:
+                two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+                rec.is_new_within_2hrs = (
+                    rec.create_date >= two_hours_ago and
+                    rec.stage_id.id == new_stage.id
+                )
+            else:
+                rec.is_new_within_2hrs = False
+
+    def _search_is_new_within_2hrs(self, operator, value):
+        """Search method for is_new_within_2hrs field"""
+        from datetime import timedelta
+
+        two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+        # Get the first stage (New stage)
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        if (operator == '=' and value) or (operator == '!=' and not value):
+            # Search for opportunities within 2 hours in new stage
+            domain = [
+                ('create_date', '>=', two_hours_ago),
+            ]
+            if new_stage:
+                domain.append(('stage_id', '=', new_stage.id))
+            return domain
+        else:
+            # Search for opportunities NOT within 2 hours or not in new stage
+            if new_stage:
+                return ['|',
+                    ('create_date', '<', two_hours_ago),
+                    ('stage_id', '!=', new_stage.id)
+                ]
+            else:
+                return [('create_date', '<', two_hours_ago)]
+
+    @api.depends('create_date', 'stage_id')
+    def _compute_is_new_more_than_2hrs(self):
+        """Check if opportunity was created more than 2 hours ago and is still in new stage"""
+        from datetime import timedelta
+
+        # Get the "New" stage - search by sequence, ordered
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        for rec in self:
+            if rec.create_date and new_stage:
+                two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+                rec.is_new_more_than_2hrs = (
+                    rec.create_date < two_hours_ago and
+                    rec.stage_id.id == new_stage.id
+                )
+            else:
+                rec.is_new_more_than_2hrs = False
+
+    def _search_is_new_more_than_2hrs(self, operator, value):
+        """Search method for is_new_more_than_2hrs field"""
+        from datetime import timedelta
+
+        two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+        # Get the first stage (New stage)
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        if (operator == '=' and value) or (operator == '!=' and not value):
+            # Search for opportunities more than 2 hours old in new stage
+            domain = [
+                ('create_date', '<', two_hours_ago),
+            ]
+            if new_stage:
+                domain.append(('stage_id', '=', new_stage.id))
+            return domain
+        else:
+            # Search for opportunities within 2 hours or not in new stage
+            if new_stage:
+                return ['|',
+                    ('create_date', '>=', two_hours_ago),
+                    ('stage_id', '!=', new_stage.id)
+                ]
+            else:
+                return [('create_date', '>=', two_hours_ago)]
+
+    def debug_new_within_2hrs(self):
+        """Debug method to test the filter logic"""
+        from datetime import timedelta
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        two_hours_ago = fields.Datetime.now() - timedelta(hours=2)
+        new_stage = self.env['crm.stage'].search([], order='sequence asc', limit=1)
+
+        _logger.info(f"Two hours ago: {two_hours_ago}")
+        _logger.info(f"New stage: {new_stage.name if new_stage else 'Not found'} (ID: {new_stage.id if new_stage else 'N/A'})")
+
+        for rec in self:
+            _logger.info(f"Lead: {rec.name}, Created: {rec.create_date}, Stage: {rec.stage_id.name} (ID: {rec.stage_id.id})")
+            _logger.info(f"  Within 2hrs? {rec.create_date >= two_hours_ago if rec.create_date else False}")
+            _logger.info(f"  In new stage? {rec.stage_id.id == new_stage.id if new_stage else False}")
 
     ###################################################################################
     @api.constrains('phone', 'mobile')
@@ -264,6 +382,12 @@ class CrmLead(models.Model):
 
         if any(field in ['active', 'stage_id'] for field in vals):
             self._handle_won_lost(vals)
+
+        # Sync user_id changes to related partner
+        if 'user_id' in vals:
+            for lead in self:
+                if lead.partner_id:
+                    lead.partner_id.write({'user_id': vals['user_id']})
 
         if not stage_is_won:
             return super(CrmLead, self).write(vals)

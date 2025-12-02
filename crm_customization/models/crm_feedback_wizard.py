@@ -56,11 +56,24 @@ class CrmFeedbackWizard(models.TransientModel):
     def default_get(self, fields_list):
         """Set default salesperson from first selected lead"""
         res = super(CrmFeedbackWizard, self).default_get(fields_list)
-        active_ids = self.env.context.get('active_ids') or []
-        if active_ids:
-            leads = self.env['crm.lead'].browse(active_ids)
 
+        # Get lead_ids from either active_ids or default_lead_ids context
+        lead_ids = []
+
+        # Check if default_lead_ids is already set (from direct context)
+        if 'lead_ids' in res and res['lead_ids']:
+            # Extract IDs from the Many2many command format [(6, 0, [ids])]
+            if isinstance(res['lead_ids'], list) and res['lead_ids'] and isinstance(res['lead_ids'][0], tuple):
+                lead_ids = res['lead_ids'][0][2] if len(res['lead_ids'][0]) > 2 else []
+
+        # If not, get from active_ids (when called from list/tree view)
+        if not lead_ids:
+            lead_ids = self.env.context.get('active_ids') or []
+
+        if lead_ids:
+            leads = self.env['crm.lead'].browse(lead_ids)
             if leads:
                 res['lead_ids'] = [(6, 0, leads.ids)]
                 res['salesperson_id'] = leads[0].user_id.id if leads[0].user_id else False
+
         return res

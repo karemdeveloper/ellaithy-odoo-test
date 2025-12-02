@@ -177,6 +177,23 @@
         <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
         <field name="arch" type="xml">
 
+            <!-- Add filter for opportunities created within 2 hours in new stage -->
+            <xpath expr="//search//filter[1]" position="before">
+                <filter name="new_within_2hrs" string="New (Within 2 Hours)"
+                        domain="[('is_new_within_2hrs', '=', True)]"
+                        help="Opportunities created within last 2 hours and still in new stage"/>
+                <filter name="new_2hrs_no_action" string="Within 2 Hours - No Action"
+                        domain="[('is_new_within_2hrs', '=', True), ('has_feedback', '=', False)]"
+                        help="Opportunities created within last 2 hours with no feedback/action taken"/>
+                <filter name="new_more_than_2hrs" string="New - More Than 2 Hours"
+                        domain="[('is_new_more_than_2hrs', '=', True)]"
+                        help="Opportunities created more than 2 hours ago and still in new stage"/>
+                <filter name="new_more_than_2hrs_no_action" string="More Than 2 Hours - No Action"
+                        domain="[('is_new_more_than_2hrs', '=', True), ('has_feedback', '=', False)]"
+                        help="Opportunities in new stage for more than 2 hours with no feedback/action taken"/>
+                <separator/>
+            </xpath>
+
             <xpath expr="//filter[@name='saleschannel']" position="after">
                 <filter name="studio_group_by_9ag_1j9595aef" string="Feedback"
                         context="{'group_by': 'has_feedback'}"/>

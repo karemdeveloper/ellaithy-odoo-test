@@ -5,6 +5,15 @@ from odoo.exceptions import ValidationError, UserError
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
+    # Override user_id to set default to current user
+    user_id = fields.Many2one(
+        'res.users',
+        string='Salesperson',
+        default=lambda self: self.env.user,
+        tracking=True,
+        help="The internal user in charge of this contact."
+    )
+
     branch_id = fields.Many2one('res.branch', string="Branch")
     area_id = fields.Many2one('res.area', string="Area")
     company_custom_id = fields.Many2one('res.company.custom', string="Company")

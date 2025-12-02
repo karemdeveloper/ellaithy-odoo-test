@@ -26,18 +26,28 @@
         <field name="groups" eval="[(4, ref('base.group_user'))]"/>
     </record>
     <record id="inactive_request_rule_view_all" model="ir.rule">
-        <field name="name">Inactive Request - View All</field>
+        <field name="name">Inactive Request - View All (Branch Restricted)</field>
         <field name="model_id" ref="model_inactive_request"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="domain_force">['|', '|', ('create_uid', '=', user.id), ('team_leader', '=', user.id), '&amp;', ('create_uid.branch_id', '!=', False), ('create_uid.branch_id', '=', user.branch_id.id)]</field>
         <field name="groups" eval="[(4, ref('crm_customization.group_view_inactive_requests'))]"/>
     </record>
     <record id="inactive_request_rule_team_leader" model="ir.rule">
         <field name="name">Inactive Request - Team Leader Records</field>
         <field name="model_id" ref="model_inactive_request"/>
-        <field name="domain_force">[('team_leader', '=', user.id)]</field>
-        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">['|', ('create_uid', '=', user.id), ('team_leader', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_sale_team_leader'))]"/>
     </record>
 
+
+    <!-- Branch Manager Group -->
+    <record id="group_branch_manager" model="res.groups">
+        <field name="name">User: Branch Manager</field>
+        <field name="category_id" ref="base.module_category_sales_sales"/>
+        <field name="implied_ids" eval="[(4, ref('group_sale_team_leader'))]"/>
+        <field name="comment">
+            The user can access all records in their branch (branch manager access).
+        </field>
+    </record>
 
     <!-- Team Leader Group -->
     <record id="group_sale_team_leader" model="res.groups">
@@ -50,17 +60,69 @@
         </field>
     </record>
 
-    <!-- تحديث الجروب الأصلي "All Documents" ليورّث من Team Leader -->
-    <record id="sales_team.group_sale_salesman_all_leads" model="res.groups">
-        <field name="implied_ids" eval="[(4, ref('crm_customization.group_sale_team_leader'))]"/>
+    <!-- Custom rule for "All Documents" group to respect branch restrictions -->
+    <record id="crm_lead_rule_all_documents_branch" model="ir.rule">
+        <field name="name">Leads: All Documents (Branch Restricted)</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="groups" eval="[(4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
+        <field name="domain_force">['|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), '&amp;', '&amp;', ('user_id', '!=', False), ('user_id.branch_id', '!=', False), ('user_id.branch_id', '=', user.branch_id.id), '&amp;', '&amp;', ('branch_name', '!=', False), ('user_id.branch_id', '!=', False), ('branch_name', '=', user.branch_id.id), '&amp;', '&amp;', ('team_id.branch_name', '!=', False), ('user_id.branch_id', '!=', False), ('team_id.branch_name', '=', user.branch_id.id)]</field>
     </record>
 
+    <!-- Custom rule for "All Contacts" to respect branch restrictions -->
+    <record id="partner_rule_all_documents_branch" model="ir.rule">
+        <field name="name">Contacts: All Contacts (Branch Restricted)</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
+        <field name="domain_force">['|', '|', '|', ('user_id', '=', user.id), ('user_id.sale_team_id.user_id', '=', user.id), '&amp;', '&amp;', ('user_id', '!=', False), ('user_id.branch_id', '!=', False), ('user_id.branch_id', '=', user.branch_id.id), '&amp;', '&amp;', ('branch_id', '!=', False), ('user_id.branch_id', '!=', False), ('branch_id', '=', user.branch_id.id)]</field>
+    </record>
 
     <record id="crm_lead_team_leader_rule" model="ir.rule">
         <field name="name">Leads: Only show my team's leads</field>
         <field name="model_id" ref="crm.model_crm_lead"/>
         <field name="groups" eval="[(4, ref('group_sale_team_leader'))]"/>
-        <field name="domain_force">[('team_id.user_id', '=', user.id)]</field>
+        <field name="domain_force">['|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id)]</field>
+    </record>
+
+    <!-- Partner/Contact Rule for Team Leader -->
+    <record id="partner_team_leader_rule" model="ir.rule">
+        <field name="name">Partner: Only show my team's contacts</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('group_sale_team_leader'))]"/>
+        <field name="domain_force">['|', ('user_id', '=', user.id), ('user_id.sale_team_id.user_id', '=', user.id)]</field>
+    </record>
+
+    <!-- Branch Manager Rules -->
+    <!-- Inactive Request Rule: Branch Manager can see requests from their team members -->
+    <record id="inactive_request_rule_branch_manager" model="ir.rule">
+        <field name="name">Inactive Request - Branch Manager Records</field>
+        <field name="model_id" ref="model_inactive_request"/>
+        <field name="domain_force">['|',
+            ('create_uid', '=', user.id),
+            ('create_uid.sale_team_id.branch_name.branch_manager', '=', user.id)
+        ]</field>
+        <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
+    </record>
+
+    <!-- Leads Rule: Branch Manager can see leads from their team members -->
+    <record id="crm_lead_branch_manager_rule" model="ir.rule">
+        <field name="name">Leads: Branch Manager - All branch leads</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
+        <field name="domain_force">['|',
+            ('user_id', '=', user.id),
+            ('user_id.sale_team_id.branch_name.branch_manager', '=', user.id)
+        ]</field>
+    </record>
+
+    <!-- Partner/Contacts Rule: Branch Manager can see contacts from their team members -->
+    <record id="partner_branch_manager_rule" model="ir.rule">
+        <field name="name">Partner: Branch Manager - All branch contacts</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('group_branch_manager'))]"/>
+        <field name="domain_force">['|',
+            ('user_id', '=', user.id),
+            ('user_id.sale_team_id.branch_name.branch_manager', '=', user.id)
+        ]</field>
     </record>
 
     <!-- Complaint Groups -->
