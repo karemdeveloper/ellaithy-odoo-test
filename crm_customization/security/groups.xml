@@ -39,6 +39,15 @@
     </record>
 
 
+    <!-- Direct Inactive Members Group -->
+    <record id="group_direct_inactive_members" model="res.groups">
+        <field name="name">User: Direct Inactive Members</field>
+        <field name="category_id" ref="base.module_category_sales_sales"/>
+        <field name="comment">
+            The user can make team members inactive directly without requiring an inactive request.
+        </field>
+    </record>
+
     <!-- Branch Manager Group -->
     <record id="group_branch_manager" model="res.groups">
         <field name="name">User: Branch Manager</field>
