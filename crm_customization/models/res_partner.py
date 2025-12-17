@@ -88,6 +88,20 @@ class ResPartner(models.Model):
         for rec in self:
             rec.branch_id = rec.area_id.branch_area.id if rec.area_id else False
 
+    @api.constrains('phone')
+    def _check_duplicate_phone(self):
+        """Validate that phone number is unique"""
+        for record in self:
+            if record.phone:
+                duplicate_phone = self.search([
+                    ('phone', '=', record.phone),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if duplicate_phone:
+                    raise ValidationError(
+                        f"Phone number '{record.phone}' already exists for customer: {duplicate_phone.name}"
+                    )
+
     # @api.constrains('phone', 'mobile')
     # def _check_duplicate_phone_mobile(self):
     #     for record in self:
