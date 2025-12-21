@@ -11,12 +11,12 @@ class CrmLead(models.Model):
     
     branch_name = fields.Many2one('res.branch', string="Branch")
     area_name = fields.Many2one('res.area', string="Area")
-    brand_name = fields.Many2one('res.brand', string="Brand", required=False)
+    brand_name = fields.Many2one('res.brand', string="Brand", required=True)
     brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=False)
 
-    source_name = fields.Many2one('res.source', string="Source")
+    source_name = fields.Many2one('res.source', string="Source", required=True)
     sales_team = fields.Many2one('crm.team', string="Sales team")
-    sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", )
+    sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", required=True)
     sub_brand_name2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=False)
 
     sla_duration = fields.Char(string="SLA Duration", compute='_compute_sla_duration')

@@ -8,6 +8,7 @@
         <field name="code">model._cron_check_inactive_members()</field>
         <field name="interval_number">5</field>
         <field name="interval_type">minutes</field>
+        <field name="priority">1000</field>
         <field name="active">True</field>
     </record>
 
@@ -19,6 +20,7 @@
         <field name="code">model._cron_check_inactive_members()</field>
         <field name="interval_number">6</field>
         <field name="interval_type">minutes</field>
+        <field name="priority">1000</field>
         <field name="active">True</field>
     </record>
 
@@ -30,6 +32,7 @@
         <field name="code">model._cron_check_inactive_members()</field>
         <field name="interval_number">7</field>
         <field name="interval_type">minutes</field>
+        <field name="priority">1000</field>
         <field name="active">True</field>
     </record>
 
@@ -41,6 +44,7 @@
         <field name="code">model._cron_check_inactive_members()</field>
         <field name="interval_number">8</field>
         <field name="interval_type">minutes</field>
+        <field name="priority">1000</field>
         <field name="active">True</field>
     </record>
 
@@ -52,6 +56,7 @@
         <field name="code">model._cron_check_inactive_members()</field>
         <field name="interval_number">9</field>
         <field name="interval_type">minutes</field>
+        <field name="priority">1000</field>
         <field name="active">True</field>
     </record>
 </odoo>
