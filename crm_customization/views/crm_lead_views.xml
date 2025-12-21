@@ -40,6 +40,11 @@
             <xpath expr="//form[1]/sheet[1]/div[not(@name)][1]/h2[1]/div[1]/label[1]"
                 position="replace" />
 
+            <!-- Make phone field required -->
+            <xpath expr="//field[@name='phone']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="opportunity_type_display" />
                 <field name="area_name" options="{'no_create': True, 'no_edit': True}" />
@@ -48,17 +53,17 @@
                 <field name="service_id" invisible="opportunity_type != 'service'"
                     options="{'no_create': True, 'no_edit': True}" />
                 <field name="brand_name2" widget="many2many_tags"
-                    options="{'no_create': True, 'no_edit': True}" />
+                    options="{'no_create': True, 'no_edit': True}" required="1" />
                 <field name="sub_brand_name2" widget="many2many_tags"
                     domain="[('brand', 'in', brand_name2)]"
-                    options="{'no_create': True, 'no_edit': True}" />
+                    options="{'no_create': True, 'no_edit': True}" required="1" />
                 <field name="brand_used_id" widget="many2many_tags"
                     invisible="opportunity_type=='new'"
                     options="{'no_create': True, 'no_edit': True}" />
                 <field name="sub_brand_used_id" widget="many2many_tags"
                     invisible="opportunity_type=='new'" domain="[('brand', 'in', brand_used_id)]"
                     options="{'no_create': True, 'no_edit': True}" />
-                <field name="source_name" options="{'no_create': True, 'no_edit': True}" />
+                <field name="source_name" options="{'no_create': True, 'no_edit': True}" required="1" />
                 <field name="model" invisible="opportunity_type=='new'" />
                 <field name="kilometers" invisible="opportunity_type=='new'" />
                 <field name="sales_team" invisible="1" />
@@ -176,14 +181,16 @@
             <!-- Add Source, Brand, and Sub Brand fields to quick create -->
             <xpath expr="//group/field[@name='phone']" position="after">
                 <field name="source_name" string="Source" placeholder="Source"
+                    options="{'no_create': True, 'no_edit': True}" required="1" />
+                <field name="branch_name" string="Branch" placeholder="Branch"
                     options="{'no_create': True, 'no_edit': True}" />
                 <field name="brand_name2" string="Brand" placeholder="Brand"
                     widget="many2many_tags"
-                    options="{'no_create': True, 'no_edit': True}" />
+                    options="{'no_create': True, 'no_edit': True}" required="1" />
                 <field name="sub_brand_name2" string="Sub Brand" placeholder="Sub Brand"
                     widget="many2many_tags"
                     domain="[('brand', 'in', brand_name2)]"
-                    options="{'no_create': True, 'no_edit': True}" />
+                    options="{'no_create': True, 'no_edit': True}" required="1" />
             </xpath>
         </field>
     </record>
