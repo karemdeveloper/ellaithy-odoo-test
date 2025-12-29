@@ -7,6 +7,7 @@
     'author': 'IBS',
     'depends': ['base', 'crm','crm_sms','crm_iap_enrich','sale_crm'],
     'data': [
+        'security/groups.xml',
         'security/ir.model.access.csv',
         'data/cron_check_inactive.xml',
         'data/survey_sequence.xml',
@@ -26,7 +27,6 @@
         'data/complaint_car_unavailable_template.xml',
         'data/complaint_doc_request_delay_template.xml',
         'data/complaint_doc_readiness_inquiry_template.xml',
-        'security/groups.xml',
         'views/res_partner_views.xml',
         'views/res_area_views.xml',
         'views/res_brand_views.xml',
