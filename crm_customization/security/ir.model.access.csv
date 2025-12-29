@@ -33,4 +33,6 @@ access_lost_opportunity_feedback,lost.opportunity.feedback,model_lost_opportunit
 access_res_service,res.service,model_res_service,,1,1,1,1
 access_opportunity_won_wizard,opportunity.won.wizard,model_opportunity_won_wizard,,1,1,1,1
 
+access_crm_lead_delete,opportunity.crm.lead.delte,model_crm_lead,crm_customization.group_crm_user_delete,1,1,1,1
+
 

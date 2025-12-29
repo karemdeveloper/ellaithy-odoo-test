@@ -9,7 +9,7 @@ class ResPartner(models.Model):
     user_id = fields.Many2one(
         'res.users',
         string='Salesperson',
-        default=lambda self: self.env.user,
+        # default=lambda self: self.env.user,
         tracking=True,
         help="The internal user in charge of this contact."
     )

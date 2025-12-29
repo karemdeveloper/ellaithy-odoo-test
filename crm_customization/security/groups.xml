@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <record id="group_crm_user_delete" model="res.groups">
+        <field name="name">CRM User: Delete</field>
+    </record>
     <!-- CRM Customer Group -->
     <record id="group_crm_customer" model="res.groups">
         <field name="name">CRM Customer</field>
     </record>
-
     <!-- Sales Customer Group -->
     <record id="group_sales_customer" model="res.groups">
         <field name="name">Sales Customer</field>
