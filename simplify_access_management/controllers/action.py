@@ -38,8 +38,24 @@ class Action(Action):
 
 class Home(Home):
 
-    @http.route('/odoo', type='http', auth="none")
-    def web_client(self, s_action=None, **kw):
+    @http.route(['/web', '/web/'], type='http', auth="none", sitemap=False)
+    def web_client_legacy(self, s_action=None, **kw):
+        """Redirect old /web URLs to /odoo for Odoo 18 compatibility"""
+        # Preserve all query parameters in the redirect
+        params = []
+        if s_action:
+            params.append(f's_action={s_action}')
+        for key, value in kw.items():
+            params.append(f'{key}={value}')
+
+        redirect_url = '/odoo'
+        if params:
+            redirect_url += '?' + '&'.join(params)
+
+        return request.redirect(redirect_url, code=301)
+
+    @http.route(['/odoo', '/odoo/<path:subpath>'], type='http', auth="none")
+    def web_client(self, s_action=None, subpath=None, **kw):
         ensure_db()
         # request.env['ir.ui.view'].flush_recordset()
         # request.env.flush_all()
@@ -47,8 +63,19 @@ class Home(Home):
         # request.env['ir.actions.actions'].clear_caches()
         # request.env.registry.clear_cache()
         request.env.registry.clear_all_caches()
-        
+
         user = request.env.user.browse(request.session.uid)
+
+        # Security check: Prevent non-admin users from accessing any URLs directly
+        if subpath and request.session.uid:
+            is_admin = user.has_group('base.group_system') or user.has_group('base.group_erp_manager')
+
+            if not is_admin:
+                # For non-admin users, block ALL direct URL access
+                # They can only navigate through menus and UI interactions
+                # This prevents URL manipulation completely
+                return request.redirect('/odoo')
+
         # if len(user.company_ids) > 1:
         #     request.env['ir.ui.menu'].clear_caches()
         if not kw.get('debug') or kw.get('debug') != "0":
