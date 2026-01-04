@@ -1,0 +1,105 @@
+<odoo>
+
+    <!-- Action -->
+    <record id="action_car_order" model="ir.actions.act_window">
+        <field name="name">Car Orders</field>
+        <field name="res_model">car.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Submenu -->
+    <menuitem id="menu_car_order" name="Car Order" parent="menu_integrations" action="action_car_order" sequence="2"/>
+
+    <!-- List view -->
+    <record id="view_car_order_list" model="ir.ui.view">
+        <field name="name">car.order.list</field>
+        <field name="model">car.order</field>
+        <field name="arch" type="xml">
+            <list string="Car Orders">
+                <field name="car_name"/>
+                <field name="first_name"/>
+                <field name="last_name"/>
+                <field name="phone"/>
+                <field name="area"/>
+                <field name="car_brand"/>
+                <field name="car_model"/>
+                <field name="year_of_manufacture"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_car_order_form" model="ir.ui.view">
+        <field name="name">car.order.form</field>
+        <field name="model">car.order</field>
+        <field name="arch" type="xml">
+            <form string="Car Order">
+
+
+                <header>
+                    <field name="state" widget="statusbar" readonly="True"/>
+                    <!-- <button name="action_create_or_update_lead_state" type="object" class="btn-primary" string="Create Lead" invisible="lead_id" /> -->
+
+                </header>
+                <sheet>
+                    <!-- <div name="button_box" class="oe_button_box">
+                        <button name="action_open_lead" type="object" class="oe_stat_button" icon="fa-link" invisible="not lead_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Open Lead</span>
+                            </div>
+                        </button>
+                    </div> -->
+
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <!-- Car Name -->
+                    <group string="Car Name">
+                        <group>
+                            <field name="car_name"/>
+                        </group>
+
+                    </group>
+
+                    <!-- Customer Information -->
+                    <group string="Customer Information" col="2">
+                        <group>
+                            <field name="first_name"/>
+                            <field name="last_name"/>
+                        </group>
+                        <group>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="area"/>
+                        </group>
+
+                    </group>
+
+                    <!-- Car Information -->
+                    <group string="Car Information" col="2">
+                        <group>
+                            <field name="car_brand"/>
+                            <field name="car_model"/>
+                        </group>
+                        <group>
+
+                            <field name="car_category"/>
+                            <field name="year_of_manufacture"/>
+                        </group>
+
+                    </group>
+
+                    <!-- Message -->
+                    <group string="Additional Notes">
+                        <field name="message" placeholder="Write additional details or requests here..."/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

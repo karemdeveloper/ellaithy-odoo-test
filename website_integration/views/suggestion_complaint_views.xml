@@ -1,0 +1,66 @@
+<odoo>
+
+    <!-- Action -->
+    <record id="action_suggestion_complaint" model="ir.actions.act_window">
+        <field name="name">Suggestion Complaint</field>
+        <field name="res_model">suggestion.complaint</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Submenu -->
+    <menuitem id="menu_suggestion_complaint"
+              name="Suggestion Complaint"
+              parent="menu_integrations"
+              action="action_suggestion_complaint"
+              sequence="4"/>
+
+    <!-- List view -->
+    <record id="view_suggestion_complaint_list" model="ir.ui.view">
+        <field name="name">suggestion.complaint.list</field>
+        <field name="model">suggestion.complaint</field>
+        <field name="arch" type="xml">
+            <list string="Suggestion Complaints">
+                <field name="first_name"/>
+                <field name="last_name"/>
+                <field name="phone"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_suggestion_complaint_form" model="ir.ui.view">
+        <field name="name">suggestion.complaint.form</field>
+        <field name="model">suggestion.complaint</field>
+        <field name="arch" type="xml">
+            <form string="Suggestion Complaint">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <!-- Customer Information -->
+                    <group string="Customer Information" col="2">
+                        <group>
+                            <field name="first_name"/>
+                            <field name="last_name"/>
+                        </group>
+                        <group>
+                            <field name="email"/>
+                            <field name="phone"/>
+                        </group>
+
+                    </group>
+
+                    <!-- Suggestion / Complaint -->
+                    <group string="Notes">
+                        <field name="suggestion_complaint"
+                               placeholder="Write additional details or requests here..."/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

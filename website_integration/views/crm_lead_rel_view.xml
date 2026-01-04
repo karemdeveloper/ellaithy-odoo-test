@@ -1,0 +1,33 @@
+<odoo>
+    <record id="view_crm_lead_form_inherit_car_order" model="ir.ui.view">
+        <field name="name">crm.lead.form.smartbutton.car.order</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_car_order"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-car"
+                        invisible="not order_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Car Order</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_car_request"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-car"
+                        invisible="not request_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Car Request</span>
+                    </div>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,38 @@
+<odoo>
+
+    <record id="seq_car_request" model="ir.sequence">
+        <field name="name">Car Request</field>
+        <field name="code">car.request</field>
+        <field name="prefix">CR/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+
+    <record id="seq_car_order" model="ir.sequence">
+        <field name="name">Car Order</field>
+        <field name="code">car.order</field>
+        <field name="prefix">CO/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+
+    <record id="seq_contact_us" model="ir.sequence">
+        <field name="name">Contact Us</field>
+        <field name="code">contact.us</field>
+        <field name="prefix">CU/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+
+    <record id="seq_instant_approval" model="ir.sequence">
+        <field name="name">Instant Approval</field>
+        <field name="code">instant.approval.request</field>
+        <field name="prefix">IA/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+
+    <record id="seq_suggestion_complaint" model="ir.sequence">
+        <field name="name">Suggestion / Complaint</field>
+        <field name="code">suggestion.complaint</field>
+        <field name="prefix">SC/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,114 @@
+<odoo>
+
+    <!-- Action -->
+    <record id="action_instant_approval_request" model="ir.actions.act_window">
+        <field name="name">Instant Approval Requests</field>
+        <field name="res_model">instant.approval.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Submenu -->
+    <menuitem id="menu_instant_approval_request"
+              name="Instant Approval Request"
+              parent="menu_integrations"
+              action="action_instant_approval_request"
+              sequence="3"/>
+
+    <!-- List view -->
+    <record id="view_instant_approval_request_list" model="ir.ui.view">
+        <field name="name">instant.approval.request.list</field>
+        <field name="model">instant.approval.request</field>
+        <field name="arch" type="xml">
+            <list string="Instant Approval Requests">
+
+                <field name="full_name"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="area"/>
+                <field name="brand"/>
+                <field name="model"/>
+                <field name="year"/>
+                <field name="payment"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_instant_approval_request_form" model="ir.ui.view">
+        <field name="name">instant.approval.request.form</field>
+        <field name="model">instant.approval.request</field>
+        <field name="arch" type="xml">
+            <form string="Instant Approval Request">
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Customer Information">
+                            <field name="full_name"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="area"/>
+
+                        </group>
+                        <group string="Car Information">
+                            <field name="brand"/>
+                            <field name="model"/>
+                            <field name="year"/>
+                        </group>
+                    </group>
+
+
+                    <group string="Payment Information">
+                        <group>
+                            <field name="payment"/>
+                            <field name="payment_method"/>
+
+                        </group>
+                        <group>
+                            <field name="deposit_available"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Personal Information">
+                            <group>
+                                <field name="home_address"/>
+                                <field name="working_status"/>
+                                <field name="qualification"/>
+                            </group>
+                        </page>
+                        <page string="Work Information">
+                            <group>
+                                <field name="work_address"/>
+                                <field name="job_title"/>
+                                <field name="no_commercial_register_tax_card"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <group string="ID Card">
+                        <group>
+                            <field name="id_card_front" widget="image" class="oe_image"/>
+                        </group>
+                        <group>
+                            <field name="id_card_back" widget="image" class="oe_image"/>
+                        </group>
+                    </group>
+                    <group string="Tax Card">
+                        <group>
+                            <field name="tax_card_front" widget="image" class="oe_image"/>
+                        </group>
+                        <group>
+                            <field name="tax_card_back" widget="image" class="oe_image"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

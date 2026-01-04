@@ -1,0 +1,8 @@
+<odoo>
+    <!-- Main menu item -->
+    <menuitem id="menu_website_integration_root" name="Website Integration" sequence="50"/>
+    <menuitem id="menu_integrations"
+              name="Integrations"
+              parent="menu_website_integration_root"
+                />
+</odoo>

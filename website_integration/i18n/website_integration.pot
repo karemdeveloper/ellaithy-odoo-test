@@ -1,0 +1,518 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_integration
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20251208\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-27 22:18+0000\n"
+"PO-Revision-Date: 2025-12-27 22:18+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_crm_lead_form_inherit_car_order
+msgid "<span class=\"o_stat_text\">Car Order</span>"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_crm_lead_form_inherit_car_order
+msgid "<span class=\"o_stat_text\">Car Request</span>"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_form
+msgid "<span class=\"o_stat_text\">Open Lead</span>"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_api_token
+msgid "API Access Token"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_res_users__api_token_ids
+#: model_terms:ir.ui.view,arch_db:website_integration.view_users_form_inherit_api_token
+msgid "API Tokens"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_contact_us_form
+msgid "Additional Notes"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__area
+#: model:ir.model.fields,field_description:website_integration.field_car_request__area
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__area
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__area
+msgid "Area"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__brand
+msgid "Brand"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__car_brand
+#: model:ir.model.fields,field_description:website_integration.field_car_request__car_brand
+msgid "Car Brand"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__car_category
+#: model:ir.model.fields,field_description:website_integration.field_car_request__car_category
+msgid "Car Category"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+msgid "Car Information"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__car_model
+#: model:ir.model.fields,field_description:website_integration.field_car_request__car_model
+msgid "Car Model"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__car_name
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+msgid "Car Name"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.ui.menu,name:website_integration.menu_car_order
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+msgid "Car Order"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.actions.act_window,name:website_integration.action_car_order
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_list
+msgid "Car Orders"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.ui.menu,name:website_integration.menu_car_request
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_form
+msgid "Car Request"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_car_request
+msgid "Car Request Model"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.actions.act_window,name:website_integration.action_car_request
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_list
+msgid "Car Requests"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.actions.act_window,name:website_integration.action_contact_us
+#: model:ir.ui.menu,name:website_integration.menu_contact_us
+#: model_terms:ir.ui.view,arch_db:website_integration.view_contact_us_form
+msgid "Contact Us"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_contact_us_list
+msgid "Contact Uss"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_form
+msgid "Create Lead"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_users_form_inherit_api_token
+msgid "Created"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__create_uid
+#: model:ir.model.fields,field_description:website_integration.field_car_order__create_uid
+#: model:ir.model.fields,field_description:website_integration.field_car_request__create_uid
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__create_uid
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__create_uid
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__create_date
+#: model:ir.model.fields,field_description:website_integration.field_car_order__create_date
+#: model:ir.model.fields,field_description:website_integration.field_car_request__create_date
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__create_date
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__create_date
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_contact_us_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_suggestion_complaint_form
+msgid "Customer Information"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__deposit_available
+msgid "Deposit Available"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__display_name
+#: model:ir.model.fields,field_description:website_integration.field_car_order__display_name
+#: model:ir.model.fields,field_description:website_integration.field_car_request__display_name
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__display_name
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__display_name
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields.selection,name:website_integration.selection__car_order__state__draft
+#: model:ir.model.fields.selection,name:website_integration.selection__car_request__state__draft
+msgid "Draft"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__email
+msgid "E-mail"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__email
+#: model:ir.model.fields,field_description:website_integration.field_car_request__email
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__email
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__email
+msgid "Email"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__expires
+msgid "Expires"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__first_name
+#: model:ir.model.fields,field_description:website_integration.field_car_request__first_name
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__first_name
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__first_name
+msgid "First Name"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__home_address
+msgid "Home Address"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__id
+#: model:ir.model.fields,field_description:website_integration.field_car_order__id
+#: model:ir.model.fields,field_description:website_integration.field_car_request__id
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__id
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__id
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__id
+msgid "ID"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+msgid "ID Card"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__id_card_back
+msgid "ID Card Back"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__id_card_front
+msgid "ID Card Front"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.ui.menu,name:website_integration.menu_instant_approval_request
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+msgid "Instant Approval Request"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.actions.act_window,name:website_integration.action_instant_approval_request
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_list
+msgid "Instant Approval Requests"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.ui.menu,name:website_integration.menu_integrations
+msgid "Integrations"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__job_title
+msgid "Job Title"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__last_name
+#: model:ir.model.fields,field_description:website_integration.field_car_request__last_name
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__last_name
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__last_name
+msgid "Last Name"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__write_uid
+#: model:ir.model.fields,field_description:website_integration.field_car_order__write_uid
+#: model:ir.model.fields,field_description:website_integration.field_car_request__write_uid
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__write_uid
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__write_uid
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__write_date
+#: model:ir.model.fields,field_description:website_integration.field_car_order__write_date
+#: model:ir.model.fields,field_description:website_integration.field_car_request__write_date
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__write_date
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__write_date
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__lead_id
+#: model:ir.model.fields,field_description:website_integration.field_car_request__lead_id
+#: model:ir.model.fields.selection,name:website_integration.selection__car_order__state__lead
+#: model:ir.model.fields.selection,name:website_integration.selection__car_request__state__lead
+msgid "Lead"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_crm_lead
+msgid "Lead/Opportunity"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__message
+#: model:ir.model.fields,field_description:website_integration.field_car_request__message
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__message
+msgid "Message"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__model
+msgid "Model"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_car_order
+msgid "Model For Car Order Requests"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_contact_us
+msgid "Model For Contact Us Messages"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_instant_approval_request
+msgid "Model For Instant Approval Request"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__full_name
+msgid "Name"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__no_commercial_register_tax_card
+msgid "No Commercial Register Or Tax Card"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_suggestion_complaint_form
+msgid "Notes"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.constraint,message:website_integration.constraint_api_token_user_id_unique
+msgid "Only one active token per user!"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_crm_lead__order_id
+msgid "Order"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__payment
+msgid "Payment"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+msgid "Payment Information"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__payment_method
+msgid "Payment Method"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+msgid "Personal Information"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__phone
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__phone
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__phone
+msgid "Phone"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_request__phone_number
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__phone
+msgid "Phone Number"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__qualification
+msgid "Qualification"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__name
+#: model:ir.model.fields,field_description:website_integration.field_car_request__name
+#: model:ir.model.fields,field_description:website_integration.field_contact_us__name
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__name
+#: model:ir.model.fields,field_description:website_integration.field_sequence_mixin__name
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__name
+msgid "Reference"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_crm_lead__request_id
+msgid "Request"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_sequence_mixin
+msgid "Sequence Mixin"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__state
+#: model:ir.model.fields,field_description:website_integration.field_car_request__state
+msgid "State"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_suggestion_complaint__suggestion_complaint
+msgid "Suggestion / Complaint"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.actions.act_window,name:website_integration.action_suggestion_complaint
+#: model:ir.ui.menu,name:website_integration.menu_suggestion_complaint
+#: model_terms:ir.ui.view,arch_db:website_integration.view_suggestion_complaint_form
+msgid "Suggestion Complaint"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_suggestion_complaint_list
+msgid "Suggestion Complaints"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_suggestion_complaint
+msgid "Suggestions and Complaints"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+msgid "Tax Card"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__tax_card_back
+msgid "Tax Card Back"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__tax_card_front
+msgid "Tax Card Front"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_api_token__token
+msgid "Token"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model,name:website_integration.model_res_users
+#: model:ir.model.fields,field_description:website_integration.field_api_token__user_id
+msgid "User"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.ui.menu,name:website_integration.menu_website_integration_root
+msgid "Website Integration"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__work_address
+msgid "Work Address"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_instant_approval_request_form
+msgid "Work Information"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__working_status
+msgid "Working Status"
+msgstr ""
+
+#. module: website_integration
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_order_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_car_request_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_contact_us_form
+#: model_terms:ir.ui.view,arch_db:website_integration.view_suggestion_complaint_form
+msgid "Write additional details or requests here..."
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_instant_approval_request__year
+msgid "Year"
+msgstr ""
+
+#. module: website_integration
+#: model:ir.model.fields,field_description:website_integration.field_car_order__year_of_manufacture
+#: model:ir.model.fields,field_description:website_integration.field_car_request__year_of_manufacture
+msgid "Year of Manufacture"
+msgstr ""
