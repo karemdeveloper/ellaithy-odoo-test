@@ -23,12 +23,12 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="shift_name"/>
+                            <field name="shift_name" required="1"/>
                             <field name="day" invisible="1"/>
                         </group>
                         <group>
-                            <field name="from_date"/>
-                            <field name="to_date"/>
+                            <field name="from_date" required="1"/>
+                            <field name="to_date" required="1"/>
                         </group>
                     </group>
                 </sheet>

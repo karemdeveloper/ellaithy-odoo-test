@@ -1,9 +1,11 @@
-from odoo import models, fields, api
+from odoo import models, fields, api,_
 from odoo.exceptions import UserError, ValidationError
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 import pytz
 import math
+
+from odoo.exceptions import AccessError
 
 
 class CrmLead(models.Model):
@@ -74,6 +76,13 @@ class CrmLead(models.Model):
         search='_search_is_new_more_than_2hrs',
         help='Opportunity created more than 2 hours ago and still in new stage'
     )
+
+    @api.model
+    def create(self, vals_list):
+        if not self.env.user.has_group("crm_cust`omization.group_crm_user_create"):
+            raise AccessError(_("You are not allowed to create CRM Leads."))
+
+        return super().create(vals_list)
     
     @api.depends('opportunity_type')
     def _compute_opportunity_type_display(self):

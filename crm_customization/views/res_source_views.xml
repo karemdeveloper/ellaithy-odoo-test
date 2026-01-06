@@ -19,7 +19,7 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="source_name"/>
+                        <field name="source_name" required="1"/>
                     </group>
                 </sheet>
                  <!-- Attachment preview -->

@@ -20,8 +20,8 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="brand"/>
-                        <field name="sub_brand_name"/>
+                        <field name="brand" required="1"/>
+                        <field name="sub_brand_name" required="1"/>
                     </group>
                 </sheet>
             </form>

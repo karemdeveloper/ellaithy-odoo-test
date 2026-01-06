@@ -19,7 +19,7 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="brand_name"/>
+                        <field name="brand_name" required="1"/>
                     </group>
                 </sheet>
                  <!-- Attachment preview -->

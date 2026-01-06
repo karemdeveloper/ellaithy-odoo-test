@@ -19,7 +19,7 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="day"/>
+                        <field name="day" required="1"/>
                     </group>
                 </sheet>
                  <!-- Attachment preview -->
