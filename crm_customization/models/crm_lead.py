@@ -79,9 +79,8 @@ class CrmLead(models.Model):
 
     @api.model
     def create(self, vals_list):
-        if not self.env.user.has_group("crm_cust`omization.group_crm_user_create"):
+        if not self.env.user.has_group("crm_customization.group_crm_user_create"):
             raise AccessError(_("You are not allowed to create CRM Leads."))
-
         return super().create(vals_list)
     
     @api.depends('opportunity_type')
