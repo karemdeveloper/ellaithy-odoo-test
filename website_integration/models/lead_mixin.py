@@ -90,8 +90,8 @@ class LeadMixin(models.AbstractModel):
         if not partner.crm_source_id:
             partner_vals['crm_source_id'] = source.id
         # Get branch from area if exists
-        if area.branch_id and not partner.branch_id:
-            partner_vals['branch_id'] = area.branch_id.id
+        if area.branch_area and not partner.branch_id:
+            partner_vals['branch_id'] = area.branch_area.id
         if partner_vals:
             partner.write(partner_vals)
 
@@ -185,8 +185,8 @@ class LeadMixin(models.AbstractModel):
         if not partner.crm_source_id:
             partner_vals['crm_source_id'] = source.id
         # Get branch from area if exists
-        if area.branch_id and not partner.branch_id:
-            partner_vals['branch_id'] = area.branch_id.id
+        if area.branch_area and not partner.branch_id:
+            partner_vals['branch_id'] = area.branch_area.id
         if partner_vals:
             partner.write(partner_vals)
 
