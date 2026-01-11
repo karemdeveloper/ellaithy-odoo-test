@@ -35,16 +35,16 @@
             <form string="Car Request">
                 <header>
                     <field name="state" widget="statusbar" readonly="True"/>
-                    <!-- <button name="action_create_or_update_lead_state" type="object" class="btn-primary" string="Create Lead" invisible="lead_id" /> -->
+                    <button name="action_create_or_update_lead_state" type="object" class="btn-primary" string="Create Lead" invisible="lead_id" />
                 </header>
                 <sheet>
-                    <!-- <div name="button_box" class="oe_button_box">
+                    <div name="button_box" class="oe_button_box">
                         <button name="action_open_lead" type="object" class="oe_stat_button" icon="fa-link" invisible="not lead_id">
                             <div class="o_stat_info">
                                 <span class="o_stat_text">Open Lead</span>
                             </div>
                         </button>
-                    </div> -->
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name"/>

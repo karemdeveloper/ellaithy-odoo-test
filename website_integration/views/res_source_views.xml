@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_res_source_list_inherit_website" model="ir.ui.view">
+        <field name="name">res.source.list.inherit.website</field>
+        <field name="model">res.source</field>
+        <field name="inherit_id" ref="crm_customization.view_res_source_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='source_name']" position="after">
+                <field name="is_website_source"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_res_source_form_inherit_website" model="ir.ui.view">
+        <field name="name">res.source.form.inherit.website</field>
+        <field name="model">res.source</field>
+        <field name="inherit_id" ref="crm_customization.view_res_source_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='source_name']" position="after">
+                <field name="is_website_source"/>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

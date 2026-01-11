@@ -38,57 +38,11 @@ class CarRequestAPI(http.Controller):
                     "message": data.get("message", ""),
                 }
             )
-            """
-            # Partner model
-            Partner = request.env['res.partner']
-            partner = Partner.search([('phone', '=', data['phone'])], limit=1)
-            if not partner:
-                partner = Partner.create({
-                    'name': f"{data['first_name']} {data['last_name']}",
-                    'phone': data['phone'],
-                    'email': data['email'],
-                })
-            # Brand model
-            Brand = request.env['res.brand']
-            brand = Brand.search([('brand_name', 'ilike', data.get('car_brand'))],limit=1)
-            if not brand:
-                brand = Brand.create({'brand_name': data.get('car_brand')})
-            # Sub-brand model
-            Sub_Brand = request.env['res.sub.brand']
-            sub_brand = Sub_Brand.search([('sub_brand_name', 'ilike', data.get('car_model'))],limit=1)
-            if not sub_brand:
-                sub_brand = Sub_Brand.create({
-                    'brand_name': brand.id,
-                    'sub_brand_name': data.get('car_model')
-                })
-            # Area model
-            Area = request.env['res.area']
-            area = Area.search([('area_name', 'ilike', data.get('area'))], limit=1)  # Search area
-            if not area:
-                area = Area.create({'area_name': data.get('area')})  # Create area if not found
-            # Source model
-            Source = request.env['res.source']
-            source_name = 'Website'  # Static source name
-            source = Source.search([('source_name', 'ilike', source_name)], limit=1)
-            # Call type model
-            CallType = request.env['call.type']
-            call_type_name = 'Order Follow-Up'  # Static call type
-            call_type = CallType.search([('name', 'ilike', call_type_name)], limit=1)  # Search call type
-            # Create CRM lead
-            lead = request.env['crm.lead'].create({
-                'name': f"Opportunity - {partner.name}",
-                'partner_id': partner.id,
-                'area_name': area.id,
-                'brand_name2': [(4, brand.id)],
-                'sub_brand_name2': [(4, sub_brand.id)],
-                'user_id': request.env.uid,
-                'source_name': source.id,
-                'call_type': call_type.id,
-                'order_id': record.id,
-            })
-            record.write({'lead_id': lead.id,
-                          'state': 'lead' })
-            """
+            # Create Lead
+            lead = request.env["lead.mixin"].create_lead_order(record)
+            # update state to lead
+            record.write({"lead_id": lead.id, "state": "lead"})
+
             return request.make_json_response(
                 {
                     "success": True,
