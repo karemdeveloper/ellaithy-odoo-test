@@ -44,22 +44,29 @@ class LeadMixin(models.AbstractModel):
                 }
             )
 
-        # Area
+        # Area - search both English and Arabic
         Area = self.env["res.area"]
-        area = Area.search([("area_name", "ilike", record.area)], limit=1)
+        area = Area.search(
+            ["|", ("area_name", "ilike", record.area), ("name_ar", "ilike", record.area)],
+            limit=1
+        )
         if not area:
             raise ValidationError(f"Area '{record.area}' not found")
 
-        # Brand
+        # Brand - search both English and Arabic
         Brand = self.env["res.brand"]
-        brand = Brand.search([("brand_name", "ilike", record.car_brand)], limit=1)
+        brand = Brand.search(
+            ["|", ("brand_name", "ilike", record.car_brand), ("name_ar", "ilike", record.car_brand)],
+            limit=1
+        )
         if not brand:
             raise ValidationError(f"Car brand '{record.car_brand}' not found")
 
-        # Sub Brand
+        # Sub Brand - search both English and Arabic
         SubBrand = self.env["res.sub.brand"]
         sub_brand = SubBrand.search(
-            [("sub_brand_name", "ilike", record.car_model)], limit=1
+            ["|", ("sub_brand_name", "ilike", record.car_model), ("name_ar", "ilike", record.car_model)],
+            limit=1
         )
         if not sub_brand:
             raise ValidationError(f"Car model '{record.car_model}' not found")
@@ -132,22 +139,29 @@ class LeadMixin(models.AbstractModel):
                 }
             )
 
-        # Area
+        # Area - search both English and Arabic
         Area = self.env["res.area"]
-        area = Area.search([("area_name", "ilike", record.area)], limit=1)
+        area = Area.search(
+            ["|", ("area_name", "ilike", record.area), ("name_ar", "ilike", record.area)],
+            limit=1
+        )
         if not area:
             raise ValidationError(f"Area '{record.area}' not found")
 
-        # Brand
+        # Brand - search both English and Arabic
         Brand = self.env["res.brand"]
-        brand = Brand.search([("brand_name", "ilike", record.car_brand)], limit=1)
+        brand = Brand.search(
+            ["|", ("brand_name", "ilike", record.car_brand), ("name_ar", "ilike", record.car_brand)],
+            limit=1
+        )
         if not brand:
             raise ValidationError(f"Car brand '{record.car_brand}' not found")
 
-        # Sub Brand
+        # Sub Brand - search both English and Arabic
         SubBrand = self.env["res.sub.brand"]
         sub_brand = SubBrand.search(
-            [("sub_brand_name", "ilike", record.car_model)], limit=1
+            ["|", ("sub_brand_name", "ilike", record.car_model), ("name_ar", "ilike", record.car_model)],
+            limit=1
         )
         if not sub_brand:
             raise ValidationError(f"Car model '{record.car_model}' not found")
