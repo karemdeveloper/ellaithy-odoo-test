@@ -6,5 +6,5 @@ class ResBrand(models.Model):
     _rec_name = 'brand_name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    brand_name = fields.Char(string="Brand Name")
+    brand_name = fields.Char(string="Brand Name",translate=True)
     sub_brand_ids = fields.One2many('res.sub.brand', 'brand', string="Sub Brands")

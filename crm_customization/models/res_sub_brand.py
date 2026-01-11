@@ -5,5 +5,5 @@ class ResSubBrand(models.Model):
     _description = ' Sub Brand'
     _rec_name = 'sub_brand_name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    sub_brand_name = fields.Char(string=" Sub Brand Name")
+    sub_brand_name = fields.Char(string=" Sub Brand Name",translate=True)
     brand=fields.Many2one('res.brand',string="Brand")

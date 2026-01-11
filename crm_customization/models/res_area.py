@@ -6,5 +6,5 @@ class ResArea(models.Model):
     _rec_name = 'area_name'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    area_name = fields.Char(string="Area Name")
+    area_name = fields.Char(string="Area Name",translate=True)
     branch_area = fields.Many2one('res.branch',string="Branch Name")
