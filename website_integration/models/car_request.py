@@ -6,6 +6,7 @@ class CarRequest(models.Model):
     _description = "Car Request Model"
     _inherit = ["sequence.mixin", "lead.mixin"]
     _sequence_code = "car.request"
+    _order = "id desc"
     first_name = fields.Char(string="First Name", required=True, translate=True)
     last_name = fields.Char(string="Last Name", required=True, translate=True)
     email = fields.Char(string="Email", required=True)

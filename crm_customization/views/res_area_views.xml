@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="area_name"/>
+                <field name="name_ar"/>
                 <field name="branch_area"/>
             </list>
         </field>
@@ -21,13 +22,14 @@
                 <sheet>
                     <group>
                         <field name="area_name"/>
+                        <field name="name_ar"/>
                         <field name="branch_area"/>
                     </group>
                 </sheet>
-                 <!-- Attachment preview -->
-                    <div class="o_attachment_preview" />
-                    <!-- Chatter -->
-                    <chatter reload_on_attachment="True"/>
+                <!-- Attachment preview -->
+                <div class="o_attachment_preview" />
+                <!-- Chatter -->
+                <chatter reload_on_attachment="True"/>
             </form>
         </field>
     </record>
@@ -37,7 +39,7 @@
         <field name="res_model">res.area</field>
         <field name="view_mode">list,form</field>
     </record>
-     <menuitem id="menu_res_area"
+    <menuitem id="menu_res_area"
               name="Areas"
               parent="crm.crm_menu_config"
               action="action_res_area"

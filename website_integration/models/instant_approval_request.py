@@ -7,6 +7,7 @@ class InstantApprovalRequest(models.Model):
     _description = "Model For Instant Approval Request"
     _inherit = 'sequence.mixin'
     _sequence_code = 'instant.approval.request'
+    _order = "id desc"
     full_name = fields.Char(
         string="Name",
         required=True,translate=True

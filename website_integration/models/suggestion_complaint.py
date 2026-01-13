@@ -5,6 +5,7 @@ class SuggestionComplaint(models.Model):
     _description = 'Suggestions and Complaints'
     _inherit = 'sequence.mixin'
     _sequence_code = 'suggestion.complaint'
+    _order = "id desc"
     first_name = fields.Char(string="First Name", required=True,translate=True)
     last_name = fields.Char(string="Last Name", required=True,translate=True)
 

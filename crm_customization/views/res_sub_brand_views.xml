@@ -9,6 +9,7 @@
             <list>
                 <field name="brand"/>
                 <field name="sub_brand_name"/>
+                <field name="name_ar"/>
             </list>
         </field>
     </record>
@@ -22,6 +23,7 @@
                     <group>
                         <field name="brand" required="1"/>
                         <field name="sub_brand_name" required="1"/>
+                        <field name="name_ar"/>
                     </group>
                 </sheet>
             </form>
@@ -33,7 +35,7 @@
         <field name="res_model">res.sub.brand</field>
         <field name="view_mode">list,form</field>
     </record>
-     <menuitem id="menu_res_sub_brand"
+    <menuitem id="menu_res_sub_brand"
               name="Sub Brand"
               parent="crm.crm_menu_config"
               action="action_res_sub_brand"
