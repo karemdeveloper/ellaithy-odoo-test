@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="brand_name"/>
+                <field name="name_ar"/>
             </list>
         </field>
     </record>
@@ -20,12 +21,13 @@
                 <sheet>
                     <group>
                         <field name="brand_name" required="1"/>
+                        <field name="name_ar"/>
                     </group>
                 </sheet>
-                 <!-- Attachment preview -->
-                    <div class="o_attachment_preview" />
-                    <!-- Chatter -->
-                    <chatter reload_on_attachment="True"/>
+                <!-- Attachment preview -->
+                <div class="o_attachment_preview" />
+                <!-- Chatter -->
+                <chatter reload_on_attachment="True"/>
             </form>
         </field>
     </record>

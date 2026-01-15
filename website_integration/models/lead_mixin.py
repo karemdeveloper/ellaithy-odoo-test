@@ -1,5 +1,4 @@
 from odoo import models
-from odoo import SUPERUSER_ID
 from odoo.exceptions import ValidationError
 import re
 

@@ -5,6 +5,7 @@ class ContactUs(models.Model):
     _description = 'Model For Contact Us Messages'
     _inherit = 'sequence.mixin'
     _sequence_code = 'contact.us'
+    _order = "id desc"
     first_name = fields.Char(string="First Name", required=True,translate=True)
     last_name = fields.Char(string="Last Name", required=True,translate=True)
     email = fields.Char(string="Email", required=True)
