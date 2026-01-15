@@ -1,9 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_res_area,res.area,model_res_area,,1,1,1,1
-access_res_branch,res.branch,model_res_branch,,1,1,1,1
-access_res_band,res.brand,model_res_brand,,1,1,1,1
-access_res_sub_band,res.sub.brand,model_res_sub_brand,,1,1,1,1
-access_res_source,res.source,model_res_source,,1,1,1,1
+access_res_area,res.area,model_res_area,,1,0,0,1
+access_res_branch,res.branch,model_res_branch,,1,0,0,1
+access_res_band,res.brand,model_res_brand,,1,0,0,1
+access_res_sub_band,res.sub.brand,model_res_sub_brand,,1,0,0,1
+access_res_source,res.source,model_res_source,,1,0,0,1
 access_res_day,res.day,model_res_day,,1,1,1,1
 access_res_shift,res.shift,model_res_shift,,1,1,1,1
 access_res_question,res.question,model_res_question,,1,1,1,1
