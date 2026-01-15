@@ -11,7 +11,7 @@ from odoo.exceptions import AccessError
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
     
-    branch_name = fields.Many2one('res.branch', string="Branch")
+    branch_name = fields.Many2one('res.branch', string="Branch" required=True)
     area_name = fields.Many2one('res.area', string="Area")
     brand_name = fields.Many2one('res.brand', string="Brand", required=True)
     brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=False)
@@ -218,10 +218,15 @@ class CrmLead(models.Model):
                         f'Mobile number must contain at least 11 digits. Current: {len(mobile_digits)} digits'
                     )
 
-    @api.onchange('area_name')
-    def _onchange_area_name(self):
-        for rec in self:
-            rec.branch_name = rec.area_name.branch_area.id if rec.area_name else False
+    @api.model
+    def default_get(self, fields_list):
+        """Set default branch from current user's sales team"""
+        defaults = super().default_get(fields_list)
+        if 'branch_name' in fields_list and 'branch_name' not in defaults:
+            user = self.env.user
+            if user.sale_team_id and user.sale_team_id.branch_name:
+                defaults['branch_name'] = user.sale_team_id.branch_name.id
+        return defaults
 
     @api.onchange('brand_name2')
     def _onchange_brand_name2(self):
