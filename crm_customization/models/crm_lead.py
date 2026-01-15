@@ -11,7 +11,7 @@ from odoo.exceptions import AccessError
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
     
-    branch_name = fields.Many2one('res.branch', string="Branch" required=True)
+    branch_name = fields.Many2one('res.branch', string="Branch",required=True)
     area_name = fields.Many2one('res.area', string="Area")
     brand_name = fields.Many2one('res.brand', string="Brand", required=True)
     brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=False)
