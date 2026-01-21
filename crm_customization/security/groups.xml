@@ -11,6 +11,9 @@
     <record id="group_crm_customer" model="res.groups">
         <field name="name">CRM Customer</field>
     </record>
+    <record id="group_crm_customer_sales_person" model="res.groups">
+        <field name="name">customer salesperson </field>
+    </record>
     <!-- Sales Customer Group -->
     <record id="group_sales_customer" model="res.groups">
         <field name="name">Sales Customer</field>

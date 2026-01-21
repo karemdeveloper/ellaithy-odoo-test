@@ -11,6 +11,7 @@
                 <field name="date_from"/>
                 <field name="date_to"/>
                 <field name="inactive_reason"/>
+                <field name="salesperson_id"/>
             </list>
         </field>
     </record>
@@ -42,6 +43,7 @@
                         <group>
                             <field name="date" readonly="state=='approved'"/>
                             <field name="inactive_reason" readonly="state=='approved'"/>
+                            <field name="salesperson_id"/>
                         </group>
                         <group>
 
@@ -59,11 +61,43 @@
             </form>
         </field>
     </record>
+    <!-- =================== INACTIVE REQUEST SEARCH =================== -->
+    <record id="view_inactive_request_search" model="ir.ui.view">
+        <field name="name">inactive.request.search</field>
+        <field name="model">inactive.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Search by Salesperson -->
+                <field name="salesperson_id"/>
+
+                <!-- Optional quick filters -->
+                <filter string="My Requests"
+                        name="my_requests"
+                        domain="[('salesperson_id', '=', uid)]"/>
+
+                <separator/>
+
+                <!-- Group By -->
+                <group expand="0" string="Group By">
+                    <filter string="Salesperson"
+                            name="group_by_salesperson"
+                            context="{'group_by': 'salesperson_id'}"/>
+
+                    <filter string="State"
+                            name="group_by_state"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
 
     <record id="action_inactive_request" model="ir.actions.act_window">
         <field name="name">Inactive Request</field>
         <field name="res_model">inactive.request</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_inactive_request_search"/>
+
 
     </record>
     <menuitem id="menu_inactive_request"
