@@ -380,15 +380,41 @@ class CrmLead(models.Model):
         if 'stage_id' in vals:
             stage_updated = any(lead.stage_id.id != vals['stage_id'] for lead in self)
             
-            # Prevent drag and drop to Lost stage
+            # Check required fields and prevent Lost stage via drag and drop
             if stage_updated and vals.get('stage_id'):
-                new_stage = self.env['crm.stage'].browse(vals['stage_id'])
-                if new_stage.is_lost:
-                    # Check if it's a drag and drop operation (not from a button/wizard)
-                    # We detect this by checking if only stage_id is being changed
-                    is_drag_drop = len(vals) <= 3 and 'stage_id' in vals
-                    if is_drag_drop:
-                        raise ValidationError(
+                # Check if it's a drag and drop operation (not from a button/wizard)
+                # We detect this by checking if only stage_id is being changed
+                is_drag_drop = len(vals) <= 3 and 'stage_id' in vals
+                
+                if is_drag_drop:
+                    for lead in self:
+                        # Check required fields
+                        missing_fields = []
+                        required_field_labels = {}
+                        
+                        # Check each required field
+                        for field_name in ['brand_name2', 'source_name', 'sub_brand_name2', 'call_type']:
+                            field = self._fields.get(field_name)
+                            if field and not lead[field_name]:
+                                missing_fields.append(field_name)
+                                required_field_labels[field_name] = field.string
+                        
+                        # Also check phone/mobile (at least one should be filled)
+                        if not lead.phone and not lead.mobile:
+                            missing_fields.append('phone/mobile')
+                            required_field_labels['phone/mobile'] = 'Phone or Mobile'
+                        
+                        if missing_fields:
+                            field_list = ', '.join([required_field_labels[f] for f in missing_fields])
+                            raise UserError(
+                                _("Cannot change stage: Please fill all required fields first.\n\n"
+                                  "Missing fields: %s") % field_list
+                            )
+                    
+                    # Prevent drag and drop to Lost stage
+                    new_stage = self.env['crm.stage'].browse(vals['stage_id'])
+                    if new_stage.is_lost:
+                        raise UserError(
                             _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
                               "Please use the 'Lost' button to properly mark the opportunity as lost.")
                         )
