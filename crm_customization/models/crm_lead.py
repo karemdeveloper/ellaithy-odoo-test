@@ -211,43 +211,6 @@ class CrmLead(models.Model):
             _logger.info(f"  In new stage? {rec.stage_id.id == new_stage.id if new_stage else False}")
 
     ###################################################################################
-    @api.constrains('stage_id', 'brand_name2', 'source_name', 'sub_brand_name2', 'call_type', 'phone', 'mobile')
-    def _check_required_fields_for_stage_change(self):
-        """Validate required fields are filled when changing stage"""
-        for record in self:
-            # Only validate if stage is set and not in create mode
-            if not record.stage_id or not record.id:
-                continue
-            
-            # Check if stage was just changed (compare with stored value)
-            if 'stage_id' in record._origin and record._origin.stage_id != record.stage_id:
-                # Check if it's Lost stage
-                if record.stage_id.is_lost:
-                    raise ValidationError(
-                        _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
-                          "Please use the 'Lost' button to properly mark the opportunity as lost.")
-                    )
-                
-                # Check required fields
-                missing_fields = []
-                
-                if not record.brand_name2:
-                    missing_fields.append('Brand(s)')
-                if not record.source_name:
-                    missing_fields.append('Source')
-                if not record.sub_brand_name2:
-                    missing_fields.append('Sub Brand(s)')
-                if not record.call_type:
-                    missing_fields.append('Call Type')
-                if not record.phone and not record.mobile:
-                    missing_fields.append('Phone or Mobile')
-                
-                if missing_fields:
-                    raise ValidationError(
-                        _("Cannot change stage: Please fill all required fields first.\n\nMissing fields: %s") 
-                        % ', '.join(missing_fields)
-                    )
-    
     @api.constrains('phone', 'mobile')
     def _check_phone_length(self):
         """Validate that phone numbers have at least 11 digits"""
@@ -407,6 +370,40 @@ class CrmLead(models.Model):
 
     def write(self, vals):
         """Override write method to remove 'active' condition from date_closed logic"""
+        # Validate stage change BEFORE any processing
+        if 'stage_id' in vals and vals.get('stage_id'):
+            new_stage = self.env['crm.stage'].browse(vals['stage_id'])
+            
+            # Check if any lead is changing stage
+            for lead in self:
+                if lead.stage_id.id != vals['stage_id']:
+                    # Check if it's Lost stage - prevent drag and drop
+                    if new_stage.is_lost:
+                        raise UserError(
+                            _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
+                              "Please use the 'Lost' button to properly mark the opportunity as lost.")
+                        )
+                    
+                    # Check required fields
+                    missing_fields = []
+                    
+                    if not lead.brand_name2:
+                        missing_fields.append('Brand(s)')
+                    if not lead.source_name:
+                        missing_fields.append('Source')
+                    if not lead.sub_brand_name2:
+                        missing_fields.append('Sub Brand(s)')
+                    if not lead.call_type:
+                        missing_fields.append('Call Type')
+                    if not lead.phone and not lead.mobile:
+                        missing_fields.append('Phone or Mobile')
+                    
+                    if missing_fields:
+                        raise UserError(
+                            _("Cannot change stage: Please fill all required fields first.\n\nMissing fields: %s") 
+                            % ', '.join(missing_fields)
+                        )
+        
         if vals.get('website'):
             vals['website'] = self.env['res.partner']._clean_website(vals['website'])
 
