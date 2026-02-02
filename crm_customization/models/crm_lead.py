@@ -79,14 +79,14 @@ class CrmLead(models.Model):
 
     # Override _search to apply domain for group_view_unassigned_opportunities
     @api.model
-    def _search(self, domain, offset=0, limit=None, order=None, access_rights_uid=None):
+    def _search(self, domain, offset=0, limit=None, order=None):
         """Override search to hide opportunities without salesperson from users without special access"""
         # Check if user does NOT have the special group to view unassigned opportunities
         if not self.env.user.has_group('crm_customization.group_view_unassigned_opportunities'):
             # Add domain to filter out opportunities without user_id (salesperson)
             domain = domain + [('user_id', '!=', False)]
         
-        return super()._search(domain, offset=offset, limit=limit, order=order, access_rights_uid=access_rights_uid)
+        return super()._search(domain, offset=offset, limit=limit, order=order)
 
     @api.model
     def create(self, vals_list):
