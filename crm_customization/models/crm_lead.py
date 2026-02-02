@@ -11,19 +11,19 @@ from odoo.exceptions import AccessError
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
     
-    branch_name = fields.Many2one('res.branch', string="Branch",required=True)
+    branch_name = fields.Many2one('res.branch', string="Branch")
     area_name = fields.Many2one('res.area', string="Area")
     # brand_name = fields.Many2one('res.brand', string="Brand", required=True)
-    brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=True)
+    brand_name2 = fields.Many2many('res.brand', string="Brand(s)")
 
-    source_name = fields.Many2one('res.source', string="Source", required=True)
+    source_name = fields.Many2one('res.source', string="Source")
     sales_team = fields.Many2one('crm.team', string="Sales team")
     # sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", required=True)
-    sub_brand_name2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=True)
+    sub_brand_name2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)")
 
     sla_duration = fields.Char(string="SLA Duration", compute='_compute_sla_duration')
     marketing_offer=fields.Many2one('marketing.offers',string='Marketing offer')
-    call_type=fields.Many2one('call.type',string='Call Type', required=True)
+    call_type=fields.Many2one('call.type',string='Call Type')
     feedback_ids = fields.One2many('crm.feedback', 'lead_id', string="Feedback Lines")
     has_feedback = fields.Boolean(string="Has Feedback", default=False)
     sub_brand_used_id = fields.Many2many(
@@ -382,6 +382,29 @@ class CrmLead(models.Model):
                         raise UserError(
                             _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
                               "Please use the 'Lost' button to properly mark the opportunity as lost.")
+                        )
+                    
+                    # Check required fields before allowing stage change
+                    missing_fields = []
+                    if not lead.branch_name:
+                        missing_fields.append('Branch')
+                    if not lead.brand_name2:
+                        missing_fields.append('Brand')
+                    if not lead.sub_brand_name2:
+                        missing_fields.append('Sub Brand')
+                    if not lead.source_name:
+                        missing_fields.append('Source')
+                    if not lead.call_type:
+                        missing_fields.append('Call Type')
+                    if not lead.user_id:
+                        missing_fields.append('Salesperson')
+                    if not lead.phone and not lead.mobile:
+                        missing_fields.append('Phone/Mobile')
+                    
+                    if missing_fields:
+                        raise UserError(
+                            _("Cannot change stage. Please fill the following required fields first:\n\n• %s") 
+                            % '\n• '.join(missing_fields)
                         )
         
         if vals.get('website'):
