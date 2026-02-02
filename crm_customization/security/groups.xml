@@ -185,6 +185,13 @@
         </field>
     </record>
 
+    <!-- View Unassigned Opportunities Group -->
+    <record id="group_view_unassigned_opportunities" model="res.groups">
+        <field name="name">View Unassigned Opportunities</field>
+        <field name="category_id" ref="base.module_category_sales_sales"/>
+        <field name="comment">Users with this group can view opportunities without a salesperson. Regular users will not see opportunities without a salesperson assigned.</field>
+    </record>
+
     <!-- Complaint Groups -->
     <record id="group_complaint_branch_manager" model="res.groups">
         <field name="name">Complaint Branch Manager</field>

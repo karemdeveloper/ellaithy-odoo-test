@@ -13,13 +13,13 @@ class CrmLead(models.Model):
     
     branch_name = fields.Many2one('res.branch', string="Branch",required=True)
     area_name = fields.Many2one('res.area', string="Area")
-    brand_name = fields.Many2one('res.brand', string="Brand", required=True)
-    brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=False)
+    # brand_name = fields.Many2one('res.brand', string="Brand", required=True)
+    brand_name2 = fields.Many2many('res.brand', string="Brand(s)",required=True)
 
     source_name = fields.Many2one('res.source', string="Source", required=True)
     sales_team = fields.Many2one('crm.team', string="Sales team")
-    sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", required=True)
-    sub_brand_name2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=False)
+    # sub_brand_name = fields.Many2one('res.sub.brand', string="Sub Brand", required=True)
+    sub_brand_name2 = fields.Many2many('res.sub.brand', string="Sub Brand(s)", required=True)
 
     sla_duration = fields.Char(string="SLA Duration", compute='_compute_sla_duration')
     marketing_offer=fields.Many2one('marketing.offers',string='Marketing offer')
@@ -76,6 +76,17 @@ class CrmLead(models.Model):
         search='_search_is_new_more_than_2hrs',
         help='Opportunity created more than 2 hours ago and still in new stage'
     )
+
+    # Override _search to apply domain for group_view_unassigned_opportunities
+    @api.model
+    def _search(self, domain, offset=0, limit=None, order=None, access_rights_uid=None):
+        """Override search to hide opportunities without salesperson from users without special access"""
+        # Check if user does NOT have the special group to view unassigned opportunities
+        if not self.env.user.has_group('crm_customization.group_view_unassigned_opportunities'):
+            # Add domain to filter out opportunities without user_id (salesperson)
+            domain = domain + [('user_id', '!=', False)]
+        
+        return super()._search(domain, offset=offset, limit=limit, order=order, access_rights_uid=access_rights_uid)
 
     @api.model
     def create(self, vals_list):
@@ -368,6 +379,20 @@ class CrmLead(models.Model):
         # lead does not have the same stage
         if 'stage_id' in vals:
             stage_updated = any(lead.stage_id.id != vals['stage_id'] for lead in self)
+            
+            # Prevent drag and drop to Lost stage
+            if stage_updated and vals.get('stage_id'):
+                new_stage = self.env['crm.stage'].browse(vals['stage_id'])
+                if new_stage.is_lost:
+                    # Check if it's a drag and drop operation (not from a button/wizard)
+                    # We detect this by checking if only stage_id is being changed
+                    is_drag_drop = len(vals) <= 3 and 'stage_id' in vals
+                    if is_drag_drop:
+                        raise ValidationError(
+                            _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
+                              "Please use the 'Lost' button to properly mark the opportunity as lost.")
+                        )
+            
             if stage_updated:
                 vals['date_last_stage_update'] = now
             if stage_updated and vals.get('stage_id'):
