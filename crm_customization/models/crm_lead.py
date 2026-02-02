@@ -377,8 +377,9 @@ class CrmLead(models.Model):
             # Check if any lead is changing stage
             for lead in self:
                 if lead.stage_id.id != vals['stage_id']:
-                    # Check if it's Lost stage - prevent drag and drop
-                    if new_stage.is_lost:
+                    # Check if it's Lost stage from drag and drop (not from Lost wizard/button)
+                    # Lost wizard sets ibs_closed_at or active=False, drag and drop doesn't
+                    if new_stage.is_lost and 'ibs_closed_at' not in vals and vals.get('active', True):
                         raise UserError(
                             _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
                               "Please use the 'Lost' button to properly mark the opportunity as lost.")
