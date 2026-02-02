@@ -66,14 +66,15 @@
                 <field name="sub_brand_used_id" widget="many2many_tags"
                     invisible="opportunity_type=='new'" domain="[('brand', 'in', brand_used_id)]"
                     options="{'no_create': True, 'no_edit': True}" />
-                <field name="source_name" options="{'no_create': True, 'no_edit': True}" required="1" />
+                <field name="source_name" options="{'no_create': True, 'no_edit': True}"
+                    required="1" />
                 <field name="model" invisible="opportunity_type=='new'" />
                 <field name="kilometers" invisible="opportunity_type=='new'" />
                 <field name="sales_team" invisible="1" />
                 <field name="sla_duration" />
                 <field name="late_days" />
                 <field name="marketing_offer" options="{'no_create': True, 'no_edit': True}" />
-                <field name="call_type" options="{'no_create': True, 'no_edit': True}" />
+                <field name="call_type" options="{'no_create': True, 'no_edit': True}" required="1" />
                 <field name="has_feedback" invisible="1" />
             </xpath>
             <xpath expr="//page[@name='lead']" position="after">
@@ -193,6 +194,8 @@
                 <field name="sub_brand_name2" string="Sub Brand" placeholder="Sub Brand"
                     widget="many2many_tags"
                     domain="[('brand', 'in', brand_name2)]"
+                    options="{'no_create': True, 'no_edit': True}" required="1" />
+                <field name="call_type" string="Call Type" placeholder="Call Type"
                     options="{'no_create': True, 'no_edit': True}" required="1" />
             </xpath>
         </field>

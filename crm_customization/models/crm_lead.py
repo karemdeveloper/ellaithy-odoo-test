@@ -383,26 +383,6 @@ class CrmLead(models.Model):
                             _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
                               "Please use the 'Lost' button to properly mark the opportunity as lost.")
                         )
-                    
-                    # Check required fields
-                    missing_fields = []
-                    
-                    if not lead.brand_name2:
-                        missing_fields.append('Brand(s)')
-                    if not lead.source_name:
-                        missing_fields.append('Source')
-                    if not lead.sub_brand_name2:
-                        missing_fields.append('Sub Brand(s)')
-                    if not lead.call_type:
-                        missing_fields.append('Call Type')
-                    if not lead.phone and not lead.mobile:
-                        missing_fields.append('Phone or Mobile')
-                    
-                    if missing_fields:
-                        raise UserError(
-                            _("Cannot change stage: Please fill all required fields first.\n\nMissing fields: %s") 
-                            % ', '.join(missing_fields)
-                        )
         
         if vals.get('website'):
             vals['website'] = self.env['res.partner']._clean_website(vals['website'])
