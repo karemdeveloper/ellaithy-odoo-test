@@ -76,5 +76,6 @@ class MailActivity(models.Model):
             for user, user_activities in todo_activities.grouped('user_id').items():
                 user._bus_send("mail.activity/updated", {"activity_deleted": True, "count_diff": -len(user_activities)})
 
-        return super(MailActivity, self).unlink()
+        # Call the grandparent's unlink (models.Model) to skip mail.activity's date comparison
+        return super(models.Model, self).unlink()
 
