@@ -34,5 +34,8 @@ access_res_service,res.service,model_res_service,,1,1,1,1
 access_opportunity_won_wizard,opportunity.won.wizard,model_opportunity_won_wizard,,1,1,1,1
 
 access_crm_lead_delete,opportunity.crm.lead.delte,crm.model_crm_lead,crm_customization.group_crm_user_delete,1,1,1,1
+access_crm_review_opportunity,crm.review.opportunity,model_crm_review_opportunity,,1,1,1,1
+access_crm_review_opportunity_line,crm.review.opportunity.line,model_crm_review_opportunity_line,,1,1,1,1
+
 
 

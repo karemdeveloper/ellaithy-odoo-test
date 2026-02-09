@@ -38,3 +38,5 @@ from . import lost_review_feedback_wizard
 from . import lost_opportunity_feedback
 from . import res_service
 from . import opportunity_won_wizard
+from . import crm_review_opportunity
+
