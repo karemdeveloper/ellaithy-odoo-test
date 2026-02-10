@@ -30,7 +30,8 @@
                             <field name="line_ids">
                                 <list editable="bottom">
                                     <field name="salesperson_id"/>
-                                    <field name="opportunity_ids"  widget="many2many_tags"/>
+                                    <field name="opportunity_ids"  widget="many2many_tags" column_invisible="True"/>
+                                    <field name="opportunity_number"/>
                                     <field name="inactive_hours"/>
                                 </list>
 

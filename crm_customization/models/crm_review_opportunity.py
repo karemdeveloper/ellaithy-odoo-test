@@ -103,10 +103,23 @@ class CrmReviewOpportunityLine(models.Model):
         compute='_compute_inactive_hours',
         store=False
     )
+    # field to compute opportunity_number
+    opportunity_number = fields.Integer(
+        string='Opportunities Count',
+        compute='_compute_opportunity_number',
+        store=False
+    )
+
 
     # ==============================
     # COMPUTE METHODS
     # ==============================
+    @api.depends('opportunity_ids')
+    def _compute_opportunity_number(self):
+        for rec in self:
+            rec.opportunity_number = len(rec.opportunity_ids)
+
+    ################################
     def _compute_inactive_hours(self):
         """
         Sum inactive hours for the salesperson
