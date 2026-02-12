@@ -7,6 +7,7 @@ class DistributeSequence(models.Model):
     _order = 'sequence asc'
     _sequence = 'sequence'
 
+    active = fields.Boolean(string="Active", default=True, tracking=True)
     sequence = fields.Integer(string="Sequence", default=10)
     sales_person = fields.Many2one('res.users', string='Sales Person')
     branch = fields.Many2one('res.branch', string='Branch')

@@ -22,6 +22,7 @@
                     <group>
                     <group>
                         <field name="branch_name" required="1"/>
+                        <field name="branch_code" required="1"/>
                     </group>
                          <group>
                         <field name="branch_manager" required="1"/>
