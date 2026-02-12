@@ -4,6 +4,15 @@ from odoo import models, fields, api
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
 
+    # Make name field readonly to prevent manual editing of the sequence
+    name = fields.Char(
+        'Opportunity',
+        required=True,
+        index='trigram',
+        tracking=True,
+        readonly=True,
+    )
+
     def _get_sequence_code(self, branch_id, year, month):
         """Generate sequence code for branch/year/month combination"""
         return f'crm.lead.{branch_id}.{year}.{month}'
