@@ -26,7 +26,6 @@ class OpportunityWonWizard(models.TransientModel):
                 'sale_order_id': self.sale_order_id,
             })
             # Mark as won
-            self.lead_id.action_set_won_rainbowman()
-        
+        self.lead_id.with_context(from_won_wizard=True).action_set_won_rainbowman()        
         return {'type': 'ir.actions.act_window_close'}
 

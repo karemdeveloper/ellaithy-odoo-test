@@ -384,7 +384,11 @@ class CrmLead(models.Model):
                             _("Cannot move opportunity to Lost stage via drag and drop.\n\n"
                               "Please use the 'Lost' button to properly mark the opportunity as lost.")
                         )
-                    
+                    if new_stage.is_won and not self.env.context.get('from_won_wizard'):
+                        raise UserError(
+                            _("Cannot move opportunity to Won via drag and drop / statusbar.\n\n"
+                            "Please use the 'Won' button.")
+                        )
                     # Check required fields before allowing stage change
                     missing_fields = []
                     if not lead.branch_name:
