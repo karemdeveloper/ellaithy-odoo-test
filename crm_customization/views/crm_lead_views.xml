@@ -141,6 +141,10 @@
                 </div>
                 <!-- Display Source, Brand, and Sub Brand in kanban card -->
                 <div class="mt-2">
+                    <div t-if="record.partner_id">
+                        <strong>Customer: </strong>
+                        <field name="partner_id" />
+                    </div>
                     <div t-if="record.source_name">
                         <strong>Source: </strong>
                         <field name="source_name" />
@@ -152,6 +156,10 @@
                     <div t-if="record.sub_brand_name2">
                         <strong>Sub Brand: </strong>
                         <field name="sub_brand_name2" />
+                    </div>
+                    <div t-if="record.create_date">
+                        <strong>Created On: </strong>
+                        <field name="create_date" />
                     </div>
                 </div>
             </xpath>

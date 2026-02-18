@@ -6,8 +6,9 @@
         <field name="name">distribute.sequence.list</field>
         <field name="model">distribute.sequence</field>
         <field name="arch" type="xml">
-            <list string="Distribution Sequence" default_order="sequence asc">
-                <field name="sequence" widget="handle" />
+            <list string="Distribution Sequence" default_order="sequence asc"  editable="bottom">
+<!--                <field name="sequence" widget="handle"/>-->
+<!--                <field name="sequence" />-->
                 <field name="sales_person" />
                 <field name="branch" />
                 <field name="shift" />
@@ -27,6 +28,7 @@
                 <sheet>
                     <group>
                         <group>
+                            <field name="sequence" />
                             <field name="sales_person" />
                             <field name="branch" />
                             <field name="shift" />

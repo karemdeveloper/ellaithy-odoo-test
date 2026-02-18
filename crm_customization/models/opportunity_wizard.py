@@ -86,45 +86,40 @@ class OpportunityWizard(models.TransientModel):
     #################################################################################
 
     def _get_next_salesperson(self):
-        """Determine the next salesperson for the selected branch (Round Robin).
-        Added detailed logs to trace time comparison and sequence selection.
-        """
+        """Determine the next salesperson for the selected branch (Round Robin per Branch + Shift)."""
         self.ensure_one()
         branch = self.branch_id
         if not branch:
             _logger.info("No branch selected in wizard. Exiting _get_next_salesperson.")
             return False
 
-        # _logger.info("===== _get_next_salesperson START for branch id=%s (%s) =====", branch.id, branch.name)
-
-        # 1) sales teams for branch
+        # 1) Get branch sales teams
         sales_teams = self.env['crm.team'].search([('branch_name', '=', branch.id)])
         if not sales_teams:
+            _logger.info("No sales teams found for branch %s.", branch.branch_name)
             return False
 
-        # 2) active team members
+        # 2) Active team members
         active_members = self.env['crm.team.member'].search([
             ('crm_team_id', 'in', sales_teams.ids),
             ('state', '=', 'active')
         ])
-        _logger.info("Found %d active team member(s) in these teams.", len(active_members))
+
+        _logger.info("Found %d active team member(s) in branch %s.",
+                     len(active_members), branch.branch_name)
+
         if not active_members:
-            _logger.info("No active team members for branch %s. Exiting.", branch.name)
             return False
 
-        # Get server UTC time (Odoo always stores in UTC)
+        # 3) Get Egypt local time
         utc_now = fields.Datetime.now()
-
-        # Convert it to Egypt local time (Africa/Cairo)
         egypt_tz = pytz.timezone('Africa/Cairo')
         local_now = utc_now.replace(tzinfo=pytz.utc).astimezone(egypt_tz)
-
-        # Calculate current hour in float
         current_hour = local_now.hour + local_now.minute / 60.0
 
-        _logger.info("UTC now: %s | Egypt local time: %s | current_hour=%.4f",
-                     utc_now, local_now, current_hour)
-        # 3a) Try to get sequences for branch filtered by active members' users AND where the SHIFT is current
+        _logger.info("Current Egypt hour: %.4f", current_hour)
+
+        # 4) Filter sequences by current shift
         shift_filtered_domain = [
             ('branch', '=', branch.id),
             ('state', '=', 'active'),
@@ -132,97 +127,91 @@ class OpportunityWizard(models.TransientModel):
             ('shift.from_date', '<=', current_hour),
             ('shift.to_date', '>=', current_hour),
         ]
-        sequences = self.env['distribute.sequence'].search(shift_filtered_domain, order='sequence asc, id asc')
-        _logger.info("After shift filter: found %d sequence(s) matching current shift.", len(sequences))
 
-        # log details of matched sequences (from/to)
-        for seq in sequences:
-            _logger.info("  -> seq id=%s sales_person=%s from=%.4f to=%.4f",
-                         seq.id,
-                         getattr(seq.sales_person, 'login', getattr(seq.sales_person, 'name', seq.sales_person.id)),
-                         float(seq.from_date) if seq.from_date is not None else None,
-                         float(seq.to_date) if seq.to_date is not None else None)
-
-        # 3b) If no sequences match the current shift, fallback to all active sequences for the branch (no shift filter)
-        if not sequences:
-            fallback_domain = [
-                ('branch', '=', branch.id),
-                ('state', '=', 'active'),
-                ('sales_person', 'in', active_members.mapped('user_id').ids)
-            ]
-            sequences = self.env['distribute.sequence'].search(fallback_domain, order='sequence asc, id asc')
-            _logger.info("Fallback: found %d active sequence(s) for branch (no shift filter).", len(sequences))
-            for seq in sequences:
-                _logger.info("  -> fallback seq id=%s sales_person=%s from=%.4f to=%.4f",
-                             seq.id,
-                             getattr(seq.sales_person, 'login', getattr(seq.sales_person, 'name', seq.sales_person.id)),
-                             float(seq.from_date) if seq.from_date is not None else None,
-                             float(seq.to_date) if seq.to_date is not None else None)
+        sequences = self.env['distribute.sequence'].search(
+            shift_filtered_domain,
+            order='sequence asc, id asc'
+        )
 
         if not sequences:
-            _logger.info("No sequences available after fallback for branch %s. Exiting.", branch.name)
+            _logger.info("❌ No sequences found for current shift.")
             return False
 
-        # 4) Round Robin using last sequence id
-        config = self.env['ir.config_parameter'].sudo()
-        param_key = f'last_sequence_id_{branch.id}'
-        last_seq_id_str = config.get_param(param_key)  # stored as string or None
-        _logger.info("ir.config_parameter '%s' = %s", param_key, last_seq_id_str)
+        # ==============================
+        # 🔍 DEBUG: Show available salespersons in current shift
+        # ==============================
 
-        next_salesperson = False
+        current_shift = sequences[0].shift
+
+        _logger.info("===================================================")
+        _logger.info("📌 CURRENT SHIFT: %s (ID=%s)",
+                     current_shift.shift_name, current_shift.id)
+        _logger.info("Shift Time: %.2f -> %.2f",
+                     current_shift.from_date, current_shift.to_date)
+        _logger.info("Branch: %s (ID=%s)",
+                     branch.branch_name, branch.id)
+        _logger.info("🕒 Current Hour: %.2f", current_hour)
+
+        _logger.info(" AVAILABLE SALESPERSONS IN THIS SHIFT (ORDERED):")
+
+        for seq in sequences:
+            _logger.info(
+                "   ➜ SeqID=%s | Order=%s | UserID=%s | Name=%s",
+                seq.id,
+                seq.sequence,
+                seq.sales_person.id,
+                seq.sales_person.name,
+            )
+
+        _logger.info("===================================================")
+
+        # 5) Round Robin Logic
+
+        current_shift_id = current_shift.id
+        param_key = f'last_sequence_id_{branch.id}_{current_shift_id}'
+        config = self.env['ir.config_parameter'].sudo()
+
+        last_seq_id_str = config.get_param(param_key)
+
         try:
             last_seq_id = int(last_seq_id_str) if last_seq_id_str else None
         except (TypeError, ValueError):
             last_seq_id = None
-        _logger.info("Interpreted last_seq_id as: %s", last_seq_id)
+
+        _logger.info("--------------------------------------------------")
+        _logger.info("VALID IDS ORDERED: %s",
+                     [(seq.id, seq.sales_person.name) for seq in sequences])
+        _logger.info("Stored last_seq_id from param '%s' = %s",
+                     param_key, last_seq_id)
+        _logger.info("--------------------------------------------------")
 
         valid_ids = sequences.ids
-        _logger.info("Valid sequence ids after filtering: %s", valid_ids)
 
-        next_seq = False
-        # Safer round robin: if last_seq_id is still in valid_ids, pick the next one.
-        # If it's not present (changed conditions), start from the first valid record.
         if last_seq_id in valid_ids:
             current_index = valid_ids.index(last_seq_id)
             next_index = (current_index + 1) % len(valid_ids)
             next_seq = sequences[next_index]
-            _logger.info("last_seq_id %s found at index %s -> choosing index %s (seq id=%s)",
-                         last_seq_id, current_index, next_index, next_seq.id)
+
+            _logger.info(
+                "last_seq_id %s found at index %s -> Next index %s (seq id=%s)",
+                last_seq_id, current_index, next_index, next_seq.id
+            )
         else:
+            _logger.info("last_seq_id not present in valid_ids")
             next_seq = sequences[0]
-            _logger.info("last_seq_id not present in valid_ids -> choosing first valid seq id=%s", next_seq.id)
+            _logger.info("Choosing first valid seq id=%s", next_seq.id)
 
-        # Extra safety: if for any reason next_seq doesn't have a sales_person or is invalid, search forward for first valid
-        if not next_seq.sales_person:
-            _logger.warning(
-                "Chosen sequence id=%s has no sales_person. Searching for next valid sequence with sales_person.",
-                getattr(next_seq, 'id', None))
-            found = False
-            for seq in sequences:
-                if seq.sales_person:
-                    next_seq = seq
-                    found = True
-                    _logger.info("Found fallback seq id=%s with sales_person %s", seq.id, seq.sales_person.id)
-                    break
-            if not found:
-                _logger.warning("No valid sequence with sales_person found. Exiting.")
-                return False
+        # Save new pointer
+        config.set_param(param_key, str(next_seq.id))
 
-        # the salesperson is the user referenced on the chosen sequence row
-        if next_seq and next_seq.sales_person:
-            next_salesperson = next_seq.sales_person
-            # save the sequence id we used (so next time we pick the following row)
-            config.set_param(param_key, str(next_seq.id))
-            _logger.info("Selected salesperson id=%s (user=%s) from sequence id=%s. Saved last_sequence_id=%s",
-                         next_salesperson.id,
-                         getattr(next_salesperson, 'login', getattr(next_salesperson, 'name', next_salesperson.id)),
-                         next_seq.id, next_seq.id)
-        else:
-            _logger.warning("Next sequence found but it has no sales_person. Returning False.")
-            return False
+        _logger.info(
+            "✅ Selected salesperson: %s (seq id=%s) -> Saved param key %s",
+            next_seq.sales_person.name,
+            next_seq.id,
+            param_key
+        )
 
-        _logger.info("===== _get_next_salesperson END (selected user id=%s) =====", next_salesperson.id)
-        return next_salesperson  ####################################################################################
+        return next_seq.sales_person
 
     def action_distribute(self):
         """Button action to create a CRM Opportunity and assign next salesperson"""

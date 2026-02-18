@@ -1,4 +1,4 @@
-from typing import Required
+# from typing import Required
 from odoo import models, fields
 
 class ResBranch(models.Model):
