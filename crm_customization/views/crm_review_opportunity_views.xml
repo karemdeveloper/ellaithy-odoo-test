@@ -22,6 +22,7 @@
                         </group>
                         <group>
                             <field name="salesperson_id"/>
+                            <field name="create_date"/>
                         </group>
                     </group>
 
@@ -55,7 +56,6 @@
             </form>
         </field>
     </record>
-    <!-- =================== INACTIVE REQUEST =================== -->
     <record id="crm_review_opportunity_list" model="ir.ui.view">
         <field name="name">crm.review.opportunity.list</field>
         <field name="model">crm.review.opportunity</field>
@@ -64,6 +64,7 @@
 
                 <field name="branch_id"/>
                 <field name="salesperson_id"/>
+                <field name="create_date"/>
             </list>
         </field>
     </record>
