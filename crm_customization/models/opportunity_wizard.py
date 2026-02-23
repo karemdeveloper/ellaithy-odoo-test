@@ -86,32 +86,37 @@ class OpportunityWizard(models.TransientModel):
     #################################################################################
 
     def _get_next_salesperson(self):
-        """Determine the next salesperson for the selected branch (Round Robin per Branch + Shift)."""
+        """
+        Determine the next salesperson using:
+        ✔ Round Robin per Branch + Shift
+        ✔ Handles overnight shifts
+        ✔ Fallback if no shift
+        ✔ Logging for debugging
+        ✔ Safety check for missing salesperson
+        ✔ Accurate fair distribution
+        """
         self.ensure_one()
         branch = self.branch_id
         if not branch:
             _logger.info("No branch selected in wizard. Exiting _get_next_salesperson.")
             return False
 
-        # 1) Get branch sales teams
+        # 1️⃣ Get branch sales teams
         sales_teams = self.env['crm.team'].search([('branch_name', '=', branch.id)])
         if not sales_teams:
             _logger.info("No sales teams found for branch %s.", branch.branch_name)
             return False
 
-        # 2) Active team members
+        # 2️⃣ Active team members
         active_members = self.env['crm.team.member'].search([
             ('crm_team_id', 'in', sales_teams.ids),
             ('state', '=', 'active')
         ])
 
-        _logger.info("Found %d active team member(s) in branch %s.",
-                     len(active_members), branch.branch_name)
-
         if not active_members:
             return False
 
-        # 3) Get Egypt local time
+        # 3️⃣ Egypt local time
         utc_now = fields.Datetime.now()
         egypt_tz = pytz.timezone('Africa/Cairo')
         local_now = utc_now.replace(tzinfo=pytz.utc).astimezone(egypt_tz)
@@ -119,58 +124,78 @@ class OpportunityWizard(models.TransientModel):
 
         _logger.info("Current Egypt hour: %.4f", current_hour)
 
-        # 4) Filter sequences by current shift
-        shift_filtered_domain = [
+        # =========================================================
+        # ⭐ GET ALL ACTIVE SEQUENCES FIRST
+        # =========================================================
+        all_sequences = self.env['distribute.sequence'].search([
             ('branch', '=', branch.id),
             ('state', '=', 'active'),
             ('sales_person', 'in', active_members.mapped('user_id').ids),
-            ('shift.from_date', '<=', current_hour),
-            ('shift.to_date', '>=', current_hour),
-        ]
+        ], order='sequence asc, id asc')
 
-        sequences = self.env['distribute.sequence'].search(
-            shift_filtered_domain,
-            order='sequence asc, id asc'
-        )
-
-        if not sequences:
-            _logger.info("❌ No sequences found for current shift.")
+        if not all_sequences:
+            _logger.info("No active sequences found.")
             return False
 
-        # ==============================
-        # 🔍 DEBUG: Show available salespersons in current shift
-        # ==============================
+        # =========================================================
+        # ⭐ SHIFT FILTER (handles overnight shift)
+        # =========================================================
+        def _is_in_shift(shift, hour):
+            if not shift:
+                return False
+            if shift.from_date <= shift.to_date:
+                # normal shift
+                return shift.from_date <= hour <= shift.to_date
+            else:
+                # overnight shift
+                return hour >= shift.from_date or hour <= shift.to_date
 
-        current_shift = sequences[0].shift
+        sequences = all_sequences.filtered(lambda s: _is_in_shift(s.shift, current_hour))
 
+        fallback_mode = False
+        current_shift = False
+
+        if not sequences:
+            _logger.info("❌ No sequences for current shift → Fallback to all active sequences")
+            sequences = all_sequences
+            fallback_mode = True
+        else:
+            current_shift = sequences[0].shift
+
+        # =========================================================
+        # 🔍 DEBUG LOGGING
+        # =========================================================
         _logger.info("===================================================")
-        _logger.info("📌 CURRENT SHIFT: %s (ID=%s)",
-                     current_shift.shift_name, current_shift.id)
-        _logger.info("Shift Time: %.2f -> %.2f",
-                     current_shift.from_date, current_shift.to_date)
-        _logger.info("Branch: %s (ID=%s)",
-                     branch.branch_name, branch.id)
-        _logger.info("🕒 Current Hour: %.2f", current_hour)
 
-        _logger.info(" AVAILABLE SALESPERSONS IN THIS SHIFT (ORDERED):")
+        if fallback_mode:
+            _logger.info("📌 FALLBACK MODE (No active shift)")
+        else:
+            _logger.info("📌 CURRENT SHIFT: %s (ID=%s)",
+                         current_shift.shift_name, current_shift.id)
+
+        _logger.info("Branch: %s (ID=%s)", branch.branch_name, branch.id)
+        _logger.info("🕒 Current Hour: %.2f", current_hour)
 
         for seq in sequences:
             _logger.info(
-                "   ➜ SeqID=%s | Order=%s | UserID=%s | Name=%s",
+                "   ➜ SeqID=%s | Order=%s | Shift=%s | User=%s",
                 seq.id,
                 seq.sequence,
-                seq.sales_person.id,
-                seq.sales_person.name,
+                seq.shift.shift_name if seq.shift else "NO SHIFT",
+                seq.sales_person.name if seq.sales_person else "NO USER",
             )
 
         _logger.info("===================================================")
 
-        # 5) Round Robin Logic
+        # =========================================================
+        # ⭐ PARAM KEY
+        # =========================================================
+        if fallback_mode:
+            param_key = f'last_sequence_id_{branch.id}_fallback'
+        else:
+            param_key = f'last_sequence_id_{branch.id}_{current_shift.id}'
 
-        current_shift_id = current_shift.id
-        param_key = f'last_sequence_id_{branch.id}_{current_shift_id}'
         config = self.env['ir.config_parameter'].sudo()
-
         last_seq_id_str = config.get_param(param_key)
 
         try:
@@ -178,41 +203,41 @@ class OpportunityWizard(models.TransientModel):
         except (TypeError, ValueError):
             last_seq_id = None
 
-        _logger.info("--------------------------------------------------")
-        _logger.info("VALID IDS ORDERED: %s",
-                     [(seq.id, seq.sales_person.name) for seq in sequences])
-        _logger.info("Stored last_seq_id from param '%s' = %s",
-                     param_key, last_seq_id)
-        _logger.info("--------------------------------------------------")
-
         valid_ids = sequences.ids
 
+        # =========================================================
+        # 5️⃣ Round Robin
+        # =========================================================
         if last_seq_id in valid_ids:
             current_index = valid_ids.index(last_seq_id)
             next_index = (current_index + 1) % len(valid_ids)
             next_seq = sequences[next_index]
-
-            _logger.info(
-                "last_seq_id %s found at index %s -> Next index %s (seq id=%s)",
-                last_seq_id, current_index, next_index, next_seq.id
-            )
         else:
-            _logger.info("last_seq_id not present in valid_ids")
             next_seq = sequences[0]
-            _logger.info("Choosing first valid seq id=%s", next_seq.id)
 
-        # Save new pointer
+        # =========================================================
+        # ⭐ SAFETY CHECK
+        # =========================================================
+        if not next_seq.sales_person:
+            _logger.warning("Sequence %s has no salesperson → searching alternative", next_seq.id)
+            for seq in sequences:
+                if seq.sales_person:
+                    next_seq = seq
+                    break
+            else:
+                return False
+
+        # Save pointer
         config.set_param(param_key, str(next_seq.id))
 
         _logger.info(
-            "✅ Selected salesperson: %s (seq id=%s) -> Saved param key %s",
+            "✅ Selected salesperson: %s (seq id=%s) → Saved param key %s",
             next_seq.sales_person.name,
             next_seq.id,
             param_key
         )
 
         return next_seq.sales_person
-
     def action_distribute(self):
         """Button action to create a CRM Opportunity and assign next salesperson"""
         self.ensure_one()
