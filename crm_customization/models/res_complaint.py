@@ -1,41 +1,6 @@
 from odoo import models, fields, api
 from datetime import date
 
-
-class MailComposeMessage(models.TransientModel):
-    _inherit = 'mail.compose.message'
-
-    cc_partners = fields.Many2many(
-        'res.partner',
-        'mail_compose_message_res_partner_cc_rel',  # relation table
-        'wizard_id',  # column referring to wizard
-        'partner_id',  # column referring to partner
-        string="CC Partners"
-    )
-
-    cc_email = fields.Char(string="CC Emails")
-    @api.onchange('cc_partners')
-    def _onchange_cc_partners(self):
-        emails = []
-        for partner in self.cc_partners:
-            if partner.email:
-                emails.append(f'"{partner.name}" <{partner.email}>')
-
-        self.cc_email = ', '.join(emails)
-
-
-    def action_send_mail(self):
-        res = super().action_send_mail()
-
-        if self.cc_email:
-            mails = self.env['mail.mail'].search([
-                ('mail_message_id', '=', self.env.context.get('mail_message_id'))
-            ])
-            print(mails,'wwwwwwwwwwwwwwwwww')
-            for mail in mails:
-                mail.email_cc = self.cc_email
-
-        return res
 class ResComplaint(models.Model):
     _name = 'res.complaint'
     _description = 'Complaint'
