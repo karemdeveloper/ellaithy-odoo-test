@@ -24,6 +24,8 @@ class CrmReviewOpportunity(models.Model):
         'review_id',
         string='Salesperson Lines'
     )
+    date_from = fields.Datetime(string="Date From")
+    date_to = fields.Datetime(string="Date To")
 
     def action_load_opportunities(self):
         """
@@ -41,7 +43,11 @@ class CrmReviewOpportunity(models.Model):
 
         if self.salesperson_id:
             domain.append(('user_id', '=', self.salesperson_id.id))
+        if self.date_from:
+            domain.append(('create_date', '>=', self.date_from))
 
+        if self.date_to:
+            domain.append(('create_date', '<=', self.date_to))
         print(f"[CRM Review] Searching Leads with domain: {domain}")
 
         leads = self.env['crm.lead'].search(domain)
@@ -123,10 +129,13 @@ class CrmReviewOpportunityLine(models.Model):
     def _compute_inactive_hours(self):
         """
         Sum inactive hours for the salesperson
-        based on inactive.request date_from & date_to
+        considering overlap with review date range
         """
         for rec in self:
             total_seconds = 0.0
+
+            review_from = rec.review_id.date_from
+            review_to = rec.review_id.date_to
 
             requests = self.env['inactive.request'].search([
                 ('salesperson_id', '=', rec.salesperson_id.id),
@@ -136,13 +145,33 @@ class CrmReviewOpportunityLine(models.Model):
             ])
 
             for req in requests:
-                delta = req.date_to - req.date_from
-                total_seconds += delta.total_seconds()
-                print(
-                    f"[Inactive] Salesperson: {rec.salesperson_id.name}, "
-                    f"Request: {req.inactive_reason.name}, "
-                    f"Hours: {delta.total_seconds() / 3600:.2f}"
-                )
+                req_from = req.date_from
+                req_to = req.date_to
 
+                # if not review range
+                if not review_from and not review_to:
+                    overlap_start = req_from
+                    overlap_end = req_to
+                else:
+                    overlap_start = max(req_from, review_from) if review_from else req_from
+                    overlap_end = min(req_to, review_to) if review_to else req_to
+
+                # check overlap
+                if overlap_start < overlap_end:
+                    delta = overlap_end - overlap_start
+                    total_seconds += delta.total_seconds()
+
+                    print(
+                        f"[Inactive Overlap] Salesperson: {rec.salesperson_id.name}, "
+                        f"Request: {req.inactive_reason.name}, "
+                       f"[Inactive Overlap] {req.date_from} → {req.date_to} | "
+                        f"Overlap Hours: {delta.total_seconds() / 3600:.2f}"
+                    )
+
+                print(req_from, req_to, overlap_start, overlap_end, 'wwwwwwwwwwwwwwwwwwwwww')
             rec.inactive_hours = round(total_seconds / 3600, 2)
-            print("[Inactive] Total inactive hours for {rec.salesperson_id.name}: {rec.inactive_hours}")
+
+            print(
+                f"[Inactive] Total inactive hours for {rec.salesperson_id.name}: "
+                f"{rec.inactive_hours}"
+            )

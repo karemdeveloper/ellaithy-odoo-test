@@ -18,11 +18,12 @@
                     <group>
                         <group>
                             <field name="branch_id"/>
+                            <field name="date_from"/>
 
                         </group>
                         <group>
                             <field name="salesperson_id"/>
-                            <field name="create_date"/>
+                            <field name="date_to"/>
                         </group>
                     </group>
 
@@ -64,6 +65,8 @@
 
                 <field name="branch_id"/>
                 <field name="salesperson_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
                 <field name="create_date"/>
             </list>
         </field>
