@@ -184,7 +184,7 @@ class ResComplaint(models.Model):
             'default_res_ids': [self.id],
             'default_use_template': bool(template_id),
             'default_template_id': template_id.id if template_id else False,
-            'default_composition_mode': 'comment',
+            'default_composition_mode': 'mass_mail',
             # 'default_partner_ids': partner_ids,
             'force_email': True,
         }

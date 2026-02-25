@@ -62,6 +62,7 @@
         'views/opportunity_won_wizard_view.xml',
         'views/mail_activity_views.xml',
         'views/crm_review_opportunity_views.xml',
+        'views/mail_compose_message_views.xml',
         'reports/crm_penalty_report_template.xml',
     ],
     'assets': {
