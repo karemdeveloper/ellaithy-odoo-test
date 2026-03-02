@@ -149,51 +149,32 @@ class ResComplaint(models.Model):
         """Open email composer to send/resend complaint notification"""
         self.ensure_one()
 
-        # Prepare email recipients based on department alias domain
         partner_ids = []
         email_to_list = []
 
-        # Add department alias email if exists
+        # add department alias email if exists
         if self.department and self.department.alias_email:
             email_to_list.append(self.department.alias_email)
-
-            # Extract domain from alias email (part after @)
             if '@' in self.department.alias_email:
                 domain = self.department.alias_email.split('@')[1]
+                users = self.env['res.users'].search([('email', 'ilike', f'@{domain}')])
+                partner_ids += [u.partner_id.id for u in users if u.partner_id]
 
-                # Find all users with the same email domain
-                users = self.env['res.users'].search([
-                    ('email', 'ilike', f'@{domain}')
-                ])
+        # get template from complaint type or default
+        template_id = self.complaint_type_id.email_template_id or \
+                      self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
 
-                # Add their partner IDs for notification
-                for user in users:
-                    if user.partner_id:
-                        partner_ids.append(user.partner_id.id)
-
-        # Get email template from complaint type
-        template_id = self.complaint_type_id.email_template_id
-
-        if not template_id:
-            # If no template is set, use default one
-            template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
-
-        # Prepare email composer context
         ctx = {
             'default_model': 'res.complaint',
             'default_res_ids': [self.id],
             'default_use_template': bool(template_id),
             'default_template_id': template_id.id if template_id else False,
             'default_composition_mode': 'mass_mail',
-            # 'default_partner_ids': partner_ids,
+            'default_partner_ids': partner_ids,
+            'default_email_to': ','.join(email_to_list) if email_to_list else False,
             'force_email': True,
         }
 
-        # Add department alias to email_to
-        if email_to_list:
-            ctx['default_email_to'] = ','.join(email_to_list)
-
-        # Open the email composer
         return {
             'type': 'ir.actions.act_window',
             'name': 'Send Complaint Notification',

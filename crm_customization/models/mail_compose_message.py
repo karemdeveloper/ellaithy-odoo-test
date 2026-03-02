@@ -1,4 +1,6 @@
 from odoo import models, fields, api
+import ast
+
 
 class MailComposeMessage(models.TransientModel):
     _inherit = 'mail.compose.message'
@@ -31,17 +33,53 @@ class MailComposeMessage(models.TransientModel):
             #     emails.append(partner.name)
 
         self.cc_email = ', '.join(emails)
-    # override method to include CC and To partners in mail values
+
+    # override to include CC and To partners in mail values
     def _prepare_mail_values(self, res_ids):
         mail_values = super()._prepare_mail_values(res_ids)
 
         cc_email = self.cc_email
-        recipient_ids = self.recipient_partners.ids
+        recipient_partners = self.recipient_partners
+
+        email_to_list = []
+        partner_ids = []
+
+        for partner in recipient_partners:
+            if partner.email:
+                email_to_list.append(f'"{partner.name}" <{partner.email}>')
+            partner_ids.append(partner.id)  # always include partner_ids
+
+        email_to = ', '.join(email_to_list)
 
         for res_id in res_ids:
-            if recipient_ids:
-                mail_values[res_id]['recipient_ids'] = [(6, 0, recipient_ids)]
+            # ensure at least one recipient exists
+            if email_to:
+                mail_values[res_id]['email_to'] = email_to
+            if partner_ids:
+                mail_values[res_id]['recipient_ids'] = [(6, 0, partner_ids)]
             if cc_email:
                 mail_values[res_id]['email_cc'] = cc_email
 
         return mail_values
+
+    # resend cancelled mails automatically
+    def _action_send_mail(self, auto_commit=False):
+        mails = super()._action_send_mail(auto_commit=auto_commit)
+
+        if self.model == 'res.complaint' and self.res_ids:
+
+            # handle string or list
+            res_ids = ast.literal_eval(self.res_ids) if isinstance(self.res_ids, str) else self.res_ids
+
+            created_mails = self.env['mail.mail'].search([
+                ('model', '=', 'res.complaint'),
+                ('res_id', 'in', res_ids),
+                ('state', '=', 'cancelled')
+            ])
+
+            for mail in created_mails:
+                # mark as outgoing and send
+                mail.mark_outgoing()
+                mail.send()
+
+        return mails
