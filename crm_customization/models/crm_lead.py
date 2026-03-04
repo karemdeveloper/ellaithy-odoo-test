@@ -87,13 +87,42 @@ class CrmLead(models.Model):
             domain = domain + [('user_id', '!=', False)]
         
         return super()._search(domain, offset=offset, limit=limit, order=order)
-
+######################################################################################
+    # override create to enforce access rights and restrict opportunity creation based on open opportunities
     @api.model
-    def create(self, vals_list):
+    def create(self, vals):
+        # Check basic CRM create access
         if not self.env.user.has_group("crm_customization.group_crm_user_create"):
             raise AccessError(_("You are not allowed to create CRM Leads."))
-        return super().create(vals_list)
-    
+
+        # ---------------------------------------------------------
+        # Access Control: Restrict opportunity creation
+        # ---------------------------------------------------------
+        if vals.get('type') == 'opportunity' and vals.get('partner_id'):
+            # check if user has the special group to bypass the open opportunity restriction
+            has_full_access = self.env.user.has_group(
+                'crm_customization.group_access_create_opportunity'
+            )
+            # if user does not have the special group, enforce the restriction of one open opportunity per customer
+            if not has_full_access:
+                partner_id = vals.get('partner_id')
+
+                # Count open opportunities (not won and not lost)
+                open_opps_count = self.search_count([
+                    ('partner_id', '=', partner_id),
+                    ('type', '=', 'opportunity'),
+                    # probability < 100 means not won, active=True means not lost (since lost stage sets active=False)
+                    ('probability', '<', 100),
+                    ('active', '=', True)
+                ])
+                # if there are any open opportunities for this customer, prevent creation of a new one
+                if open_opps_count > 0:
+                    raise ValidationError(
+                        _("Cannot add opportunity. Customer already has an open opportunity.")
+                    )
+
+        return super().create(vals)
+#######################################################################################
     @api.depends('opportunity_type')
     def _compute_opportunity_type_display(self):
         """Display opportunity type as short code"""

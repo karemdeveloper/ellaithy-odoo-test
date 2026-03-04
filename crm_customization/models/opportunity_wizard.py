@@ -6,7 +6,7 @@ import logging
 import pytz
 
 _logger = logging.getLogger(__name__)
-
+from odoo.exceptions import ValidationError
 
 class OpportunityWizard(models.TransientModel):
     _name = 'opportunity.wizard'
@@ -241,7 +241,32 @@ class OpportunityWizard(models.TransientModel):
     def action_distribute(self):
         """Button action to create a CRM Opportunity and assign next salesperson"""
         self.ensure_one()
-        
+        # ---------------------------------------------------------
+        # Access Control: Check if user has full create permission
+        # ---------------------------------------------------------
+        has_full_access = self.env.user.has_group(
+            'crm_customization.group_access_create_opportunity'
+        )
+
+        if not has_full_access:
+            # Check ALL existing opportunities for this partner
+            existing_opps = self.env['crm.lead'].search([
+                ('partner_id', '=', self.partner_id.id),
+                ('type', '=', 'opportunity')
+            ])
+
+            if existing_opps:
+                # Filter open opportunities (not won and not lost)
+                open_opps = existing_opps.filtered(
+                    lambda o: not getattr(o, 'is_won', False)
+                              and not getattr(o, 'is_lost', False)
+                )
+
+                if open_opps:
+                    raise ValidationError(
+                        "Cannot add opportunity. Customer already has an open opportunity."
+                    )
+
         # Check if partner already has a salesperson assigned
         if self.partner_id.user_id:
             # Use the existing salesperson from partner

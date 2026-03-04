@@ -12,7 +12,7 @@
         <field name="name">CRM Customer</field>
     </record>
     <record id="group_crm_customer_sales_person" model="res.groups">
-        <field name="name">customer salesperson </field>
+        <field name="name">customer salesperson</field>
     </record>
     <!-- Sales Customer Group -->
     <record id="group_sales_customer" model="res.groups">
@@ -40,10 +40,16 @@
     <record id="group_sale_team_leader" model="res.groups">
         <field name="name">User: Team Leader</field>
         <field name="category_id" ref="base.module_category_sales_sales"/>
-        <!-- يرث من salesman الأصلي -->
         <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
         <field name="comment">
             The user can access all records related to their own sales team (team leader access).
+        </field>
+    </record>
+    <!-- Access Create Opportunity group-->
+    <record id="group_access_create_opportunity" model="res.groups">
+        <field name="name">Access Create Opportunity</field>
+        <field name="comment">
+            Users with this group can create opportunity anytime without restriction.
         </field>
     </record>
 
@@ -189,7 +195,9 @@
     <record id="group_view_unassigned_opportunities" model="res.groups">
         <field name="name">View Unassigned Opportunities</field>
         <field name="category_id" ref="base.module_category_sales_sales"/>
-        <field name="comment">Users with this group can view opportunities without a salesperson. Regular users will not see opportunities without a salesperson assigned.</field>
+        <field name="comment">Users with this group can view opportunities without a salesperson. Regular users will not
+            see opportunities without a salesperson assigned.
+        </field>
     </record>
 
     <!-- Complaint Groups -->
