@@ -15,7 +15,7 @@
     'depends': ['crm', 'crm_customization'],
     'data': [
         'views/crm_lead_views.xml',
-        'data/update_existing_leads.xml',
+        # 'data/update_existing_leads.xml',
     ],
     'installable': True,
     'application': False,
