@@ -75,7 +75,7 @@ class OpenExistingCustomerButton extends Component {
                 body: `This will discard the current form and open ${customerName}. Continue?`,
                 confirm: async () => {
                     // Force close current form without saving by navigating directly
-                    window.location.href = `/web#id=${customerId}&model=res.partner&view_type=form`;
+                    window.location.href = `/odoo/contacts/${customerId}`;
                 },
                 cancel: () => {},
             });
