@@ -139,10 +139,10 @@ class Home(Home):
                         # Log any other exceptions
                         _logger.error(f"Unexpected error in URL security check: {e}", exc_info=True)
                         return request.redirect('/odoo')
-                elif not subpath.startswith('res.partner/'):
+                elif not subpath.startswith('contacts/'):
                     # For non-admin users, block all other direct URL access
                     # (settings, models, records, etc.)
-                    # Only allow res.partner record URLs for the "Open Existing Customer" button
+                    # Only allow contacts (res.partner) record URLs for the "Open Existing Customer" button
                     return request.redirect('/odoo')
 
         # Debug mode check
