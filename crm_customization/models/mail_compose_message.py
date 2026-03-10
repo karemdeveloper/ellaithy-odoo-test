@@ -68,18 +68,17 @@ class MailComposeMessage(models.TransientModel):
 
         if self.model == 'res.complaint' and self.res_ids:
 
-            # handle string or list
             res_ids = ast.literal_eval(self.res_ids) if isinstance(self.res_ids, str) else self.res_ids
 
-            created_mails = self.env['mail.mail'].search([
+            # Use sudo() to bypass mail.mail access restriction for non-admin users
+            created_mails = self.env['mail.mail'].sudo().search([
                 ('model', '=', 'res.complaint'),
                 ('res_id', 'in', res_ids),
                 ('state', '=', 'cancelled')
             ])
 
             for mail in created_mails:
-                # mark as outgoing and send
-                mail.mark_outgoing()
-                mail.send()
+                mail.sudo().mark_outgoing()
+                mail.sudo().send()
 
         return mails
