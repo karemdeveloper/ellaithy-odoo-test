@@ -11,7 +11,7 @@
             </xpath>
              <xpath expr="//field[@name='subject']" position="after">
             <field name="cc_partners" widget="many2many_tags"/>
-            <field name="cc_email" readonly="0"/>
+            <field name="cc_email" readonly="0" invisible="1"/>
         </xpath>
         </field>
     </record>
