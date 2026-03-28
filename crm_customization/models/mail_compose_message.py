@@ -82,3 +82,24 @@ class MailComposeMessage(models.TransientModel):
                 mail.sudo().send()
 
         return mails
+#####################################################################
+    # Override can_edit_body to always allow editing
+    can_edit_body = fields.Boolean(
+        compute='_compute_can_edit_body',
+        store=False,
+    )
+
+    @api.depends('composition_mode', 'template_id')
+    def _compute_can_edit_body(self):
+        for record in self:
+            record.can_edit_body = True  # Always editable
+
+   #################################################################
+    # method to default get to values from assign to field
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        # Pre-fill recipient_partners from context (assigned users)
+        if self.env.context.get('default_recipient_partners'):
+            res['recipient_partners'] = [(6, 0, self.env.context['default_recipient_partners'])]
+        return res

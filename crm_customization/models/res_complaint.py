@@ -163,6 +163,10 @@ class ResComplaint(models.Model):
         # get template from complaint type or default
         template_id = self.complaint_type_id.email_template_id or \
                       self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
+        # Collect assigned users' partners
+        assigned_partner_ids = [
+            u.partner_id.id for u in self.assigned_to_ids if u.partner_id
+        ]
 
         ctx = {
             'default_model': 'res.complaint',
@@ -173,6 +177,8 @@ class ResComplaint(models.Model):
             'default_partner_ids': partner_ids,
             'default_email_to': ','.join(email_to_list) if email_to_list else False,
             'force_email': True,
+            'default_recipient_partners': assigned_partner_ids,  # ← ADD THIS
+
         }
 
         return {
