@@ -25,7 +25,7 @@
                 <header>
                     <button string="Create opportunity" name="action_open_create_opportunity_wizard" type="object"/>
                     <button string="Create Survey" name="action_create_survey" type="object"/>
-                    <button name="action_create_complaint" type="object" string="New Complaint" class="oe_stat_button"
+                    <button name="action_create_complaint" type="object" string="New Complaint" class="oe_stat_button" groups="crm_customization.group_complaint_customer_care_manager"
                             icon="fa-plus"/>
                 </header>
             </xpath>
