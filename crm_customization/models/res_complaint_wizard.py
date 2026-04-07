@@ -94,17 +94,24 @@ class ResComplaintWizard(models.TransientModel):
         if not template_id:
             # If no template is set, create a default one
             template_id = self.env.ref('crm_customization.email_template_complaint_default', raise_if_not_found=False)
-        
+        # After creating the complaint, collect assigned partners
+        assigned_partner_ids = []
+        for user in self.assigned_to_ids:
+            if user.partner_id:
+                assigned_partner_ids.append(user.partner_id.id)
         # Prepare email composer context
         ctx = {
             'default_model': 'res.complaint',
             'default_res_ids': [complaint.id],
             'default_use_template': bool(template_id),
             'default_template_id': template_id.id if template_id else False,
-            'default_composition_mode': 'comment',
+            'default_composition_mode': 'mass_mail',
             'default_partner_ids': partner_ids,
             'force_email': True,
+            'default_email_to': ','.join(email_to_list) if email_to_list else False,
             'complaint_wizard_send': True,
+            'default_recipient_partners': assigned_partner_ids,
+
         }
         
         # Add department alias to email_to

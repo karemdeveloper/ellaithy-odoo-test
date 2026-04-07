@@ -68,18 +68,38 @@ class MailComposeMessage(models.TransientModel):
 
         if self.model == 'res.complaint' and self.res_ids:
 
-            # handle string or list
             res_ids = ast.literal_eval(self.res_ids) if isinstance(self.res_ids, str) else self.res_ids
 
-            created_mails = self.env['mail.mail'].search([
+            # Use sudo() to bypass mail.mail access restriction for non-admin users
+            created_mails = self.env['mail.mail'].sudo().search([
                 ('model', '=', 'res.complaint'),
                 ('res_id', 'in', res_ids),
                 ('state', '=', 'cancelled')
             ])
 
             for mail in created_mails:
-                # mark as outgoing and send
-                mail.mark_outgoing()
-                mail.send()
+                mail.sudo().mark_outgoing()
+                mail.sudo().send()
 
         return mails
+#####################################################################
+    # Override can_edit_body to always allow editing
+    can_edit_body = fields.Boolean(
+        compute='_compute_can_edit_body',
+        store=False,
+    )
+
+    @api.depends('composition_mode', 'template_id')
+    def _compute_can_edit_body(self):
+        for record in self:
+            record.can_edit_body = True  # Always editable
+
+   #################################################################
+    # method to default get to values from assign to field
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        # Pre-fill recipient_partners from context (assigned users)
+        if self.env.context.get('default_recipient_partners'):
+            res['recipient_partners'] = [(6, 0, self.env.context['default_recipient_partners'])]
+        return res

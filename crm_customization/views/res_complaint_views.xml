@@ -24,7 +24,9 @@
                 <field name="days_since_creation"/>
                 <field name="creation_late_days"/>
                 <field name="solving_date"/>
-                <field name="complaint_state" widget="badge" decoration-info="complaint_state=='new'" decoration-warning="complaint_state=='under_investigate'" decoration-success="complaint_state=='solved'"/>
+                <field name="complaint_state" widget="badge" decoration-info="complaint_state=='new'"
+                       decoration-warning="complaint_state=='under_investigate'"
+                       decoration-success="complaint_state=='solved'"/>
             </list>
         </field>
     </record>
@@ -68,14 +70,18 @@
                             <field name="customer_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
                             <field name="primary_phone" readonly="1"/>
                             <field name="salesperson_id" readonly="1"/>
-                            <field name="complaint_reason_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
-                            <field name="complaint_type_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="complaint_reason_id"
+                                   readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="complaint_type_id"
+                                   readonly="complaint_state in ['under_investigate', 'solved']"/>
                         </group>
                         <group>
                             <field name="branch_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
                             <field name="department" readonly="complaint_state in ['under_investigate', 'solved']"/>
-                            <field name="assigned_to_ids" widget="many2many_tags" readonly="complaint_state in ['under_investigate', 'solved']"/>
-                            <field name="escalation_line_id" readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="assigned_to_ids" widget="many2many_tags"
+                                   readonly="complaint_state in ['under_investigate', 'solved']"/>
+                            <field name="escalation_line_id"
+                                   readonly="complaint_state in ['under_investigate', 'solved']"/>
                             <field name="validity"/>
                         </group>
                     </group>
@@ -99,11 +105,28 @@
             </form>
         </field>
     </record>
+    <!-- =================== PIVOT VIEW =================== -->
+    <record id="view_res_complaint_pivot" model="ir.ui.view">
+        <field name="name">res.complaint.pivot</field>
+        <field name="model">res.complaint</field>
+        <field name="arch" type="xml">
+            <pivot string="Complaints Analysis">
+                <field name="complaint_state" type="col"/>
+                <field name="complaint_reason_id" type="row"/>
+                <field name="complaint_type_id" type="row"/>
+                <field name="branch_id" type="row"/>
+                <field name="department" type="row"/>
+                <field name="salesperson_id" type="row"/>
+                <field name="complaint_duration" type="measure" operator="avg"/>
+                <field name="late_days" type="measure" operator="sum"/>
+            </pivot>
+        </field>
+    </record>
 
     <record id="action_res_complaint" model="ir.actions.act_window">
         <field name="name">Complaint</field>
         <field name="res_model">res.complaint</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,form,pivot</field>
     </record>
     <menuitem id="menu_res_complaint"
               name="Complaint"
