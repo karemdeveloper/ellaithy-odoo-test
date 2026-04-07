@@ -53,6 +53,7 @@ class ResComplaint(models.Model):
         ('new', 'New'),
         ('under_investigate', 'Under Investigate'),
         ('solved', 'Solved'),
+        ('reset_to_draft', 'Reset to Draft'),
     ], string='Complaint State', tracking=True, default='new')
 
     # Validity field - only in complaint model, not in wizard
@@ -135,6 +136,10 @@ class ResComplaint(models.Model):
         for record in self:
             record.complaint_state = 'under_investigate'
             record.message_post(body="Complaint moved to <b>Under Investigation</b> stage.")
+        return True
+    def action_reset_to_draft(self):
+        for record in self:
+            record.complaint_state = 'reset_to_draft'
         return True
 
     def action_mark_solved(self):
