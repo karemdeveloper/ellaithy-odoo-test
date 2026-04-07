@@ -52,6 +52,8 @@ class MailComposeMessage(models.TransientModel):
         email_to = ', '.join(email_to_list)
 
         for res_id in res_ids:
+            mail_values[res_id]['email_from'] = 'odoo@ellaithy.com.eg'
+
             # ensure at least one recipient exists
             if email_to:
                 mail_values[res_id]['email_to'] = email_to

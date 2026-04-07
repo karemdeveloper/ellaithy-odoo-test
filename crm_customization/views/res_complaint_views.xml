@@ -27,7 +27,6 @@
                 <field name="complaint_state" widget="badge" decoration-info="complaint_state=='new'"
                        decoration-warning="complaint_state=='under_investigate'"
                        decoration-success="complaint_state=='solved'"
-                       decoration-muted="complaint_state=='reset_to_draft'"
                 />
             </list>
         </field>
@@ -51,7 +50,7 @@
                             string="Start Investigation"
                             type="object"
                             class="btn-primary"
-                            invisible="complaint_state not in [ 'new','reset_to_draft']"/>
+                            invisible="complaint_state !=  'new'"/>
 
                     <button name="action_mark_solved"
                             string="Mark Solved"
@@ -61,7 +60,7 @@
                     <button name="action_reset_to_draft"
                             string="Reset to Draft"
                             type="object"
-                            invisible="complaint_state not in ['under_investigate','solved']"/>
+                            invisible="complaint_state != 'solved'"/>
                 </header>
 
                 <sheet>

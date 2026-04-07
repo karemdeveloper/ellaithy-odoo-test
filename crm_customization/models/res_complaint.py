@@ -50,10 +50,9 @@ class ResComplaint(models.Model):
                                         compute='_compute_creation_late_days')
 
     complaint_state = fields.Selection([
-        ('new', 'New'),
+        ('new', 'Draft'),
         ('under_investigate', 'Under Investigate'),
         ('solved', 'Solved'),
-        ('reset_to_draft', 'Reset to Draft'),
     ], string='Complaint State', tracking=True, default='new')
 
     # Validity field - only in complaint model, not in wizard
@@ -139,7 +138,7 @@ class ResComplaint(models.Model):
         return True
     def action_reset_to_draft(self):
         for record in self:
-            record.complaint_state = 'reset_to_draft'
+            record.complaint_state = 'new'
         return True
 
     def action_mark_solved(self):
