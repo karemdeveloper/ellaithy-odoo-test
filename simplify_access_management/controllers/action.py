@@ -34,6 +34,8 @@ class Action(Action):
                 actions_and_prints = actions_and_prints + access.mapped('report_action_ids.action_id').ids
                 actions_and_prints = actions_and_prints + access.mapped('server_action_ids.action_id').ids
                 for view_data in access.view_data_ids:
+                    if view_data.techname == 'pivot':
+                        continue
                     for b_view in res['views']:
                         if b_view[1] == view_data.techname:
                             res['views'].pop(res['views'].index(b_view))
@@ -58,7 +60,8 @@ class Action(Action):
 
         if res:
             cids = request.httprequest.cookies.get('cids') and request.httprequest.cookies.get('cids').split(',')[0] or request.env.company.id
-            for view_data in set(request.env['remove.action'].sudo().search([('view_data_ids','!=',False),('access_management_id.company_ids','in',int(cids)),('access_management_id','in',request.env.user.access_management_ids.ids),('model_id.model','=',res.get('res_model'))]).mapped('view_data_ids.techname')):
+            hidden_view_types = set(request.env['remove.action'].sudo().search([('view_data_ids','!=',False),('access_management_id.company_ids','in',int(cids)),('access_management_id','in',request.env.user.access_management_ids.ids),('model_id.model','=',res.get('res_model'))]).mapped('view_data_ids.techname')) - {'pivot'}
+            for view_data in hidden_view_types:
                 for views_data_list in res.get('views'):
                     if view_data == views_data_list[1]:
                         res['views'].pop(res['views'].index(views_data_list))
