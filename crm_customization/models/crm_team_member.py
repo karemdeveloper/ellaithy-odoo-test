@@ -31,12 +31,26 @@ class CrmTeamMember(models.Model):
             rec.can_edit_state_directly = has_permission
     @api.model
     def _cron_check_inactive_members(self):
-        """Deactivate members whose date_to has passed."""
+        """Deactivate members whose date_to has passed, and activate scheduled inactive requests."""
         now = fields.Datetime.now()
-        now_float = now.hour + now.minute / 60.0
 
+        # Reactivate members whose inactive period has ended
         expired_members = self.search([
             ('date_to', '<', now),
             ('state', '=', 'inactive')
         ])
         expired_members.write({'state': 'active'})
+
+        # Apply scheduled inactive requests whose date_from has arrived
+        pending_requests = self.env['inactive.request'].search([
+            ('state', '=', 'approved'),
+            ('scheduled_inactive', '=', True),
+            ('date_from', '<=', now),
+        ])
+        for req in pending_requests:
+            member = self.search([('user_id', '=', req.create_uid.id)], limit=1)
+            if member:
+                member.state = 'inactive'
+                if req.date_to:
+                    member.date_to = req.date_to
+            req.scheduled_inactive = False
