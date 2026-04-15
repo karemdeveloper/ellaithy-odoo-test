@@ -145,8 +145,41 @@ class ResComplaint(models.Model):
         for record in self:
             record.complaint_state = 'solved'
             record.solving_date = fields.Date.context_today(self)
+
             record.message_post(
-                body=f"Complaint marked as <b>Solved</b>. Duration: {record.complaint_duration} days.")
+                body=f"Complaint marked as <b>Solved</b>. Duration: {record.complaint_duration} days."
+            )
+
+            template = self.env.ref('crm_customization.email_template_complaint_lack_followup')
+
+            # ✅ هات آخر mail حقيقي
+            last_mail = self.env['mail.mail'].search([
+                ('model', '=', 'res.complaint'),
+                ('res_id', '=', record.id),
+            ], order='id desc', limit=1)
+
+            print("Last Mail:", last_mail)
+
+            email_to = last_mail.email_to or ''
+            email_cc = last_mail.email_cc or ''
+            partner_ids = last_mail.recipient_ids.ids if last_mail else []
+
+            print("Email To:", email_to)
+            print("Email CC:", email_cc)
+            print("Partners:", partner_ids)
+
+            if template:
+                template.send_mail(
+                    record.id,
+                    force_send=True,
+                    email_values={
+                        'email_to': email_to,
+                        'email_cc': email_cc,
+                        'partner_ids': [(6, 0, partner_ids)],
+                        'email_from': "odoo@ellaithy.com.eg",
+                    }
+                )
+
         return True
 
     def action_send_complaint_email(self):
@@ -171,12 +204,18 @@ class ResComplaint(models.Model):
         assigned_partner_ids = [
             u.partner_id.id for u in self.assigned_to_ids if u.partner_id
         ]
+        template = template_id
+
+        body = template._render_field('body_html', [self.id])[self.id]
+        subject = template._render_field('subject', [self.id])[self.id]
 
         ctx = {
             'default_model': 'res.complaint',
             'default_res_ids': [self.id],
             'default_use_template': bool(template_id),
             'default_template_id': template_id.id if template_id else False,
+            'default_body': body,
+            'default_subject': subject,
             'default_composition_mode': 'mass_mail',
             'default_partner_ids': partner_ids,
             'default_email_to': ','.join(email_to_list) if email_to_list else False,

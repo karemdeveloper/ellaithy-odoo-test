@@ -9,3 +9,4 @@ class ResDepartment(models.Model):
     name = fields.Char(string="Name")
     department_user = fields.Many2many('res.users', string="Department Users", tracking=True)
     alias_email = fields.Char(string='Alias Email', help='Email address for this department to receive complaints')
+    department_manager_id = fields.Many2one('res.users', string='Department Manager', tracking=True)
