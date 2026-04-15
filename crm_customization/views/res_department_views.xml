@@ -23,6 +23,7 @@
                         <field name="name"/>
                         <field name="alias_email" placeholder="department@example.com"/>
                         <field name="department_user" widget="many2many_tags"/>
+                        <field name="department_manager_id" />
                     </group>
                 </sheet>
                  <!-- Attachment preview -->
