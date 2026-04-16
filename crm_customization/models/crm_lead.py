@@ -498,3 +498,18 @@ class CrmLead(models.Model):
             result = super(CrmLead, leads_already_won).write(vals)
         return result
 ################################################################################
+
+    not_lead_access = fields.Boolean(
+        compute="_compute_not_lead_access"
+    )
+
+    @api.depends_context('uid')
+    def _compute_not_lead_access(self):
+        for rec in self:
+            is_sales_group = rec.env.user.has_group(
+                'sales_team.group_sale_manager'
+            )
+
+            rec.not_lead_access = not (
+                is_sales_group or not rec.id
+            )

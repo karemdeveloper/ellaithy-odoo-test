@@ -23,7 +23,7 @@
                 <p style="margin: 0px; padding: 0px; font-size: 14px; font-weight: bold;">
                     السادة ادارة الموارد البشرية
                     <br/>
-                    <t t-esc="object.branch_id.branch_manager.partner_id.name or 'مدير الفرع'"/>
+                    <t t-out="object.department.department_manager_id.name or 'Department Manager'"/>
                     <br/>
                     <br/>
                     تحية طيبة وبعد ,,,

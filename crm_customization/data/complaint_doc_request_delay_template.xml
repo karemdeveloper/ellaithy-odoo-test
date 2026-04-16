@@ -22,7 +22,7 @@
                 </p>
                 <p style="font-size: 14px; margin-bottom: 15px;">
                     استاذ /
-                    <t t-esc="object.branch_id.branch_manager.partner_id.name or 'مدير الفرع'"/>
+                    <t t-out="object.department.department_manager_id.name or 'Department Manager'"/>
                     <br/>
                     السادة ادارة الموارد البشرية
                     <br/>
