@@ -70,7 +70,7 @@ class CrmLead(models.Model):
         
         for vals in vals_list:
             branch_id = vals.get('branch_name')
-            if branch_id and not vals.get('name'):
+            if not vals.get('name'):
                 vals['name'] = self._generate_lead_name(branch_id)
 
         records = super(CrmLead, self).create(vals_list)
