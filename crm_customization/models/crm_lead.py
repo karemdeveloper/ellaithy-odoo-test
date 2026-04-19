@@ -483,8 +483,9 @@ class CrmLead(models.Model):
         if 'user_id' in vals:
             for lead in self:
                 if lead.partner_id:
-                    lead.partner_id.write({'user_id': vals['user_id']})
-
+                    lead.partner_id.sudo().write({
+                        'user_id': vals['user_id']
+                    })
         if not stage_is_won:
             return super(CrmLead, self).write(vals)
 
