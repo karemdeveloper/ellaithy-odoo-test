@@ -24,9 +24,9 @@
             <xpath expr="//field[@name='phone']" position="attributes">
                 <attribute name="readonly">not_lead_access</attribute>
             </xpath>
-            <xpath expr="//field[@name='user_id']" position="attributes">
-                <attribute name="readonly">not_lead_access</attribute>
-            </xpath>
+<!--            <xpath expr="//field[@name='user_id']" position="attributes">-->
+<!--                <attribute name="readonly">not_lead_access</attribute>-->
+<!--            </xpath>-->
             <xpath expr="//field[@name='tag_ids']" position="attributes">
                 <attribute name="readonly">not_lead_access</attribute>
             </xpath>

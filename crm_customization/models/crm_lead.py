@@ -98,6 +98,24 @@ class CrmLead(models.Model):
         # ---------------------------------------------------------
         # Access Control: Restrict opportunity creation
         # ---------------------------------------------------------
+        if not vals.get('name'):
+            branch_id = vals.get('branch_name')
+            print("Branch ID from vals:", branch_id)  # Debug print
+
+            # ✅ fallback from user if not exist
+            if not branch_id:
+                user = self.env.user
+                if user.sale_team_id and user.sale_team_id.branch_name:
+                    branch_id = user.sale_team_id.branch_name.id
+                    print("Branch ID from user sale team:", branch_id)  # Debug print
+
+            if branch_id:
+                vals['name'] = self._generate_lead_name(branch_id)
+                print("Generated lead name:", vals['name'])  # Debug print
+            else:
+                vals['name'] = self.env['ir.sequence'].next_by_code('crm.lead') or 'New'
+                print("Generated lead name from default sequence:", vals['name'])  # Debug print
+
         if vals.get('type') == 'opportunity' and vals.get('partner_id'):
             # check if user has the special group to bypass the open opportunity restriction
             has_full_access = self.env.user.has_group(
@@ -483,9 +501,7 @@ class CrmLead(models.Model):
         if 'user_id' in vals:
             for lead in self:
                 if lead.partner_id:
-                    lead.partner_id.sudo().write({
-                        'user_id': vals['user_id']
-                    })
+                    lead.partner_id.write({'user_id': vals['user_id']})
         if not stage_is_won:
             return super(CrmLead, self).write(vals)
 
