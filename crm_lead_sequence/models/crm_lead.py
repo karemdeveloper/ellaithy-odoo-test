@@ -62,26 +62,27 @@ class CrmLead(models.Model):
         
         return f"{branch_code}/{year}/{month}/{number_str.zfill(4)}"
 
-    @api.model
-    def create(self, vals_list):
-        """Override create to set custom name based on branch sequence"""
-        if isinstance(vals_list, dict):
-            vals_list = [vals_list]
-        
-        for vals in vals_list:
-            branch_id = vals.get('branch_name')
-            if not vals.get('name'):
-                vals['name'] = self._generate_lead_name(branch_id)
+    # @api.model
+    # def create(self, vals_list):
+    #     """Override create to set custom name based on branch sequence"""
+    #     if isinstance(vals_list, dict):
+    #         vals_list = [vals_list]
+    #
+    #     for vals in vals_list:
+    #         branch_id = vals.get('branch_name')
+    #         if branch_id and not vals.get('name'):
+    #             vals['name'] = self._generate_lead_name(branch_id)
+    #
+    #     records = super(CrmLead, self).create(vals_list)
+    #     # Post sequence in chatter
+    #     for record in records:
+    #         if record.name:
+    #             record.message_post(
+    #                 body=f"Opportunity Reference:{record.name}"
+    #             )
+    #
+    #     return records
 
-        records = super(CrmLead, self).create(vals_list)
-        # Post sequence in chatter
-        for record in records:
-            if record.name:
-                record.message_post(
-                    body=f"Opportunity Reference:{record.name}"
-                )
-
-        return records
     # now, we will not use this method, but it can be used in the future if we want to update existing leads with new sequence format
     # @api.model
     # def action_update_existing_leads(self):
