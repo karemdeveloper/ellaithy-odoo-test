@@ -6,7 +6,7 @@
         <field name="name">Complaint: Tip Request (Arabic)</field>
         <field name="model_id"
                ref="model_res_complaint"/>
-        <field name="subject">شكوي مسئول مبيعات – إكراميه</field>
+        <field name="subject">{{ object.name }} ,شكوي مسئول مبيعات – إكراميه</field>
         <field name="email_from">{{(object.create_uid.email_formatted or user.email_formatted) or ''}}</field>
         <field name="body_html"
                type="html">

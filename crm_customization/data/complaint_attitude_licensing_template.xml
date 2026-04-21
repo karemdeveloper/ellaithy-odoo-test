@@ -6,7 +6,7 @@
         <field name="name">Complaint: Attitude Licensing Representative (Arabic)</field>
         <field name="model_id"
                ref="model_res_complaint"/>
-        <field name="subject">شكوي بسبب اسلوب مندوب ترخيص</field>
+        <field name="subject"> {{ object.name }} , شكوي بسبب اسلوب مندوب ترخيص</field>
         <field name="email_from">{{(object.create_uid.email_formatted or user.email_formatted) or ''}}</field>
         <field name="body_html"
                type="html">

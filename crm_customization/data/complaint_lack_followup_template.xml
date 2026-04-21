@@ -6,7 +6,7 @@
         <field name="name">Complaint: Lack of Follow-up (Arabic)</field>
         <field name="model_id"
                ref="model_res_complaint"/>
-        <field name="subject">شكوي عدم تواصل – فرع {{object.branch_id.branch_name or 'غير محدد'}}</field>
+        <field name="subject">{{ object.name }} , شكوي عدم تواصل – فرع {{object.branch_id.branch_name or 'غير محدد'}}</field>
         <field name="email_from">{{(object.create_uid.email_formatted or user.email_formatted) or ''}}</field>
         <field name="body_html"
                type="html">
