@@ -526,7 +526,10 @@ class CrmLead(models.Model):
             is_sales_group = rec.env.user.has_group(
                 'sales_team.group_sale_manager'
             )
+            is_salesman_all_leads = rec.env.user.has_group(
+                'sales_team.group_sale_salesman_all_leads'
+            )
 
             rec.not_lead_access = not (
-                is_sales_group or not rec.id
+                is_sales_group or is_salesman_all_leads or not rec.id
             )
