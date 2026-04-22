@@ -268,7 +268,6 @@ class CrmLead(models.Model):
                     raise ValidationError(
                         f'Phone number must contain at least 11 digits. Current: {len(phone_digits)} digits'
                     )
-            
             if record.mobile:
                 mobile_digits = ''.join(filter(str.isdigit, record.mobile))
                 if len(mobile_digits) < 11:
@@ -514,6 +513,11 @@ class CrmLead(models.Model):
             vals.pop('date_closed', False)
             result = super(CrmLead, leads_already_won).write(vals)
         return result
+
+    def copy(self, default=None):
+        if not self.env.user._is_admin():
+            raise AccessError(_("You are not allowed to duplicate CRM leads."))
+        return super().copy(default=default)
 ################################################################################
 
     not_lead_access = fields.Boolean(
