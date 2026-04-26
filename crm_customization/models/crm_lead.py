@@ -533,3 +533,14 @@ class CrmLead(models.Model):
             rec.not_lead_access = not (
                 is_sales_group or is_salesman_all_leads or not rec.id
             )
+##########################################################################################
+    def copy(self, default=None):
+        """
+        if not sales manager cannot duplicate lead records, raise error
+        """
+        self.ensure_one()
+
+        # check group
+        if not self.env.user.has_group('sales_team.group_sale_manager'):
+            raise UserError(_("You are not allowed to duplicate Opportunity records. Please contact Sales Manager."))
+        return super(CrmLead, self).copy(default)
