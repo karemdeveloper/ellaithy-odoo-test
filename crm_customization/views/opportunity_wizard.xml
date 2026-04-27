@@ -29,6 +29,7 @@
                                    options="{'no_create': True, 'no_create_edit': True}"
                                    domain="[('brand', 'in', brand_id2)]"
                                    required="opportunity_type not in ('used', 'service')"/>
+                            <field name="hotline_transfer"/>
 
 
                         </group>

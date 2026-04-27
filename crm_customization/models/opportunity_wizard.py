@@ -47,6 +47,8 @@ class OpportunityWizard(models.TransientModel):
     model = fields.Char(string="Model")
     kilometers = fields.Char(string="Kilometers")
     service_id = fields.Many2one('res.service', string='Service')
+    hotline_transfer = fields.Boolean(string='Hotline-Transfer',default=False)
+
 
     @api.model
     def default_get(self, fields):
@@ -307,6 +309,7 @@ class OpportunityWizard(models.TransientModel):
             'opportunity_type': self.opportunity_type,
             'kilometers': self.kilometers,
             'service_id': self.service_id.id if self.service_id else False,
+            'hotline_transfer': self.hotline_transfer,
         })
 
         return {
