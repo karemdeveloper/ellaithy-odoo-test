@@ -76,7 +76,7 @@ class CrmLead(models.Model):
         search='_search_is_new_more_than_2hrs',
         help='Opportunity created more than 2 hours ago and still in new stage'
     )
-
+    hotline_transfer = fields.Boolean(string='Hotline-Transfer',default=False)
     # Override _search to apply domain for group_view_unassigned_opportunities
     @api.model
     def _search(self, domain, offset=0, limit=None, order=None):
