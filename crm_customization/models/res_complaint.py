@@ -153,7 +153,7 @@ class ResComplaint(models.Model):
             template = self.env.ref('crm_customization.email_template_complaint_lack_followup')
 
             # ✅ هات آخر mail حقيقي
-            last_mail = self.env['mail.mail'].search([
+            last_mail = self.env['mail.mail'].sudo().search([
                 ('model', '=', 'res.complaint'),
                 ('res_id', '=', record.id),
             ], order='id desc', limit=1)
