@@ -150,24 +150,21 @@ class ResComplaint(models.Model):
                 body=f"Complaint marked as <b>Solved</b>. Duration: {record.complaint_duration} days."
             )
 
-            template = self.env.ref('crm_customization.email_template_complaint_lack_followup')
+            template = record.complaint_type_id.email_template_id or \
+                       self.env.ref(
+                           'crm_customization.email_template_complaint_default',
+                           raise_if_not_found=False
+                       )
 
-            # ✅ هات آخر mail حقيقي
             last_mail = self.env['mail.mail'].sudo().search([
                 ('model', '=', 'res.complaint'),
                 ('res_id', '=', record.id),
             ], order='id desc', limit=1)
 
-            print("Last Mail:", last_mail)
-
-            email_to = last_mail.email_to or ''
-            email_cc = last_mail.email_cc or ''
+            email_to = last_mail.email_to if last_mail else ''
+            email_cc = last_mail.email_cc if last_mail else ''
             partner_ids = last_mail.recipient_ids.ids if last_mail else []
-
-            print("Email To:", email_to)
-            print("Email CC:", email_cc)
-            print("Partners:", partner_ids)
-
+            #  send email
             if template:
                 template.send_mail(
                     record.id,
@@ -181,7 +178,6 @@ class ResComplaint(models.Model):
                 )
 
         return True
-
     def action_send_complaint_email(self):
         """Open email composer to send/resend complaint notification"""
         self.ensure_one()
