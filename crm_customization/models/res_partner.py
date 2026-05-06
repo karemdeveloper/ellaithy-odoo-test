@@ -189,7 +189,18 @@ class ResPartner(models.Model):
                 ], limit=1)
                 if existing_customer:
                     rec.customer_already_exist_id = existing_customer
-    
+    ###################################################################################
+    def copy(self, default=None):
+        """
+        if not sales manager cannot duplicate customer records, raise error
+        """
+        self.ensure_one()
+
+        # check group
+        if not self.env.user.has_group('sales_team.group_sale_manager'):
+            raise UserError(_("You are not allowed to duplicate customer records. Please contact Sales Manager."))
+        return super(ResPartner, self).copy(default)
+
     # @api.onchange('phone')
     # def _onchange_phone_check_existing(self):
     #     """

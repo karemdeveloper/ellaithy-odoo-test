@@ -223,7 +223,7 @@
         <field name="name">Complaint: Customer Service</field>
         <field name="model_id"
                ref="model_res_complaint"/>
-        <field name="subject">Customer Service Complaint - {{object.name or ''}}</field>
+        <field name="subject">{{ object.name }} , Customer Service Complaint - {{object.name or ''}}</field>
         <field name="email_from">{{(object.create_uid.email_formatted or user.email_formatted) or ''}}</field>
         <field name="body_html"
                type="html">

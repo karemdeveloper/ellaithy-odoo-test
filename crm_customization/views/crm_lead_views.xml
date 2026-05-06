@@ -11,8 +11,7 @@
                 <field name="user_id" required="1" readonly="1"
                        groups="sales_team.group_sale_salesman"/>
                 <field name="user_id" required="1"
-                       groups="sales_team.group_sale_manager"/>
-
+                       groups="sales_team.group_sale_manager,sales_team.group_sale_salesman_all_leads"/>
                 <field name="not_lead_access"/>
             </xpath>
             <xpath expr="//group[@name='opportunity_partner']//field[@name='partner_id']" position="attributes">
@@ -24,12 +23,13 @@
             <xpath expr="//field[@name='phone']" position="attributes">
                 <attribute name="readonly">not_lead_access</attribute>
             </xpath>
-<!--            <xpath expr="//field[@name='user_id']" position="attributes">-->
-<!--                <attribute name="readonly">not_lead_access</attribute>-->
-<!--            </xpath>-->
+            <!--            <xpath expr="//field[@name='user_id']" position="attributes">-->
+            <!--                <attribute name="readonly">not_lead_access</attribute>-->
+            <!--            </xpath>-->
             <xpath expr="//field[@name='tag_ids']" position="attributes">
                 <attribute name="readonly">not_lead_access</attribute>
             </xpath>
+
 
 
             <!-- Add ibs_closed_at field -->
@@ -84,15 +84,21 @@
                 <field name="brand_used_id" widget="many2many_tags" invisible="opportunity_type=='new'"
                        options="{'no_create': True, 'no_edit': True}" readonly="not_lead_access"/>
                 <field name="sub_brand_used_id" widget="many2many_tags" invisible="opportunity_type=='new'"
-                       domain="[('brand', 'in', brand_used_id)]" options="{'no_create': True, 'no_edit': True}" readonly="not_lead_access"/>
-                <field name="source_name" options="{'no_create': True, 'no_edit': True}" required="1" readonly="not_lead_access"/>
+                       domain="[('brand', 'in', brand_used_id)]" options="{'no_create': True, 'no_edit': True}"
+                       readonly="not_lead_access"/>
+                <field name="source_name" options="{'no_create': True, 'no_edit': True}" required="1"
+                       readonly="not_lead_access"/>
                 <field name="model" invisible="opportunity_type=='new'" readonly="not_lead_access"/>
                 <field name="kilometers" invisible="opportunity_type=='new'" readonly="not_lead_access"/>
                 <field name="sales_team" invisible="1"/>
-                <field name="sla_duration" />
+                <field name="sla_duration"/>
                 <field name="late_days"/>
-                <field name="marketing_offer" options="{'no_create': True, 'no_edit': True}" readonly="not_lead_access"/>
-                <field name="call_type" options="{'no_create': True, 'no_edit': True}" required="1" readonly="not_lead_access"/>
+                <field name="marketing_offer" options="{'no_create': True, 'no_edit': True}"
+                       readonly="not_lead_access"/>
+                <field name="call_type" options="{'no_create': True, 'no_edit': True}" required="1"
+                       readonly="not_lead_access"/>
+                <field name="hotline_transfer" string="Hotline-Transfer" groups="sales_team.group_sale_salesman_all_leads"/>
+
                 <field name="has_feedback" invisible="1"/>
             </xpath>
             <xpath expr="//page[@name='lead']" position="after">

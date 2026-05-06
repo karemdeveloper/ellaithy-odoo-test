@@ -76,7 +76,7 @@ class CrmLead(models.Model):
         search='_search_is_new_more_than_2hrs',
         help='Opportunity created more than 2 hours ago and still in new stage'
     )
-
+    hotline_transfer = fields.Boolean(string='Hotline-Transfer',default=False)
     # Override _search to apply domain for group_view_unassigned_opportunities
     @api.model
     def _search(self, domain, offset=0, limit=None, order=None):
@@ -530,7 +530,21 @@ class CrmLead(models.Model):
             is_sales_group = rec.env.user.has_group(
                 'sales_team.group_sale_manager'
             )
+            is_salesman_all_leads = rec.env.user.has_group(
+                'sales_team.group_sale_salesman_all_leads'
+            )
 
             rec.not_lead_access = not (
-                is_sales_group or not rec.id
+                is_sales_group or is_salesman_all_leads or not rec.id
             )
+##########################################################################################
+    def copy(self, default=None):
+        """
+        if not sales manager cannot duplicate lead records, raise error
+        """
+        self.ensure_one()
+
+        # check group
+        if not self.env.user.has_group('sales_team.group_sale_manager'):
+            raise UserError(_("You are not allowed to duplicate Opportunity records. Please contact Sales Manager."))
+        return super(CrmLead, self).copy(default)
