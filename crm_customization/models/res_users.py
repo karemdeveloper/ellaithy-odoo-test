@@ -13,14 +13,17 @@ class ResUsers(models.Model):
 
     def action_archive_and_redistribute(self):
         """
-        Archive this user and redistribute all their open opportunities
-        (excluding won/lost) using the same round-robin distribution logic.
+        Archive this user (and their linked contact) and redistribute all
+        their open opportunities (excluding won/lost) using the same
+        round-robin distribution logic.
         """
         self.ensure_one()
         archived_user = self
 
         # 1. Fetch open opportunities assigned to this user
-        open_leads = self.env['crm.lead'].search([
+        # Use sudo() to bypass record rules — this action must access all leads
+        # regardless of the calling user's branch restrictions.
+        open_leads = self.env['crm.lead'].sudo().search([
             ('user_id', '=', archived_user.id),
             ('active', '=', True),
             ('probability', '<', 100),   # not won
@@ -83,12 +86,20 @@ class ResUsers(models.Model):
         # 3. Archive the user
         archived_user.write({'active': False})
 
+        # 4. Archive the linked contact (partner) if still active
+        if archived_user.partner_id and archived_user.partner_id.active:
+            archived_user.partner_id.sudo().write({'active': False})
+            _logger.info(
+                "Partner '%s' (id=%s) archived alongside user.",
+                archived_user.partner_id.name, archived_user.partner_id.id
+            )
+
         _logger.info(
             "User %s archived. Opportunities reassigned: %s / %s",
             archived_user.name, reassigned_count, len(open_leads)
         )
 
-        # 4. Show result notification
+        # 5. Show result notification
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
