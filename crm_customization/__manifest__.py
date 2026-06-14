@@ -5,7 +5,7 @@
     'description': 'Add mandatory fields, and add opportunity for customer.',
     'category': 'CRM',
     'author': 'IBS',
-    'depends': ['base', 'crm','crm_sms','crm_iap_enrich','sale_crm'],
+    'depends': ['base', 'crm','crm_sms','crm_iap_enrich','sale_crm','helpdesk'],
     'data': [
         'security/groups.xml',
         'security/ir.model.access.csv',
@@ -49,6 +49,7 @@
         'views/crm_feedback_wizard_view.xml',
         'views/res_department_views.xml',
         'views/res_complaint_views.xml',
+        'views/complaint_category_views.xml',
         'views/res_complaint_reason_views.xml',
         'views/res_complaint_type_views.xml',
         'views/res_escalation_views.xml',

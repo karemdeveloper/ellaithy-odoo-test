@@ -182,8 +182,7 @@ class HelpdeskTicket(models.Model):
         if not self.env.user.has_group('helpdesk.group_helpdesk_manager'):
             for ticket in self:
                 if ticket.stage_id.escalation_level == 'overdue':
-                    raise UserError("عذراً، لا يمكن تعديل التذكرة أو نقلها من مرحلة الـ Overdue بعد تصعيدها للـ HR.")
-
+                    raise UserError("Sorry, you cannot modify or move the ticket from the Overdue stage after it has been escalated to HR.")
         # التحقق من الحقول المحمية للمستخدمين العاديين بعد التعديل الجديد
         if not self.env.user.has_group('helpdesk.group_helpdesk_manager'):
             if any(field in vals for field in protected_fields):
