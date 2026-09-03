@@ -1,0 +1,503 @@
+/* Global Layout */
+.o_action_manager {
+    overflow: auto !important;
+}
+
+.oh_dashboards {
+    background-color: #f4f6fa !important;
+    padding: 0 !important;
+}
+
+.container-fluid.o_hr_dashboard {
+    padding: 20px !important;
+    background-color: #f4f6fa !important;
+}
+
+/* Premium Card Design System */
+.oh-card, .oh_card {
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    overflow: hidden;
+    height: 100%;
+}
+
+.oh-card:hover, .oh_card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+    cursor: pointer;
+}
+
+/* Employee Profile Sidebar */
+.employee_profile_sidebar {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+@media (min-width: 992px) {
+    .employee_profile_sidebar {
+        position: sticky;
+        top: 20px;
+        z-index: 10;
+    }
+}
+
+.employee_profile_sidebar .employee_icon img {
+    max-width: 220px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin: 25px auto 10px auto;
+    display: block;
+}
+
+.employee_profile_sidebar .employee_name {
+    text-align: center;
+}
+
+.employee_profile_sidebar .employee_name h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.employee_profile_sidebar .employee_name p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.employee_profile_sidebar .employee_experience {
+    background-color: #f9fafb;
+    padding: 15px;
+    text-align: center;
+}
+
+.employee_profile_sidebar .employee_experience p.text-light {
+    color: #6b7280 !important;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.employee_profile_sidebar .employee_experience p:not(.text-light) {
+    color: #111827 !important;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.employee_profile_sidebar .contact {
+    padding: 15px 20px;
+}
+
+.employee_profile_sidebar .contact i {
+    font-size: 14px;
+    color: #017e84;
+}
+
+.employee_profile_sidebar .contact span {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.employee_profile_sidebar .address {
+    padding: 15px 20px;
+}
+
+.employee_profile_sidebar .address i {
+    font-size: 14px;
+    color: #017e84;
+}
+
+/* Stats Cards (Top row) */
+@media (min-width: 1200px) {
+    .col-xl-five {
+        flex: 0 0 20% !important;
+        max-width: 20% !important;
+    }
+}
+
+.stat-widget-one {
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 85px;
+}
+
+.stat-widget-one .stat-icon {
+    width: 70px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.stat-widget-one .stat-icon i {
+    color: #ffffff !important;
+    font-size: 24px !important;
+}
+
+.stat-widget-one .stat-content {
+    padding-left: 15px;
+}
+
+.stat-widget-one .stat-text {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px !important;
+}
+
+.stat-widget-one .stat-digit {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Color mappings for stats widgets */
+.oh-payslip .stat-icon { background-color: #ff8762; }
+.oh-payslip .stat-text { color: #ff8762 !important; }
+
+.oh-timesheets .stat-icon { background-color: #5ebade; }
+.oh-timesheets .stat-text { color: #5ebade !important; }
+
+.oh-contracts .stat-icon { background-color: #b298e1; }
+.oh-contracts .stat-text { color: #b298e1 !important; }
+
+.oh-broad-factor .stat-icon { background-color: #70cac1; }
+.oh-broad-factor .stat-text { color: #70cac1 !important; }
+
+.hr_attendance_login .stat-icon { background-color: #134c8a; }
+.hr_attendance_login .stat-text { color: #134c8a !important; }
+.hr_attendance_login .oh-card { background-color: #ffffff !important; }
+
+/* Manager Dashboard Leaves & Job App Panel */
+.leave-manager {
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.hr_leave_request_approve, .leaves_request_today, .leaves_request_month {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.hr_leave_request_approve:hover, .leaves_request_today:hover, .leaves_request_month:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.hr_leave_request_approve .stat-title, .leaves_request_today .stat-title, .leaves_request_month .stat-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hr_leave_request_approve .stat-count, .leaves_request_today .stat-count, .leaves_request_month .stat-count {
+    font-size: 24px;
+    margin: 0;
+}
+
+.hr_leave_request_approve { background-color: rgba(255, 135, 98, 0.08); }
+.hr_leave_request_approve .stat-title { color: #ff8762; }
+.hr_leave_request_approve .stat-count { color: #ff8762 !important; }
+
+.leaves_request_today { background-color: rgba(94, 186, 222, 0.08); }
+.leaves_request_today .stat-title { color: #5ebade; }
+.leaves_request_today .stat-count { color: #5ebade !important; }
+
+.leaves_request_month { background-color: rgba(178, 152, 225, 0.08); }
+.leaves_request_month .stat-title { color: #b298e1; }
+.leaves_request_month .stat-count { color: #b298e1 !important; }
+
+.hr_leave_allocations_approve, .hr_job_application_approve {
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.hr_leave_allocations_approve:hover, .hr_job_application_approve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.hr_leave_allocations_approve { background-color: rgba(255, 135, 98, 0.08); }
+.hr_leave_allocations_approve .stat-title { color: #ff8762; font-size: 13px; font-weight: 600; }
+.hr_leave_allocations_approve .stat-count { color: #ff8762 !important; font-size: 20px; }
+
+.hr_job_application_approve { background-color: rgba(112, 202, 193, 0.08); }
+.hr_job_application_approve .stat-title { color: #70cac1; font-size: 13px; font-weight: 600; }
+.hr_job_application_approve .stat-count { color: #70cac1 !important; font-size: 20px; }
+
+/* Dashboard Titles & Sections */
+.stat-head, .stat_head {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    letter-spacing: 0.5px;
+    width: 100%;
+}
+
+.emp_graph {
+    padding: 0 15px 15px 15px !important;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.dept_chart_container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+}
+
+.leave_graph {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.leave_chart_container {
+    position: relative;
+    flex: 1 1 calc(50% - 10px);
+    min-width: 280px;
+    height: 280px;
+}
+
+/* Odoo Ribbon */
+.oh-ribbon {
+    position: absolute;
+    left: 10px !important;
+    top: 10px !important;
+    right: auto !important;
+    z-index: 1;
+    overflow: hidden;
+    width: 100px;
+    height: 100px;
+}
+
+.oh-ribbon span {
+    font-size: 9px;
+    font-weight: bold;
+    color: #FFF;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 18px;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    width: 140px;
+    display: block;
+    background: linear-gradient(#017e84 0%, #005f63 100%);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 25px;
+    left: -35px !important;
+    right: auto !important;
+}
+
+/* Lists & Tables styling */
+.attendance_table, .leaves_table, .expense_table, .projects_table {
+    max-height: 250px;
+    overflow-y: auto;
+    border-radius: 6px;
+}
+
+.table thead th {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #4b5563;
+    border-bottom: 2px solid #f3f4f6;
+    padding: 10px 8px;
+}
+
+.table tbody td {
+    font-size: 13px;
+    color: #374151;
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+
+.add_lines {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    color: #4b5563;
+    transition: all 0.2s ease;
+}
+
+.add_lines:hover {
+    background-color: #017e84;
+    color: #ffffff;
+    border-color: #017e84;
+}
+
+.state_td {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffffff;
+    border-radius: 12px;
+    display: inline-block;
+    text-transform: capitalize;
+}
+
+/* Scrollbars styling */
+.attendance_table::-webkit-scrollbar,
+.leaves_table::-webkit-scrollbar,
+.expense_table::-webkit-scrollbar,
+.hr_notification::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.attendance_table::-webkit-scrollbar-track,
+.leaves_table::-webkit-scrollbar-track,
+.expense_table::-webkit-scrollbar-track,
+.hr_notification::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.attendance_table::-webkit-scrollbar-thumb,
+.leaves_table::-webkit-scrollbar-thumb,
+.expense_table::-webkit-scrollbar-thumb,
+.hr_notification_responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.attendance_table::-webkit-scrollbar-thumb:hover,
+.leaves_table::-webkit-scrollbar-thumb:hover,
+.expense_table::-webkit-scrollbar-thumb:hover,
+.hr_notification_responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Notifications (Upcoming section) */
+.hr_notification_responsive {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    height: 320px;
+    overflow-y: auto;
+}
+
+.hr_notification_responsive-head {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #374151;
+    background: #f9fafb;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f3f4f6;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.birth_img {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.days_left {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.birthday {
+    display: block;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.event_emp, .announcement_emp {
+    transition: background-color 0.2s ease;
+}
+
+.event_emp:hover, .announcement_emp:hover {
+    background-color: #f9fafb;
+}
+
+/* General Spacing */
+.mb-3 { margin-bottom: 1rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .container-fluid.o_hr_dashboard {
+        padding: 15px !important;
+    }
+    .employee_profile_sidebar {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .container-fluid.o_hr_dashboard {
+        padding: 10px !important;
+    }
+    .stat-widget-one {
+        height: 75px;
+    }
+    .stat-widget-one .stat-icon {
+        width: 60px;
+        font-size: 20px;
+    }
+    .stat-widget-one .stat-text {
+        font-size: 11px !important;
+    }
+    .stat-widget-one .stat-digit {
+        font-size: 16px !important;
+    }
+}
+
+.manager_dashboard_main_responsive {
+    width: 100%;
+    display: block;
+}

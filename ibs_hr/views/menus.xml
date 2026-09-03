@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Payroll flow -->
+    <menuitem id="menu_ibs_hr_root" name="Payroll Flow"
+              parent="ellithy_hr_base.menu_ellithy_hr_root" sequence="30"
+              groups="ibs_hr.group_ibs_payroll_officer"/>
+    <menuitem id="menu_ibs_payslips" name="Payslips" parent="menu_ibs_hr_root"
+              action="ibs_hr_payslip_action" sequence="10"/>
+    <menuitem id="menu_ibs_payslip_batch" name="Generate Payslips" parent="menu_ibs_hr_root"
+              action="ibs_hr_payslip_batch_action" sequence="20"/>
+    <menuitem id="menu_ibs_attendance_day" name="Attendance Days" parent="menu_ibs_hr_root"
+              action="ibs_hr_attendance_day_action" sequence="30"/>
+    <menuitem id="menu_ibs_loans" name="Loans &amp; Advances" parent="menu_ibs_hr_root"
+              action="ibs_hr_loan_action" sequence="40"/>
+
+    <!-- Penalties -->
+    <menuitem id="menu_ibs_penalties_root" name="Penalties"
+              parent="ellithy_hr_base.menu_ellithy_hr_root" sequence="40"
+              groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>
+
+    <menuitem id="menu_ibs_penalty_list" name="Penalty List"
+              parent="menu_ibs_penalties_root"
+              action="ibs_hr_violation_action" sequence="10"/>
+    <menuitem id="menu_ibs_penalties" name="Penalties"
+              parent="menu_ibs_penalties_root"
+              action="ibs_hr_warning_action" sequence="20"/>
+    <menuitem id="menu_ibs_admin_penalty_list" name="Admin Penalties List"
+              parent="menu_ibs_penalties_root"
+              action="ibs_hr_admin_penalty_action" sequence="30"/>
+    <menuitem id="menu_ibs_admin_penalties" name="Admin Penalties"
+              parent="menu_ibs_penalties_root"
+              action="ibs_hr_admin_penalty_record_action" sequence="40"/>
+    <menuitem id="menu_ibs_commission_penalties" name="Commission Penalties"
+              parent="menu_ibs_penalties_root"
+              action="ibs_hr_commission_penalty_action" sequence="50"/>
+    <menuitem id="menu_ibs_investigations" name="Investigations"
+              parent="menu_ibs_penalties_root"
+              action="ibs_hr_investigation_action" sequence="60"/>
+
+    <!-- Permissions and missions live under Time Off > Management, where
+         anyone looking for someone's absence would go first. -->
+    <menuitem id="menu_ibs_timeoff_permissions" name="Permissions"
+              parent="hr_holidays.menu_hr_holidays_management"
+              action="ibs_hr_permission_action" sequence="30"/>
+    <menuitem id="menu_ibs_timeoff_missions" name="Missions"
+              parent="hr_holidays.menu_hr_holidays_management"
+              action="ibs_hr_mission_action" sequence="40"/>
+</odoo>

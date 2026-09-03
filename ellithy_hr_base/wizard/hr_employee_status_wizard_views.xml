@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ellithy_hr_employee_status_wizard_view_form" model="ir.ui.view">
+        <field name="name">ellithy.hr.employee.status.wizard.form</field>
+        <field name="model">ellithy.hr.employee.status.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Change Employee Status">
+                <field name="currently_active" invisible="1"/>
+                <div class="alert alert-warning" role="alert" invisible="not currently_active">
+                    Archiving an employee requires both a resignation date and a
+                    last working day, and disables their login.
+                </div>
+                <group invisible="not currently_active">
+                    <group>
+                        <field name="employee_id" readonly="1"/>
+                        <field name="inactive_type"/>
+                        <field name="resignation_type"/>
+                    </group>
+                    <group>
+                        <field name="resignation_date"/>
+                        <field name="last_working_day"/>
+                        <field name="disable_login"/>
+                    </group>
+                </group>
+                <group string="Reason" invisible="not currently_active">
+                    <field name="turnover_reason" nolabel="1" placeholder="Why is the employee leaving?"/>
+                    <field name="blacklist"/>
+                    <field name="blacklist_reason" invisible="not blacklist" required="blacklist"/>
+                </group>
+                <div class="alert alert-info" role="status" invisible="currently_active">
+                    This employee is archived. Reactivating clears the resignation
+                    date and last working day, which may not be held on an active
+                    employee.
+                </div>
+                <footer>
+                    <button name="action_apply" type="object" string="Archive Employee"
+                            class="btn-primary" invisible="not currently_active"/>
+                    <button name="action_reactivate" type="object" string="Reactivate"
+                            class="btn-primary" invisible="currently_active"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

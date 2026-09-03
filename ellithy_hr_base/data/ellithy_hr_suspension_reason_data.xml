@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="suspension_reason_1" model="ellithy.hr.suspension.reason">
+            <field name="name">بعد السكن عن مكان العمل</field>
+            <field name="sequence">10</field>
+            <field name="legacy_value">بعد السكن عن مكان العمل</field>
+        </record>
+        <record id="suspension_reason_2" model="ellithy.hr.suspension.reason">
+            <field name="name">عدم الرضاء عن الراتب</field>
+            <field name="sequence">20</field>
+            <field name="legacy_value">عدم الرضاء عن الراتب</field>
+        </record>
+        <record id="suspension_reason_3" model="ellithy.hr.suspension.reason">
+            <field name="name">مشكله صحيه و عدم القدره على العمل</field>
+            <field name="sequence">30</field>
+            <field name="legacy_value">مشكله صحيه و عدم القدره على العمل</field>
+        </record>
+        <record id="suspension_reason_4" model="ellithy.hr.suspension.reason">
+            <field name="name">عرض افضل فى الراتب و الدرجه الوظيفيه</field>
+            <field name="sequence">40</field>
+            <field name="legacy_value">عرض افضل فى الراتب و الدرجه الوظيفيه</field>
+        </record>
+        <record id="suspension_reason_5" model="ellithy.hr.suspension.reason">
+            <field name="name">مشكلة في تعامل المشرف او المدير المباشر</field>
+            <field name="sequence">50</field>
+            <field name="legacy_value">مشكلة في تعامل المشرف او المدير المباشر</field>
+        </record>
+        <record id="suspension_reason_6" model="ellithy.hr.suspension.reason">
+            <field name="name">شركته السابقة قدمت له عرض احتفاظ</field>
+            <field name="sequence">60</field>
+            <field name="legacy_value">شركته السابقة قدمت له عرض احتفاظ</field>
+        </record>
+        <record id="suspension_reason_7" model="ellithy.hr.suspension.reason">
+            <field name="name">سلوك سئ +ضعيف فنيا</field>
+            <field name="sequence">70</field>
+            <field name="legacy_value">سلوك سئ +ضعيف فنيا</field>
+        </record>
+        <record id="suspension_reason_8" model="ellithy.hr.suspension.reason">
+            <field name="name">عرض افضل خارج البلاد</field>
+            <field name="sequence">80</field>
+            <field name="legacy_value">عرض افضل خارج البلاد</field>
+        </record>
+        <record id="suspension_reason_9" model="ellithy.hr.suspension.reason">
+            <field name="name">لم تتأقلم مع System المشتريات</field>
+            <field name="sequence">90</field>
+            <field name="legacy_value">لم تتأقلم مع System المشتريات</field>
+        </record>
+        <record id="suspension_reason_10" model="ellithy.hr.suspension.reason">
+            <field name="name">يحتاج الى تطوير في الجانب الفني لاداء عمله بفعالية</field>
+            <field name="sequence">100</field>
+            <field name="legacy_value">يحتاج الى تطوير في الجانب الفني لاداء عمله بفعالية</field>
+        </record>
+        <record id="suspension_reason_11" model="ellithy.hr.suspension.reason">
+            <field name="name">غير مناسب فنيا بعد انتهاء فتره التدريب</field>
+            <field name="sequence">110</field>
+            <field name="legacy_value">غير مناسب فنيا بعد انتهاء فتره التدريب</field>
+        </record>
+        <record id="suspension_reason_12" model="ellithy.hr.suspension.reason">
+            <field name="name">كاد ان يتسبب في خسارة مالية للشركة</field>
+            <field name="sequence">120</field>
+            <field name="legacy_value">كاد ان يتسبب في خسارة مالية للشركة</field>
+        </record>
+        <record id="suspension_reason_13" model="ellithy.hr.suspension.reason">
+            <field name="name">سلوك سئ</field>
+            <field name="sequence">130</field>
+            <field name="legacy_value">سلوك سئ</field>
+        </record>
+        <record id="suspension_reason_14" model="ellithy.hr.suspension.reason">
+            <field name="name">الزواج و السفر للخارج</field>
+            <field name="sequence">140</field>
+            <field name="legacy_value">الزواج و السفر للخارج</field>
+        </record>
+        <record id="suspension_reason_15" model="ellithy.hr.suspension.reason">
+            <field name="name">الانجاب</field>
+            <field name="sequence">150</field>
+            <field name="legacy_value">الانجاب</field>
+        </record>
+        <record id="suspension_reason_16" model="ellithy.hr.suspension.reason">
+            <field name="name">سرقة</field>
+            <field name="sequence">160</field>
+            <field name="legacy_value">سرقة</field>
+        </record>
+        <record id="suspension_reason_17" model="ellithy.hr.suspension.reason">
+            <field name="name">عرض افضل ماديا</field>
+            <field name="sequence">170</field>
+            <field name="legacy_value">عرض افضل ماديا</field>
+        </record>
+        <record id="suspension_reason_18" model="ellithy.hr.suspension.reason">
+            <field name="name">مخالفة قواعد العمل</field>
+            <field name="sequence">180</field>
+            <field name="legacy_value">مخالفة قواعد العمل</field>
+        </record>
+        <record id="suspension_reason_19" model="ellithy.hr.suspension.reason">
+            <field name="name">اسباب غير منطقية</field>
+            <field name="sequence">190</field>
+            <field name="legacy_value">اسباب غير منطقية</field>
+        </record>
+        <record id="suspension_reason_20" model="ellithy.hr.suspension.reason">
+            <field name="name">غير ملتزم</field>
+            <field name="sequence">200</field>
+            <field name="legacy_value">غير ملتزم</field>
+        </record>
+        <record id="suspension_reason_21" model="ellithy.hr.suspension.reason">
+            <field name="name">تحرش</field>
+            <field name="sequence">210</field>
+            <field name="legacy_value">تحرش</field>
+        </record>
+        <record id="suspension_reason_22" model="ellithy.hr.suspension.reason">
+            <field name="name">انقطاع عن العمل</field>
+            <field name="sequence">220</field>
+            <field name="legacy_value">انقطاع عن العمل</field>
+        </record>
+        <record id="suspension_reason_23" model="ellithy.hr.suspension.reason">
+            <field name="name">رفض امضاء ايصال الامانة</field>
+            <field name="sequence">230</field>
+            <field name="legacy_value">رفض امضاء ايصال الامانة</field>
+        </record>
+        <record id="suspension_reason_24" model="ellithy.hr.suspension.reason">
+            <field name="name">انقطاع</field>
+            <field name="sequence">240</field>
+            <field name="legacy_value">انقطاع</field>
+        </record>
+        <record id="suspension_reason_25" model="ellithy.hr.suspension.reason">
+            <field name="name">كثرة الغياب و عدم الالتزام</field>
+            <field name="sequence">250</field>
+            <field name="legacy_value">كثرة الغياب و عدم الالتزام</field>
+        </record>
+        <record id="suspension_reason_26" model="ellithy.hr.suspension.reason">
+            <field name="name">التحاقه بالجيش</field>
+            <field name="sequence">260</field>
+            <field name="legacy_value">التحاقه بالجيش</field>
+        </record>
+        <record id="suspension_reason_27" model="ellithy.hr.suspension.reason">
+            <field name="name">تعاطي مخدرات</field>
+            <field name="sequence">270</field>
+            <field name="legacy_value">تعاطي مخدرات</field>
+        </record>
+        <record id="suspension_reason_28" model="ellithy.hr.suspension.reason">
+            <field name="name">وفاه</field>
+            <field name="sequence">280</field>
+            <field name="legacy_value">وفاه</field>
+        </record>
+        <record id="suspension_reason_29" model="ellithy.hr.suspension.reason">
+            <field name="name">انتهاء فترة التدريب</field>
+            <field name="sequence">290</field>
+            <field name="legacy_value">انتهاء فترة التدريب</field>
+        </record>
+        <record id="suspension_reason_30" model="ellithy.hr.suspension.reason">
+            <field name="name">انتهاء رخصة الونش</field>
+            <field name="sequence">300</field>
+            <field name="legacy_value">انتهاء رخصة الونش</field>
+        </record>
+        <record id="suspension_reason_31" model="ellithy.hr.suspension.reason">
+            <field name="name">تعدي</field>
+            <field name="sequence">310</field>
+            <field name="legacy_value">تعدي</field>
+        </record>
+        <record id="suspension_reason_32" model="ellithy.hr.suspension.reason">
+            <field name="name">تخفيف عمالة</field>
+            <field name="sequence">320</field>
+            <field name="legacy_value">تخفيف عمالة</field>
+        </record>
+        <record id="suspension_reason_33" model="ellithy.hr.suspension.reason">
+            <field name="name">طول عدد ساعات العمل مع عدم احتساب ساعات اضافية</field>
+            <field name="sequence">330</field>
+            <field name="legacy_value">طول عدد ساعات العمل مع عدم احتساب ساعات اضافية</field>
+        </record>
+        <record id="suspension_reason_34" model="ellithy.hr.suspension.reason">
+            <field name="name">عدم تحقيق تارجت المبيعات</field>
+            <field name="sequence">340</field>
+            <field name="legacy_value">عدم تحقيق تارجت المبيعات</field>
+        </record>
+        <record id="suspension_reason_35" model="ellithy.hr.suspension.reason">
+            <field name="name">ظروف شخصية</field>
+            <field name="sequence">350</field>
+            <field name="legacy_value">ظروف شخصية</field>
+        </record>
+        <record id="suspension_reason_36" model="ellithy.hr.suspension.reason">
+            <field name="name">خلال الفترة الحالية Google Sheets تم إيقاف العمل نظرًا لعدم الحاجة إلى استخدام</field>
+            <field name="sequence">360</field>
+            <field name="legacy_value">خلال الفترة الحالية Google Sheets تم إيقاف العمل نظرًا لعدم الحاجة إلى استخدام</field>
+        </record>
+        <record id="suspension_reason_37" model="ellithy.hr.suspension.reason">
+            <field name="name">لم يتأقلم مع نظام الشركة</field>
+            <field name="sequence">370</field>
+            <field name="legacy_value">لم يتأقلم مع نظام الشركة</field>
+        </record>
+        <record id="suspension_reason_38" model="ellithy.hr.suspension.reason">
+            <field name="name">UnQualified</field>
+            <field name="sequence">380</field>
+            <field name="legacy_value">UnQualified</field>
+        </record>
+        <record id="suspension_reason_39" model="ellithy.hr.suspension.reason">
+            <field name="name">تسريب أفكار الشركة</field>
+            <field name="sequence">390</field>
+            <field name="legacy_value">تسريب أفكار الشركة</field>
+        </record>
+        <record id="suspension_reason_40" model="ellithy.hr.suspension.reason">
+            <field name="name">تقاضي مقابل مادي من مورد</field>
+            <field name="sequence">400</field>
+            <field name="legacy_value">تقاضي مقابل مادي من مورد</field>
+        </record>
+        <record id="suspension_reason_41" model="ellithy.hr.suspension.reason">
+            <field name="name">رغبته في تغيير فرع عمله</field>
+            <field name="sequence">410</field>
+            <field name="legacy_value">رغبته في تغيير فرع عمله</field>
+        </record>
+        <record id="suspension_reason_42" model="ellithy.hr.suspension.reason">
+            <field name="name">Shift Career</field>
+            <field name="sequence">420</field>
+            <field name="legacy_value">Shift Career</field>
+        </record>
+        <record id="suspension_reason_43" model="ellithy.hr.suspension.reason">
+            <field name="name">ضعف الانتاجية</field>
+            <field name="sequence">430</field>
+            <field name="legacy_value">ضعف الانتاجية</field>
+        </record>
+        <record id="suspension_reason_44" model="ellithy.hr.suspension.reason">
+            <field name="name">لم يجتاز Test المتدربين و تقييمات مديره و غير ملتزم</field>
+            <field name="sequence">440</field>
+            <field name="legacy_value">لم يجتاز Test المتدربين و تقييمات مديره و غير ملتزم</field>
+        </record>
+        <record id="suspension_reason_45" model="ellithy.hr.suspension.reason">
+            <field name="name">التحدث بإسلوب غير لائق مع عميلة</field>
+            <field name="sequence">450</field>
+            <field name="legacy_value">التحدث بإسلوب غير لائق مع عميلة</field>
+        </record>
+        <record id="suspension_reason_46" model="ellithy.hr.suspension.reason">
+            <field name="name">احتياج الشركة لتوظيف موظف Full Time</field>
+            <field name="sequence">460</field>
+            <field name="legacy_value">احتياج الشركة لتوظيف موظف Full Time</field>
+        </record>
+        <record id="suspension_reason_47" model="ellithy.hr.suspension.reason">
+            <field name="name">التسبب في اتلالاف سيارات في الشركة</field>
+            <field name="sequence">470</field>
+            <field name="legacy_value">التسبب في اتلالاف سيارات في الشركة</field>
+        </record>
+    </data>
+</odoo>

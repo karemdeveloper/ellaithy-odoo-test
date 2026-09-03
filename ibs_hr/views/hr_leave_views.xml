@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_leave_type_view_form_inherit" model="ir.ui.view">
+        <field name="name">hr.leave.type.form.ibs</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="name_ar"/>
+                <field name="slug" readonly="1" groups="base.group_no_one"/>
+                <field name="legacy_allocated" readonly="1" groups="base.group_no_one"/>
+                <field name="early_exit"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="hr_leave_view_form_inherit" model="ir.ui.view">
+        <field name="name">hr.leave.form.ibs</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="title"/>
+            </field>
+            <sheet position="inside">
+                <group string="Second Approval"
+                       groups="hr_holidays.group_hr_holidays_user">
+                    <group>
+                        <field name="requires_admin_approval"/>
+                        <field name="admin_second_approval_status"
+                               invisible="not requires_admin_approval"/>
+                        <field name="early_exit"/>
+                    </group>
+                    <group>
+                        <field name="admin_second_approved_by"
+                               invisible="not requires_admin_approval"/>
+                        <field name="admin_second_approved_at"
+                               invisible="not requires_admin_approval"/>
+                        <field name="referred_by"/>
+                        <field name="leave_requested_date"/>
+                    </group>
+                    <field name="admin_remark" placeholder="Admin remark"/>
+                    <field name="legacy_id" readonly="1" groups="base.group_no_one"/>
+                </group>
+            </sheet>
+        </field>
+    </record>
+</odoo>

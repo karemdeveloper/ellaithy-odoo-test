@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_ellithy_hr_root"
+              name="Ellithy HR"
+              web_icon="hr,static/description/icon.png"
+              sequence="70"
+              groups="ellithy_hr_base.group_ellithy_hr_assistant"/>
+
+    <menuitem id="menu_ellithy_hr_directory"
+              name="Directory"
+              parent="menu_ellithy_hr_root"
+              sequence="10"/>
+
+    <menuitem id="menu_ellithy_hr_employees"
+              name="Employees"
+              parent="menu_ellithy_hr_directory"
+              action="hr.open_view_employee_list_my"
+              sequence="10"/>
+
+    <menuitem id="menu_ellithy_hr_inactive"
+              name="Inactive Employees"
+              parent="menu_ellithy_hr_directory"
+              action="hr_employee_inactive_action"
+              sequence="20"
+              groups="ellithy_hr_base.group_ellithy_hr_personnel"/>
+
+    <menuitem id="menu_ellithy_hr_structure"
+              name="Organisation"
+              parent="menu_ellithy_hr_root"
+              sequence="20"/>
+
+    <menuitem id="menu_ellithy_hr_branches"
+              name="Branches"
+              parent="menu_ellithy_hr_structure"
+              action="ellithy_branch_action"
+              sequence="10"/>
+
+    <menuitem id="menu_ellithy_hr_departments"
+              name="Departments"
+              parent="menu_ellithy_hr_structure"
+              action="hr.hr_department_tree_action"
+              sequence="20"/>
+
+    <menuitem id="menu_ellithy_hr_sections"
+              name="Sections"
+              parent="menu_ellithy_hr_structure"
+              action="hr_section_action"
+              sequence="30"/>
+
+    <menuitem id="menu_ellithy_hr_positions"
+              name="Positions"
+              parent="menu_ellithy_hr_structure"
+              action="hr.action_hr_job"
+              sequence="40"/>
+
+    <menuitem id="menu_ellithy_hr_config"
+              name="Configuration"
+              parent="menu_ellithy_hr_root"
+              sequence="90"
+              groups="ellithy_hr_base.group_ellithy_hr_admin"/>
+
+    <menuitem id="menu_ellithy_hr_grades"
+              name="Grades"
+              parent="menu_ellithy_hr_config"
+              action="ellithy_hr_grade_action"
+              sequence="10"/>
+
+    <menuitem id="menu_ellithy_hr_document_types"
+              name="Document Types"
+              parent="menu_ellithy_hr_config"
+              action="ellithy_hr_document_type_action"
+              sequence="20"/>
+
+    <menuitem id="menu_ellithy_hr_suspension_reasons"
+              name="Suspension Reasons"
+              parent="menu_ellithy_hr_config"
+              action="ellithy_hr_suspension_reason_action"
+              sequence="30"/>
+
+    <menuitem id="menu_ellithy_hr_insurance_offices"
+              name="Insurance Offices"
+              parent="menu_ellithy_hr_config"
+              action="ellithy_hr_insurance_office_action"
+              sequence="40"/>
+
+    <menuitem id="menu_ellithy_hr_uniforms"
+              name="Uniforms"
+              parent="menu_ellithy_hr_config"
+              action="ellithy_hr_uniform_action"
+              sequence="50"/>
+
+    <menuitem id="menu_ellithy_hr_admin_settings"
+              name="Administration Settings"
+              parent="menu_ellithy_hr_root"
+              sequence="80"
+              groups="ellithy_hr_base.group_ellithy_hr_personnel"/>
+
+    <menuitem id="menu_ellithy_hr_line_phone" name="Work Numbers"
+              parent="menu_ellithy_hr_admin_settings"
+              action="ellithy_hr_line_action_phone" sequence="10"/>
+    <menuitem id="menu_ellithy_hr_line_lap" name="Lap Numbers"
+              parent="menu_ellithy_hr_admin_settings"
+              action="ellithy_hr_line_action_lap" sequence="20"/>
+    <menuitem id="menu_ellithy_hr_line_adsl" name="ADSL Numbers"
+              parent="menu_ellithy_hr_admin_settings"
+              action="ellithy_hr_line_action_adsl" sequence="30"/>
+    <menuitem id="menu_ellithy_hr_line_sms" name="SMS Numbers"
+              parent="menu_ellithy_hr_admin_settings"
+              action="ellithy_hr_line_action_sms" sequence="40"/>
+    <menuitem id="menu_ellithy_hr_line_data" name="Data Numbers"
+              parent="menu_ellithy_hr_admin_settings"
+              action="ellithy_hr_line_action_data" sequence="50"/>
+    <menuitem id="menu_ellithy_hr_line_all" name="All Lines"
+              parent="menu_ellithy_hr_admin_settings"
+              action="ellithy_hr_line_action_all" sequence="60"/>
+</odoo>

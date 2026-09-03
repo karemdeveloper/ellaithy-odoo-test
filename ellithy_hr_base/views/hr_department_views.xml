@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_department_view_form_inherit" model="ir.ui.view">
+        <field name="name">hr.department.form.ellithy</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_form"/>
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="name_ar"/>
+                <field name="dept_type"/>
+                <field name="branch_id"/>
+                <field name="address"/>
+                <field name="phone"/>
+                <field name="legacy_id" readonly="1" groups="base.group_no_one"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="hr_department_view_list_inherit" model="ir.ui.view">
+        <field name="name">hr.department.list.ellithy</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="name_ar" optional="show"/>
+                <field name="dept_type" optional="show"/>
+                <field name="branch_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="hr_department_view_search_inherit" model="ir.ui.view">
+        <field name="name">hr.department.search.ellithy</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_filter"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="branch_id"/>
+                <filter name="filter_directorate" string="Directorates"
+                        domain="[('dept_type', '=', 'directorate')]"/>
+                <filter name="filter_section" string="Sections"
+                        domain="[('dept_type', '=', 'section')]"/>
+                <filter name="group_branch" string="Branch"
+                        context="{'group_by': 'branch_id'}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="hr_section_action" model="ir.actions.act_window">
+        <field name="name">Sections</field>
+        <field name="res_model">hr.department</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('dept_type', '=', 'section')]</field>
+        <field name="context">{'default_dept_type': 'section'}</field>
+    </record>
+</odoo>

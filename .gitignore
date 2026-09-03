@@ -1,1 +1,12 @@
-*.pyc
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Local dev stack and data live outside the repo, in ~/ellithy
+*.sql
+*.zip
+.devstack/

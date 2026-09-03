@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_view_form_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.ellithy</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <div name="button_box" position="inside">
+                <button name="action_open_status_wizard" type="object"
+                        class="oe_stat_button" icon="fa-user-times"
+                        groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Change</span>
+                        <span class="o_stat_text">Status</span>
+                    </div>
+                </button>
+                <button name="action_force_logout" type="object"
+                        class="oe_stat_button" icon="fa-sign-out"
+                        confirm="End every active session for this employee?"
+                        invisible="not user_id"
+                        groups="ellithy_hr_base.group_ellithy_hr_admin">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Force</span>
+                        <span class="o_stat_text">Logout</span>
+                    </div>
+                </button>
+            </div>
+
+            <field name="job_title" position="before">
+                <field name="employee_code"/>
+                <field name="name_ar"/>
+            </field>
+
+            <field name="department_id" position="after">
+                <field name="branch_id"/>
+                <field name="section_id"/>
+                <field name="grade_id"/>
+            </field>
+
+            <notebook position="inside">
+
+                <page string="Employment Terms" name="ellithy_terms">
+                    <group>
+                        <group string="Engagement">
+                            <field name="joining_date"/>
+                            <field name="work_type"/>
+                            <field name="workspace_type"/>
+                            <field name="time_role"/>
+                        </group>
+                        <group string="Entitlement Policy">
+                            <field name="vacation_role"/>
+                            <field name="overtime_role"/>
+                            <field name="overtime_report"/>
+                        </group>
+                        <group string="Evaluation">
+                            <field name="evaluation_date"/>
+                            <field name="evaluation_mail_sent_at"/>
+                        </group>
+                        <group string="Identity">
+                            <field name="card_issue_date"/>
+                            <field name="religion"/>
+                            <field name="office_number"/>
+                            <field name="created_from" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+                </page>
+
+                <page string="Insurance" name="ellithy_insurance"
+                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                    <group>
+                        <group string="Medical">
+                            <field name="medical_insurance_type"/>
+                            <field name="medical_insurance_date"/>
+                            <field name="medical_card_number"/>
+                            <field name="medical_cost_per_year"/>
+                            <field name="medical_cost_per_month"/>
+                            <field name="medical_employee_share"/>
+                            <field name="has_medical_relative"/>
+                        </group>
+                        <group string="Social">
+                            <field name="has_social_insurance"/>
+                            <field name="social_insurance_office_id"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_number"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_start_date"
+                                   invisible="not has_social_insurance"/>
+                            <field name="contract_id" invisible="1"/>
+                            <field name="basic_salary"/>
+                            <field name="subscription_salary"/>
+                            <field name="total_salary"/>
+                            <field name="profession"/>
+                            <div colspan="2" class="text-muted"
+                                 invisible="contract_id">
+                                No running contract, so the salary figures
+                                cannot be set here yet.
+                            </div>
+                        </group>
+                    </group>
+                    <group string="Superseded Insurance Columns"
+                           groups="base.group_no_one">
+                        <group>
+                            <field name="insurance_number"/>
+                            <field name="insurance_office"/>
+                            <field name="insurance_entered_date"/>
+                        </group>
+                        <group>
+                            <field name="insurance_salary"/>
+                            <field name="social_insurance_price"/>
+                        </group>
+                    </group>
+                    <separator string="Covered Relatives"/>
+                    <field name="dependant_ids" invisible="not has_medical_relative">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="relation"/>
+                            <field name="birthday"/>
+                            <field name="age"/>
+                            <field name="medical_insurance_type"/>
+                            <field name="card_number"/>
+                            <field name="code"/>
+                            <field name="insurance_date"/>
+                            <field name="overage_price"/>
+                            <field name="cost_per_year"/>
+                            <field name="cost_per_month"/>
+                            <field name="employee_share"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Payout" name="ellithy_payout"
+                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                    <field name="payout_account_ids">
+                        <list editable="bottom">
+                            <field name="method"/>
+                            <field name="is_primary" widget="boolean_toggle"/>
+                            <field name="bank_name" invisible="method != 'bank'"/>
+                            <field name="account_holder" invisible="method != 'bank'"/>
+                            <field name="account_number" invisible="method != 'bank'"/>
+                            <field name="account_iban" invisible="method != 'bank'"/>
+                            <field name="branch_code" invisible="method != 'bank'"/>
+                            <field name="account_type" invisible="method != 'bank'"/>
+                            <field name="fawry_national_number" invisible="method != 'fawry'"/>
+                            <field name="fawry_phone_number" invisible="method != 'fawry'"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="HR File" name="ellithy_documents"
+                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                    <group>
+                        <field name="document_completeness" widget="progressbar"/>
+                    </group>
+                    <field name="document_ids">
+                        <list editable="bottom" default_order="sequence">
+                            <field name="sequence" column_invisible="1"/>
+                            <field name="type_id" readonly="1"/>
+                            <field name="required" readonly="1" optional="show"/>
+                            <field name="received" widget="boolean_toggle"/>
+                            <field name="document" filename="filename" widget="binary"/>
+                            <field name="filename" column_invisible="1"/>
+                            <field name="received_date"/>
+                            <field name="expiry_date"/>
+                            <field name="note" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Custody" name="ellithy_custody">
+                    <group>
+                        <group string="Entitled To">
+                            <field name="has_uniform"/>
+                            <field name="has_id_file"/>
+                            <field name="has_mobile"/>
+                            <field name="has_medical"/>
+                            <field name="has_addition"/>
+                        </group>
+                        <group string="Uniforms Issued" colspan="2">
+                            <field name="uniform_ids" nolabel="1"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   placeholder="Select uniform items"/>
+                        </group>
+                        <!-- <group string="Costs" groups="base.group_no_one">
+                            <div colspan="2" class="text-muted">
+                                Unused in the source system: zero on every
+                                employee except three personal-card values.
+                            </div>
+                            <field name="mobile_price"/>
+                            <field name="medical_price"/>
+                            <field name="detection_price"/>
+                            <field name="personal_card_price"/>
+                        </group> -->
+                    </group>
+                </page>
+
+                <page string="Exit" name="ellithy_exit"
+                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                    <div class="alert alert-info" role="status">
+                        Resignation date and last working day may only be set on an
+                        archived employee, and archiving requires both. Use the
+                        Change Status button rather than editing these directly.
+                    </div>
+                    <group>
+                        <group string="Departure">
+                            <field name="inactive_type"/>
+                            <field name="resignation_type"/>
+                            <field name="resignation_date"/>
+                            <field name="last_working_day"/>
+                            <field name="settlement_done"/>
+                        </group>
+                        <group string="Suspension">
+                            <field name="suspension_start"/>
+                            <field name="suspension_end"/>
+                            <field name="suspension_reason_id"/>
+                            <field name="suspension_comment"/>
+                        </group>
+                        <group string="Blacklist">
+                            <field name="blacklist"/>
+                            <field name="blacklist_reason" invisible="not blacklist"
+                                   required="blacklist"/>
+                        </group>
+                        <!-- <group string="Migration" groups="base.group_no_one">
+                            <field name="legacy_id" readonly="1"/>
+                            <field name="legacy_odoo_id" readonly="1"/>
+                        </group> -->
+                    </group>
+                </page>
+
+            </notebook>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_list_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.list.ellithy</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="before">
+                <field name="employee_code"/>
+            </field>
+            <field name="name" position="after">
+                <field name="name_ar" optional="show"/>
+            </field>
+            <field name="department_id" position="after">
+                <field name="branch_id" optional="show"/>
+                <field name="section_id" optional="show"/>
+                <field name="grade_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_search_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.search.ellithy</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="employee_code"/>
+                <field name="name_ar"/>
+                <field name="identification_id" string="National ID"/>
+                <field name="branch_id"/>
+                <field name="grade_id"/>
+            </field>
+            <filter name="group_department" position="after">
+                <filter name="group_branch" string="Branch"
+                        context="{'group_by': 'branch_id'}"/>
+                <filter name="group_section" string="Section"
+                        context="{'group_by': 'section_id'}"/>
+                <filter name="group_grade" string="Grade"
+                        context="{'group_by': 'grade_id'}"/>
+            </filter>
+            <filter name="group_department" position="before">
+                <filter name="filter_blacklisted" string="Blacklisted"
+                        domain="[('blacklist', '=', True)]"/>
+                <filter name="filter_incomplete_file" string="Incomplete HR File"
+                        domain="[('document_completeness', '&lt;', 100)]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="hr_employee_inactive_action" model="ir.actions.act_window">
+        <field name="name">Inactive Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('active', '=', False)]</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+</odoo>
