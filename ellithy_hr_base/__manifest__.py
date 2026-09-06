@@ -47,6 +47,7 @@ reconcilable against the source MariaDB database.
         'wizard/hr_employee_status_wizard_views.xml',
         'views/menus.xml',
     ],
+    'icon': '/ellithy_hr_base/static/description/icon.png',
     'installable': True,
     'application': True,
     'auto_install': False,

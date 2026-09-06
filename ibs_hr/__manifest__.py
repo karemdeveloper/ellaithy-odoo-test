@@ -53,6 +53,7 @@ Known legacy defects, deliberately not reproduced -- see README.
         'views/ibs_hr_payslip_views.xml',
         'views/menus.xml',
     ],
+    'icon': '/ibs_hr/static/description/icon.png',
     'installable': True,
-    'application': False,
+    'application': True,
 }

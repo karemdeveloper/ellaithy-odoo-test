@@ -155,10 +155,20 @@ class HrEmployee(models.Model):
         leaves_this_month = cr.fetchall()
         leaves_alloc_req = self.env['hr.leave.allocation'].sudo().search_count(
             [('state', 'in', ['confirm', 'validate1'])])
-        timesheet_count = self.env['account.analytic.line'].sudo().search_count(
-            [('project_id', '!=', False), ('user_id', '=', uid)])
+        # Timesheets are out of scope for this deployment. The model check
+        # covers the search; the view lookup needs raise_if_not_found because
+        # env.ref raises on a missing xmlid rather than returning empty.
+        # Checking for the model is not enough: account.analytic.line comes
+        # from `analytic` and survives, but hr_timesheet is what adds the
+        # project_id field the domain filters on. Test the field.
+        analytic = self.env['account.analytic.line']
+        if 'project_id' in analytic._fields:
+            timesheet_count = analytic.sudo().search_count(
+                [('project_id', '!=', False), ('user_id', '=', uid)])
+        else:
+            timesheet_count = 0
         timesheet_view_id = self.env.ref(
-            'hr_timesheet.hr_timesheet_line_search')
+            'hr_timesheet.hr_timesheet_line_search', raise_if_not_found=False)
         job_applications = self.env['hr.applicant'].sudo().search_count([])
         if employee:
             sql = """select broad_factor from hr_employee_broad_factor 
@@ -235,15 +245,23 @@ class HrEmployee(models.Model):
              ('position_ids', 'in', employee.job_id.id),
              ], fields=['announcement_reason', 'date_start', 'date_end'])
 
-        lang = f"'{self.env.context['lang']}'"
-        cr.execute("""select e.id, e.name ->> e.lang as name, e.date_begin,
-         e.date_end,rp.name as location
-        from event_event e
-        inner join res_partner rp 
-        on e.address_id = rp.id
-        and (e.date_begin >= now())
-        order by e.date_begin""")
-        event = cr.fetchall()
+        # The events module is out of scope for this deployment, so
+        # event_event may not exist. This is raw SQL rather than an ORM call,
+        # so a missing model would be an undefined-table error rather than a
+        # clean KeyError -- check the table is really there before querying.
+        cr.execute("""SELECT to_regclass('public.event_event') IS NOT NULL""")
+        has_events = cr.fetchone()[0]
+        if has_events:
+            cr.execute("""select e.id, e.name ->> e.lang as name, e.date_begin,
+             e.date_end,rp.name as location
+            from event_event e
+            inner join res_partner rp
+            on e.address_id = rp.id
+            and (e.date_begin >= now())
+            order by e.date_begin""")
+            event = cr.fetchall()
+        else:
+            event = []
         return {
             'birthday': birthday_employees,
             'event': event,
@@ -561,28 +579,4 @@ class HrEmployee(models.Model):
             dataset.append(vals)
         return dataset
 
-    @api.model
-    def get_employee_project_tasks(self):
-        """Get employee's project tasks"""
-        employee = self.env['hr.employee'].sudo().browse(self.env.uid)
-        if not employee:
-            return []
-
-        # Get tasks assigned to the current user
-        tasks = self.env['project.task'].sudo().search([
-            ('user_ids', 'in', self.env.uid),
-            ('active', '=', True)
-        ], order='date_deadline asc', limit=10)
-
-        task_data = []
-        for task in tasks:
-            task_data.append({
-                'id': task.id,
-                'task_name': task.name,
-                'project_name': task.project_id.name if task.project_id else 'No Project',
-                'date_deadline': task.date_deadline.strftime('%Y-%m-%d') if task.date_deadline else '',
-                'stage_name': task.stage_id.name if task.stage_id else 'No Stage',
-            })
-
-        return task_data
 

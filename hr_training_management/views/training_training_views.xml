@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_training_training_list" model="ir.ui.view">
+        <field name="name">training.training.list</field>
+        <field name="model">training.training</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="employee_ids" widget="many2many_tags"/>
+                <field name="department_id"/>
+                <field name="training_type_id"/>
+                <field name="category"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="trainer_id"/>
+                <field name="cost" sum="Total Cost"/>
+                <field name="budget" sum="Total Budget"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_training_training_form" model="ir.ui.view">
+        <field name="name">training.training.form</field>
+        <field name="model">training.training</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="branch_id"/>
+                            <field name="department_id"/>
+                            <field name="employee_ids" widget="many2many_tags"/>
+                            <field name="training_type_id"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="time_start"/>
+                            <field name="time_end"/>
+                            <field name="number_of_hours"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="trainer_type"/>
+                            <field name="trainer_id"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="cost"/>
+                            <field name="budget"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Certificate">
+                            <field name="certificate_attachment"
+                                   filename="certificate_attachment_filename"/>
+                            <field name="certificate_attachment_filename" invisible="1"/>
+                        </page>
+                        <page string="Training Files">
+                            <field name="training_file_ids" widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_training_training_search" model="ir.ui.view">
+        <field name="name">training.training.search</field>
+        <field name="model">training.training</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="employee_ids"/>
+                <field name="department_id"/>
+                <field name="training_type_id"/>
+                <field name="trainer_id"/>
+                <filter string="New Comer" name="cat_new_comer" domain="[('category', '=', 'new_comer')]"/>
+                <filter string="Internal" name="cat_internal" domain="[('category', '=', 'internal')]"/>
+                <filter string="External" name="cat_external" domain="[('category', '=', 'external')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Department" name="group_department" context="{'group_by': 'department_id'}"/>
+                    <filter string="Training Type" name="group_type" context="{'group_by': 'training_type_id'}"/>
+                    <filter string="Category" name="group_category" context="{'group_by': 'category'}"/>
+                    <filter string="Trainer" name="group_trainer" context="{'group_by': 'trainer_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_training_training" model="ir.actions.act_window">
+        <field name="name">Trainings</field>
+        <field name="res_model">training.training</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first training record
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_training_training" name="Trainings" parent="menu_training_root"
+              action="action_training_training" sequence="10"/>
+
+</odoo>

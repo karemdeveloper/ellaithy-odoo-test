@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Menu items that span both suites live here, because this is the only
+        module that depends on Ellithy's and Cybrosys's at the same time.
+        Putting them in ellithy_hr_base would force it to depend on the whole
+        OpenHRMS stack.
+    -->
+
+    <!-- ============ Employees ============ -->
+    <!-- ============ 20. Payroll ============ -->
+    <!-- Payroll stays its own app, so only the items the vendor root does
+         not already provide are added to it. -->
+    <menuitem id="menu_payroll_generate"
+              name="Generate Payslips"
+              parent="hr_payroll_community.menu_hr_payroll_community_root"
+              action="hr_payroll_community.hr_payslip_by_employees_action"
+              sequence="30"/>
+
+    <menuitem id="menu_payroll_advances"
+              name="Salary Advances"
+              parent="hr_payroll_community.menu_hr_payroll_community_root"
+              action="ohrms_salary_advance.salary_advance_to_approve_action"
+              sequence="50"/>
+
+</odoo>

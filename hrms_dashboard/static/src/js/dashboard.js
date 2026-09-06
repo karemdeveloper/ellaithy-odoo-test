@@ -51,40 +51,12 @@ export class HrDashboard extends Component{
                 this.state.upcoming_events = res['event'];
                 this.state.announcements = res['announcement'];
             }
-            var projectTaskDetails = await this.orm.call('hr.employee', 'get_employee_project_tasks', [])
-            if (projectTaskDetails) {
-                this.state.login_employee['project_task_lines'] = projectTaskDetails;
-            }
         });
         onMounted(() => {
             this.title = 'Dashboard'
             this.render_graphs();
         });
     }
-    add_project_task() {
-                this.action.doAction({
-                    name: _t("Project Task"),
-                    type: 'ir.actions.act_window',
-                    res_model: 'project.task',
-                    view_mode: 'form',
-                    views: [[false, 'form']],
-                    target: 'new',
-                    context: {
-                        'default_user_ids': [user.userId]
-                    }
-                });
-            }
-    view_project_tasks() {
-                this.action.doAction({
-                    name: _t("My Tasks"),
-                    type: 'ir.actions.act_window',
-                    res_model: 'project.task',
-                    view_mode: 'tree,form,kanban',
-                    views: [[false, 'list'],[false, 'form'],[false, 'kanban']],
-                    domain: [['user_ids','in', user.userId]],
-                    target: 'current'
-                });
-            }
     render_graphs(){
         var self = this;
         if (this.state.login_employee){
@@ -633,20 +605,6 @@ export class HrDashboard extends Component{
                 target: 'current'
             })
         }
-    }
-    hr_timesheets() {
-        this.action.doAction({
-            name: _t("Timesheets"),
-            type: 'ir.actions.act_window',
-            res_model: 'account.analytic.line',
-            view_mode: 'tree,form',
-            views: [[false, 'list'], [false, 'form']],
-            context: {
-                'search_default_month': true,
-            },
-            domain: [['employee_id','=', this.state.login_employee.id]],
-            target: 'current'
-        })
     }
     employee_broad_factor() {
         var today = new Date();

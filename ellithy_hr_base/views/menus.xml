@@ -1,116 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_ellithy_hr_root"
-              name="Ellithy HR"
-              web_icon="hr,static/description/icon.png"
-              sequence="70"
-              groups="ellithy_hr_base.group_ellithy_hr_assistant"/>
+    <!--
+        Everything lives under Odoo's own Employees app rather than a separate
+        "Ellithy HR" root. Odoo already ships Dashboard, Employees, Reporting
+        and Configuration under that root, so those are extended in place and
+        only the three genuinely new sections are created here.
 
-    <menuitem id="menu_ellithy_hr_directory"
-              name="Directory"
-              parent="menu_ellithy_hr_root"
-              sequence="10"/>
+        Section sequences leave room between them:
+          1  Dashboard        (hrms_dashboard)
+          3  Employees        (hr.menu_hr_employee_payroll)
+         10  Time & Attendance
+         15  Conduct
+         20  Payroll          (ellithy_ohrms_bridge)
+         25  Development
+         95  Reporting        (hr.hr_menu_hr_reports)
+        100  Configuration    (hr.menu_human_resources_configuration)
+    -->
 
-    <menuitem id="menu_ellithy_hr_employees"
-              name="Employees"
-              parent="menu_ellithy_hr_directory"
-              action="hr.open_view_employee_list_my"
-              sequence="10"/>
-
-    <menuitem id="menu_ellithy_hr_inactive"
-              name="Inactive Employees"
-              parent="menu_ellithy_hr_directory"
+    <!-- ============ 3. Employees ============ -->
+    <menuitem id="menu_employees_inactive"
+              name="Ex-Employees"
+              parent="hr.menu_hr_employee_payroll"
               action="hr_employee_inactive_action"
               sequence="20"
               groups="ellithy_hr_base.group_ellithy_hr_personnel"/>
 
-    <menuitem id="menu_ellithy_hr_structure"
+    <!-- ============ 10. Time &amp; Attendance ============ -->
+    <menuitem id="menu_time_attendance"
+              name="Time &amp; Attendance"
+              parent="hr.menu_hr_root"
+              sequence="10"
+              groups="ellithy_hr_base.group_ellithy_hr_assistant"/>
+
+    <!-- ============ 15. Conduct ============ -->
+    <menuitem id="menu_conduct"
+              name="Conduct"
+              parent="hr.menu_hr_root"
+              sequence="15"
+              groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>
+
+    <!-- ============ 100. Configuration ============ -->
+    <menuitem id="menu_cfg_organisation"
               name="Organisation"
-              parent="menu_ellithy_hr_root"
-              sequence="20"/>
-
-    <menuitem id="menu_ellithy_hr_branches"
-              name="Branches"
-              parent="menu_ellithy_hr_structure"
-              action="ellithy_branch_action"
-              sequence="10"/>
-
-    <menuitem id="menu_ellithy_hr_departments"
-              name="Departments"
-              parent="menu_ellithy_hr_structure"
-              action="hr.hr_department_tree_action"
-              sequence="20"/>
-
-    <menuitem id="menu_ellithy_hr_sections"
-              name="Sections"
-              parent="menu_ellithy_hr_structure"
-              action="hr_section_action"
-              sequence="30"/>
-
-    <menuitem id="menu_ellithy_hr_positions"
-              name="Positions"
-              parent="menu_ellithy_hr_structure"
-              action="hr.action_hr_job"
-              sequence="40"/>
-
-    <menuitem id="menu_ellithy_hr_config"
-              name="Configuration"
-              parent="menu_ellithy_hr_root"
-              sequence="90"
+              parent="hr.menu_human_resources_configuration"
+              sequence="30"
               groups="ellithy_hr_base.group_ellithy_hr_admin"/>
 
-    <menuitem id="menu_ellithy_hr_grades"
-              name="Grades"
-              parent="menu_ellithy_hr_config"
-              action="ellithy_hr_grade_action"
-              sequence="10"/>
+    <menuitem id="menu_cfg_branches" name="Branches"
+              parent="menu_cfg_organisation" action="ellithy_branch_action" sequence="10"/>
+    <menuitem id="menu_cfg_departments" name="Departments"
+              parent="menu_cfg_organisation" action="hr.hr_department_tree_action" sequence="20"/>
+    <menuitem id="menu_cfg_sections" name="Sections"
+              parent="menu_cfg_organisation" action="hr_section_action" sequence="30"/>
+    <menuitem id="menu_cfg_positions" name="Positions"
+              parent="menu_cfg_organisation" action="hr.action_hr_job" sequence="40"/>
+    <menuitem id="menu_cfg_grades" name="Grades"
+              parent="menu_cfg_organisation" action="ellithy_hr_grade_action" sequence="50"/>
 
-    <menuitem id="menu_ellithy_hr_document_types"
-              name="Document Types"
-              parent="menu_ellithy_hr_config"
-              action="ellithy_hr_document_type_action"
-              sequence="20"/>
+    <menuitem id="menu_cfg_others"
+              name="Others"
+              parent="hr.menu_human_resources_configuration"
+              sequence="70"
+              groups="ellithy_hr_base.group_ellithy_hr_admin"/>
 
-    <menuitem id="menu_ellithy_hr_suspension_reasons"
-              name="Suspension Reasons"
-              parent="menu_ellithy_hr_config"
-              action="ellithy_hr_suspension_reason_action"
-              sequence="30"/>
+    <menuitem id="menu_cfg_document_types" name="Document Types"
+              parent="menu_cfg_others" action="ellithy_hr_document_type_action" sequence="10"/>
+    <menuitem id="menu_cfg_suspension_reasons" name="Suspension Reasons"
+              parent="menu_cfg_others" action="ellithy_hr_suspension_reason_action" sequence="20"/>
+    <menuitem id="menu_cfg_uniforms" name="Uniforms"
+              parent="menu_cfg_others" action="ellithy_hr_uniform_action" sequence="30"/>
+    <menuitem id="menu_cfg_lines" name="Company Lines"
+              parent="menu_cfg_others" action="ellithy_hr_line_action_all" sequence="40"/>
 
-    <menuitem id="menu_ellithy_hr_insurance_offices"
-              name="Insurance Offices"
-              parent="menu_ellithy_hr_config"
-              action="ellithy_hr_insurance_office_action"
-              sequence="40"/>
-
-    <menuitem id="menu_ellithy_hr_uniforms"
-              name="Uniforms"
-              parent="menu_ellithy_hr_config"
-              action="ellithy_hr_uniform_action"
-              sequence="50"/>
-
-    <menuitem id="menu_ellithy_hr_admin_settings"
-              name="Administration Settings"
-              parent="menu_ellithy_hr_root"
-              sequence="80"
-              groups="ellithy_hr_base.group_ellithy_hr_personnel"/>
-
-    <menuitem id="menu_ellithy_hr_line_phone" name="Work Numbers"
-              parent="menu_ellithy_hr_admin_settings"
-              action="ellithy_hr_line_action_phone" sequence="10"/>
-    <menuitem id="menu_ellithy_hr_line_lap" name="Lap Numbers"
-              parent="menu_ellithy_hr_admin_settings"
-              action="ellithy_hr_line_action_lap" sequence="20"/>
-    <menuitem id="menu_ellithy_hr_line_adsl" name="ADSL Numbers"
-              parent="menu_ellithy_hr_admin_settings"
-              action="ellithy_hr_line_action_adsl" sequence="30"/>
-    <menuitem id="menu_ellithy_hr_line_sms" name="SMS Numbers"
-              parent="menu_ellithy_hr_admin_settings"
-              action="ellithy_hr_line_action_sms" sequence="40"/>
-    <menuitem id="menu_ellithy_hr_line_data" name="Data Numbers"
-              parent="menu_ellithy_hr_admin_settings"
-              action="ellithy_hr_line_action_data" sequence="50"/>
-    <menuitem id="menu_ellithy_hr_line_all" name="All Lines"
-              parent="menu_ellithy_hr_admin_settings"
-              action="ellithy_hr_line_action_all" sequence="60"/>
+    <menuitem id="menu_cfg_payroll"
+              name="Payroll"
+              parent="hr.menu_human_resources_configuration"
+              sequence="50"
+              groups="ellithy_hr_base.group_ellithy_hr_admin"/>
+    <menuitem id="menu_cfg_insurance_offices" name="Insurance Offices"
+              parent="menu_cfg_payroll" action="ellithy_hr_insurance_office_action" sequence="10"/>
 </odoo>

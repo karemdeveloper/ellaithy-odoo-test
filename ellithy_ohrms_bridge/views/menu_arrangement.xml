@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Each HR module publishes its own root menu, which is how the app
+        switcher ended up with a dozen HR entries. They are folded into the
+        native Employees app here.
+
+        Re-parenting an existing root is preferred over creating a second menu
+        item for the same action: it keeps one menu per feature, so nothing is
+        reachable by two different paths.
+
+        Roots that are genuinely a different audience — Recruitment, Discuss,
+        Calendar, Invoicing — are deliberately left alone.
+    -->
+
+    <!-- === 1. Dashboard === -->
+    <menuitem id="hrms_dashboard.hrms_dashboard_menu_root"
+              name="Dashboard"
+              parent="hr.menu_hr_root"
+              sequence="1"/>
+
+    <!-- === 2. Employees === -->
+    <!-- === 3. Time &amp; Attendance === -->
+    <menuitem id="hr_attendance.menu_hr_attendance_root"
+              name="Attendance"
+              parent="ellithy_hr_base.menu_time_attendance"
+              sequence="10"/>
+
+    <!-- === 4. Conduct === -->
+    <!-- === 5. Payroll === -->
+    <!-- The vendor root is folded in rather than left beside the curated
+         Payroll section, so payslips are reachable one way only. -->
+    <menuitem id="ohrms_loan.hr_loan_menu_root"
+              name="Loans"
+              parent="hr_payroll_community.menu_hr_payroll_community_root"
+              sequence="40"/>
+
+    <!-- === 6. Development === -->
+    <!-- === restored to root === -->
+    <!-- Time Off, Surveys and Payroll are their own apps again. Removing the
+         re-parenting entry is not enough on its own: the change is already in
+         the database, so parent_id has to be cleared explicitly. -->
+    <record id="hr_holidays.menu_hr_holidays_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+
+    <record id="survey.menu_surveys" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+
+    <record id="hr_resignation.hr_resignation_menu_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+
+    <!-- Both roots come from one module, so they share its icon unless a
+         second one is named explicitly. Courses gets its own so the two are
+         distinguishable in the app switcher. -->
+    <record id="hr_training_management.menu_training_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+        <field name="web_icon">hr_training_management,static/description/icon.png</field>
+    </record>
+
+    <record id="hr_training_management.menu_course_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+        <field name="web_icon">hr_training_management,static/description/icon_courses.png</field>
+    </record>
+
+    <record id="hr_payroll_community.menu_hr_payroll_community_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- === roots that only duplicated something else === -->
+    <!-- Departments and Positions already live under Configuration >
+         Organisation; Reminders and To-do have no children at all. -->
+    <record id="hr.menu_hr_department_kanban" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="hr.menu_view_hr_job" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <!-- Document Templates duplicates what Employees > Documents already
+         covers, and template maintenance is a configuration concern. -->
+    <record id="oh_employee_documents_expiry.hr_document_menu" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="hr_reminder.hr_reminder_menu" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

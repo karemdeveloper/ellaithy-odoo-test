@@ -68,10 +68,10 @@
     'assets': {
         'web.assets_backend': [
             'ohrms_core/static/src/css/menu_order_alphabets.css',
-            'web/static/lib/jquery/jquery.js',
-            'ohrms_core/static/src/js/appMenu.js',
-            'ohrms_core/static/src/xml/link_view.xml',
-            'ohrms_core/static/templates/side_bar.xml'
+            # 'web/static/lib/jquery/jquery.js',
+            # 'ohrms_core/static/src/js/appMenu.js',
+            # 'ohrms_core/static/src/xml/link_view.xml',
+            # 'ohrms_core/static/templates/side_bar.xml'
         ],
     },
     "external_dependencies": {"python": ["pandas"]},

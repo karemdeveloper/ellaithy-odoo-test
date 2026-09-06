@@ -130,20 +130,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-md-4 col-xl-five hr_timesheets oh-payslip oh-timesheets"
-                 t-on-click="hr_timesheets">
-                <div class="oh-card h-100">
-                    <div class="oh-card-body p-0">
-                        <div class="stat-widget-one d-flex align-items-center w-100">
-                            <div class="stat-icon p-3 d-flex align-items-center justify-content-center h-100"><i class="fa fa-clock-o"/></div>
-                            <div class="stat-content p-3 flex-grow-1">
-                                <div class="stat-text">Timesheets</div>
-                                <div class="stat-digit font-weight-bold"><t t-esc="this.state.login_employee['emp_timesheets']"/></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="col-12 col-sm-6 col-md-4 col-xl-five hr_contract oh-payslip oh-contracts"
                  t-on-click="hr_contract">
                 <div class="oh-card h-100">
@@ -442,42 +428,6 @@
                 </div>
             </div>
             
-            <div class="col-12 col-lg-6 projects">
-                <div class="oh-card text-color p-3 h-100 m-0">
-                    <div class="oh-card-body pb-2 border-bottom justify-content-between align-items-center">
-                        <p class="stat_head m-0 font-weight-bold">PROJECTS</p>
-                        <div class="add_lines" t-on-click="add_project_task" style="cursor: pointer;">
-                            <i class="fa fa-plus"/>
-                        </div>
-                    </div>
-                    <div class="leaves_table table-responsive mt-3">
-                        <table class="table table-sm table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Project</th>
-                                    <th>Task</th>
-                                    <th>Due Date</th>
-                                    <th style="min-width:120px;">Stage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="project_task_lines"
-                                    t-foreach="this.state.login_employee['project_task_lines']"
-                                    t-as="lines" t-key="lines['id']">
-                                    <td t-esc="lines['project_name']"/>
-                                    <td t-esc="lines['task_name']"/>
-                                    <td t-esc="lines['date_deadline']"/>
-                                    <td>
-                                        <span class="state_td"
-                                              t-esc="lines['stage_name']"
-                                              t-attf-style="background: #6c757d;"/>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Row 3: Upcoming Birthdays, Events, Announcements -->

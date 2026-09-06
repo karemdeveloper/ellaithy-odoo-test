@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_course_course_list" model="ir.ui.view">
+        <field name="name">course.course.list</field>
+        <field name="model">course.course</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="title"/>
+                <field name="category_id"/>
+                <field name="subcategory_id"/>
+                <field name="level"/>
+                <field name="duration"/>
+                <field name="price"/>
+                <field name="discount"/>
+                <field name="price_after_discount"/>
+                <field name="featured"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_course_course_form" model="ir.ui.view">
+        <field name="name">course.course.form</field>
+        <field name="model">course.course</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_lessons" type="object"
+                                class="oe_stat_button" icon="fa-play-circle">
+                            <field name="lesson_count" widget="statinfo" string="Lessons"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <field name="image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <field name="active" invisible="1"/>
+                        <h1><field name="title" placeholder="Course Title"/></h1>
+                        <field name="slug" placeholder="course-slug"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="category_id"/>
+                            <field name="subcategory_id"/>
+                            <field name="level"/>
+                            <field name="featured"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="price"/>
+                            <field name="discount"/>
+                            <field name="price_after_discount" readonly="1"/>
+                            <field name="duration"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_course_course_kanban" model="ir.ui.view">
+        <field name="name">course.course.kanban</field>
+        <field name="model">course.course</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="title"/>
+                <field name="image"/>
+                <field name="price"/>
+                <field name="price_after_discount"/>
+                <field name="level"/>
+                <field name="featured"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <img t-att-src="kanban_image('course.course', 'image', record.id.raw_value)"
+                                 class="o_kanban_image_fill_left rounded" alt="Course" width="64" height="64"/>
+                            <strong><field name="title"/></strong>
+                            <div class="text-muted"><field name="level"/></div>
+                            <div>
+                                <field name="price_after_discount" widget="monetary"/>
+                            </div>
+                            <span class="badge text-bg-warning" invisible="featured != 'yes'">Featured</span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_course_course_search" model="ir.ui.view">
+        <field name="name">course.course.search</field>
+        <field name="model">course.course</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="title"/>
+                <field name="slug"/>
+                <field name="category_id"/>
+                <field name="subcategory_id"/>
+                <filter string="Featured" name="featured" domain="[('featured', '=', 'yes')]"/>
+                <filter string="Beginner" name="level_beginner" domain="[('level', '=', 'beginner')]"/>
+                <filter string="Intermediate" name="level_intermediate" domain="[('level', '=', 'intermediate')]"/>
+                <filter string="Advanced" name="level_advanced" domain="[('level', '=', 'advanced')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Category" name="group_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="Subcategory" name="group_subcategory" context="{'group_by': 'subcategory_id'}"/>
+                    <filter string="Level" name="group_level" context="{'group_by': 'level'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_course_course" model="ir.actions.act_window">
+        <field name="name">Courses</field>
+        <field name="res_model">course.course</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first course
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_course_courses" name="Courses" parent="menu_course_root"
+              action="action_course_course" sequence="10"/>
+
+</odoo>
