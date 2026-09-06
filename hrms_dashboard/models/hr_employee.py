@@ -221,7 +221,11 @@ class HrEmployee(models.Model):
             else:
                 emp_birthday = emp['birthday'].replace(year=today.year)
                 emp['days'] = (emp_birthday - today).days
-        announcements = self.env['hr.announcement'].search_read(
+        # hr_reward_warning is out of scope for this deployment, so the
+        # announcement model may not be installed. Degrade to an empty list
+        # rather than raising when the dashboard loads.
+        announcements = [] if 'hr.announcement' not in self.env else \
+            self.env['hr.announcement'].search_read(
             [('state', '=', 'approved'),
              ('date_start', '<=', fields.Date.today()),
              '|', ('is_announcement', '=', True),
