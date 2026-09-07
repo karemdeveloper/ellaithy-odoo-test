@@ -3,12 +3,14 @@
     <record id="ibs_hr_commission_penalty_view_list" model="ir.ui.view">
         <field name="name">ibs.hr.commission.penalty.list</field>
         <field name="model">ibs.hr.commission.penalty</field>
-        <field name="arch" type="xml"><list><field name="name"/><field name="employee_id"/><field name="branch_id"/><field name="percentage"/><field name="reason"/><field name="date"/></list></field>
+        <field name="arch" type="xml">
+            <list><field name="name"/><field name="employee_id"/><field name="branch_id"/><field name="percentage"/><field name="reason"/><field name="date"/></list></field>
     </record>
     <record id="ibs_hr_commission_penalty_view_form" model="ir.ui.view">
         <field name="name">ibs.hr.commission.penalty.form</field>
         <field name="model">ibs.hr.commission.penalty</field>
-        <field name="arch" type="xml"><form><sheet>
+        <field name="arch" type="xml">
+            <form><sheet>
                 <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
                 <group>
                     <group><field name="employee_id"/><field name="branch_id"/><field name="date"/></group>

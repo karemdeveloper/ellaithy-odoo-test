@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class EllithyHrDocument(models.Model):
@@ -20,7 +20,17 @@ class EllithyHrDocument(models.Model):
     sequence = fields.Integer(related='type_id.sequence', store=True)
     required = fields.Boolean(related='type_id.required', store=True)
 
-    received = fields.Boolean(string='Received')
+    # CR 2.4 -- the binary "Received" toggle is replaced by the physical
+    # form the HR file actually holds. ``received`` survives as a stored
+    # compute so ``document_completeness`` keeps working unchanged.
+    copy_type = fields.Selection(
+        [('original', 'Original'), ('copy', 'Copy')],
+        string='Original / Copy',
+        help='Whether the HR file holds the original document or a copy.')
+    received = fields.Boolean(
+        string='Received', compute='_compute_received', store=True,
+        help='A document counts as received once its Original/Copy form is '
+             'recorded.')
     document = fields.Binary(string='File', attachment=True)
     filename = fields.Char(string='Filename')
     received_date = fields.Date(string='Received On')
@@ -30,6 +40,11 @@ class EllithyHrDocument(models.Model):
     legacy_path = fields.Char(
         string='Legacy Path', copy=False,
         help='Relative path held in the legacy column, for file migration.')
+
+    @api.depends('copy_type')
+    def _compute_received(self):
+        for record in self:
+            record.received = bool(record.copy_type)
 
     _sql_constraints = [
         ('employee_type_uniq', 'unique(employee_id, type_id)',

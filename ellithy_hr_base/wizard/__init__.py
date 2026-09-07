@@ -1,1 +1,1 @@
-from . import hr_employee_status_wizard
+from . import hr_welcome_mail_wizard

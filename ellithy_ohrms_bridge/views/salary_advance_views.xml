@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        CR 2.19: the earned-to-date ceiling is shown beside the requested
+        amount, so HR can see the limit rather than discover it on save.
+    -->
+    <record id="salary_advance_view_form_ellithy" model="ir.ui.view">
+        <field name="name">salary.advance.view.form.inherit.ellithy</field>
+        <field name="model">salary.advance</field>
+        <field name="inherit_id" ref="ohrms_salary_advance.salary_advance_view_form"/>
+        <field name="arch" type="xml">
+            <field name="advance" position="after">
+                <field name="earned_to_date" readonly="1"/>
+            </field>
+        </field>
+    </record>
+
+    <!--
+        CR 2.18: advances are raised by HR. The vendor's self-service menus
+        are restricted to HR Personnel rather than removed, so the actions and
+        any bookmarks pointing at them keep working for the people who should
+        have them. The model refuses a non-HR author regardless.
+    -->
+    <record id="ohrms_salary_advance.salary_advance_menu_own" model="ir.ui.menu">
+        <field name="name">Salary Advances</field>
+        <field name="groups_id"
+               eval="[(6, 0, [ref('ellithy_hr_base.group_ellithy_hr_personnel')])]"/>
+    </record>
+
+    <record id="ohrms_salary_advance.salary_advance_menu_my_approved"
+            model="ir.ui.menu">
+        <field name="groups_id"
+               eval="[(6, 0, [ref('ellithy_hr_base.group_ellithy_hr_personnel')])]"/>
+    </record>
+</odoo>

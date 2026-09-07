@@ -3,12 +3,14 @@
     <record id="ibs_hr_investigation_view_list" model="ir.ui.view">
         <field name="name">ibs.hr.investigation.list</field>
         <field name="model">ibs.hr.investigation</field>
-        <field name="arch" type="xml"><list><field name="reference"/><field name="name"/><field name="date"/><field name="employee_count"/><field name="state"/></list></field>
+        <field name="arch" type="xml">
+            <list><field name="reference"/><field name="name"/><field name="date"/><field name="employee_count"/><field name="state"/></list></field>
     </record>
     <record id="ibs_hr_investigation_view_form" model="ir.ui.view">
         <field name="name">ibs.hr.investigation.form</field>
         <field name="model">ibs.hr.investigation</field>
-        <field name="arch" type="xml"><form><header>
+        <field name="arch" type="xml">
+            <form><header>
                 <button name="action_open" type="object" string="Open" class="btn-primary" invisible="state != 'draft'"/>
                 <button name="action_close" type="object" string="Close" class="btn-primary" invisible="state != 'open'"/>
                 <button name="action_reset" type="object" string="Reset" invisible="state == 'draft'"/>

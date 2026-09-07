@@ -1,7 +1,10 @@
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 VACATION_ROLE = [
+    ('15', '15 Days'),
     ('21', '21 Days'),
     ('30', '30 Days'),
 ]
@@ -38,12 +41,6 @@ OVERTIME_REPORT = [
 RELIGION = [
     ('muslim', 'Muslim'),
     ('christian', 'Christian'),
-]
-
-MEDICAL_TIER = [
-    ('a', 'A'),
-    ('b', 'B'),
-    ('c', 'C'),
 ]
 
 INACTIVE_TYPE = [
@@ -117,9 +114,13 @@ class HrEmployee(models.Model):
     # ------------------------------------------------------------------
     joining_date = fields.Date(string='Joining Date', tracking=True)
     vacation_role = fields.Selection(
-        VACATION_ROLE, string='Vacation Role',
-        help='Annual leave entitlement tier. Egyptian labour law grants 21 '
-             'days, rising to 30 with long service or age.')
+        VACATION_ROLE, string='Vacation Role', default='15',
+        help='Annual leave entitlement tier. A new joiner starts on the '
+             '15-day first-year tier, which is why that is the default; it '
+             'rises to 21 after a year and to 30 with ten years of insured '
+             'service. Raise it by hand for someone who arrives already '
+             'carrying that insured service -- the computed Annual Leave '
+             'Entitlement is the figure that follows the rule.')
     time_role = fields.Selection(TIME_ROLE, string='Time Role')
     work_type = fields.Selection(WORK_TYPE, string='Work Type')
     workspace_type = fields.Selection(WORKSPACE_TYPE, string='Workplace')
@@ -135,42 +136,71 @@ class HrEmployee(models.Model):
         string='Evaluation Mail Sent', readonly=True)
 
     # ------------------------------------------------------------------
-    # Medical insurance (employee side; dependants are a child model)
+    # Insurance -- entered on the contract, shown here
     # ------------------------------------------------------------------
-    medical_insurance_date = fields.Date(string='Medical Insurance Date')
+    # Both insurances are terms of an engagement: the tier, the costs, the
+    # subscription salary a contribution is calculated on and the office an
+    # employee is registered at all belong to the contract that agreed them.
+    # Held on the employee, renewing a contract silently rewrote the figures
+    # the previous one was filed under.
+    #
+    # They are mirrored here so the employee file still answers "what is
+    # this person insured for" in one place, and so reports and the leave
+    # entitlement rule keep reading them from the employee.
+    #
+    # Writable on purpose, though the form shows them read-only. A related
+    # field left at its default ``readonly=True`` does not reject a write --
+    # it drops it silently, so an import or a script aimed at the employee
+    # would lose the values without a word. Writable, the same write lands on
+    # the contract, which is where it belonged.
+    medical_insurance_date = fields.Date(
+        related='contract_id.medical_insurance_date', readonly=False,
+        string='Medical Insurance Date')
     medical_insurance_type = fields.Selection(
-        MEDICAL_TIER, string='Medical Insurance Type')
-    medical_card_number = fields.Char(string='Medical Card Number')
+        related='contract_id.medical_insurance_type', readonly=False,
+        string='Medical Insurance Type')
+    medical_card_number = fields.Char(
+        related='contract_id.medical_card_number', readonly=False,
+        string='Medical Card Number')
     medical_cost_per_year = fields.Monetary(
-        string='Cost Per Year', currency_field='currency_id')
+        related='contract_id.medical_cost_per_year', readonly=False, string='Cost Per Year',
+        currency_field='currency_id')
     medical_cost_per_month = fields.Monetary(
-        string='Cost Per Month', currency_field='currency_id')
+        related='contract_id.medical_cost_per_month', readonly=False, string='Cost Per Month',
+        currency_field='currency_id')
     medical_employee_share = fields.Float(
-        string='Employee Share (%)', digits=(5, 2))
-    has_medical_relative = fields.Boolean(string='Has Covered Relatives')
+        related='contract_id.medical_employee_share', readonly=False,
+        string='Employee Share (%)')
+    has_medical_relative = fields.Boolean(
+        related='contract_id.has_medical_relative', readonly=False,
+        string='Has Covered Relatives')
+
+    # A dependant belongs to the person, not to the engagement, so the list
+    # itself stays on the employee.
     dependant_ids = fields.One2many(
         'ellithy.hr.dependant', 'employee_id', string='Covered Relatives')
     dependant_count = fields.Integer(
         string='Relatives', compute='_compute_dependant_count')
 
     # ------------------------------------------------------------------
-    # Social insurance
+    # Social insurance -- entered on the contract, shown here
     #
     # Field order follows the legacy form: enrolment flag, office, number,
     # start date, then the three salary figures and the profession. The
-    # salaries are related to the CURRENT contract rather than stored here --
-    # editing them updates that contract, so a later raise creates a new
-    # contract and leaves the old figures intact.
+    # salary figures stay writable, because HR has always set a raise from
+    # the employee file and that edit lands on the running contract.
     # ------------------------------------------------------------------
-    has_social_insurance = fields.Boolean(string='Has Social Insurance')
+    has_social_insurance = fields.Boolean(
+        related='contract_id.has_social_insurance', readonly=False,
+        string='Has Social Insurance')
     social_insurance_office_id = fields.Many2one(
-        'ellithy.hr.insurance.office', string='Social Insurance Office',
-        ondelete='restrict')
+        related='contract_id.social_insurance_office_id', readonly=False,
+        string='Social Insurance Office')
     social_insurance_number = fields.Char(
-        string='Social Insurance Number',
-        help='Legacy users.social_insurance_number. Distinct from the older '
-             'insurance_number column, which is kept below.')
+        related='contract_id.social_insurance_number', readonly=False,
+        string='Social Insurance Number')
     social_insurance_start_date = fields.Date(
+        related='contract_id.social_insurance_start_date', readonly=False,
         string='Social Insurance Start Date')
 
     basic_salary = fields.Monetary(
@@ -184,12 +214,20 @@ class HrEmployee(models.Model):
         readonly=False, currency_field='currency_id')
 
     # ---- superseded insurance columns, kept for reference --------------
-    insurance_number = fields.Char(string='Insurance Number (legacy)')
-    insurance_office = fields.Char(string='Insurance Office (legacy)')
-    insurance_entered_date = fields.Date(string='Insurance Registration Date')
+    insurance_number = fields.Char(
+        related='contract_id.insurance_number', readonly=False,
+        string='Insurance Number (legacy)')
+    insurance_office = fields.Char(
+        related='contract_id.insurance_office', readonly=False,
+        string='Insurance Office (legacy)')
+    insurance_entered_date = fields.Date(
+        related='contract_id.insurance_entered_date', readonly=False,
+        string='Insurance Registration Date')
     insurance_salary = fields.Monetary(
-        string='Insured Salary', currency_field='currency_id')
+        related='contract_id.insurance_salary', readonly=False, string='Insured Salary',
+        currency_field='currency_id')
     social_insurance_price = fields.Monetary(
+        related='contract_id.social_insurance_price', readonly=False,
         string='Social Insurance Cost', currency_field='currency_id')
 
     # ------------------------------------------------------------------
@@ -259,6 +297,93 @@ class HrEmployee(models.Model):
         string='Settlement Completed', tracking=True, copy=False,
         help='Legacy "hal tammat al-taswiya" flag. Consumed by the clearance '
              'and final settlement process.')
+
+    # ------------------------------------------------------------------
+
+    # ------------------------------------------------------------------
+    # CR 2.3 -- audit trail
+    # ------------------------------------------------------------------
+    # Stock hr.employee tracks almost nothing. These are the fields HR is
+    # asked about in a dispute, so they get native tracking; everything else
+    # is caught by the catch-all audit note in ``write`` below.
+    name = fields.Char(tracking=True)
+    job_id = fields.Many2one(tracking=True)
+    job_title = fields.Char(tracking=True)
+    department_id = fields.Many2one(tracking=True)
+    parent_id = fields.Many2one(tracking=True)
+    coach_id = fields.Many2one(tracking=True)
+    work_email = fields.Char(tracking=True)
+    work_phone = fields.Char(tracking=True)
+    mobile_phone = fields.Char(tracking=True)
+    company_id = fields.Many2one(tracking=True)
+
+    # Fields whose changes are noise rather than audit: recomputed values,
+    # attachments and the message stack itself.
+    _AUDIT_EXCLUDE = {
+        'write_date', 'write_uid', 'create_date', 'create_uid', '__last_update',
+        'message_ids', 'message_follower_ids', 'activity_ids',
+        'document_completeness', 'open_loan_balance', 'warning_count',
+        'investigation_count', 'resignation_count', 'display_name',
+    }
+
+    # Field types that have no readable before/after form. A binary renders as
+    # its base64 payload and an x2many as ``model(id, id, ...)``, so logging
+    # them fills the chatter with noise -- the document lines in particular are
+    # written by ``_sync_document_lines`` on every create. Changes inside those
+    # relations are audited on the line models themselves.
+    _AUDIT_EXCLUDE_TYPES = {'binary', 'image', 'one2many', 'many2many', 'html'}
+
+    def _ibs_audit_fields(self, vals):
+        """Stored, writable, non-tracked fields being changed by this write."""
+        names = []
+        for name in vals:
+            field = self._fields.get(name)
+            if not field or name in self._AUDIT_EXCLUDE:
+                continue
+            if not field.store or field.compute or field.related:
+                continue
+            if field.type in self._AUDIT_EXCLUDE_TYPES:
+                continue
+            if getattr(field, 'tracking', False):
+                continue  # native tracking already logs it
+            names.append(name)
+        return names
+
+    def _ibs_format_audit(self, field, value):
+        if field.type == 'many2one':
+            return value.display_name or '—' if value else '—'
+        if field.type == 'boolean':
+            return _('Yes') if value else _('No')
+        if value is False or value is None or value == '':
+            return '—'
+        if field.type == 'selection':
+            return dict(field._description_selection(self.env)).get(value, value)
+        text = str(value)
+        # A long note or free-text field would otherwise push the whole
+        # previous value into the log line.
+        return text if len(text) <= 120 else text[:117] + '...'
+
+    def _ibs_post_audit(self, before):
+        # ``message_post`` escapes a plain string body, so the note has to be
+        # built as Markup or the reader gets the tags instead of the layout.
+        # Values go through ``escape`` on the way in: a field holding '<' would
+        # otherwise break the markup it lands in.
+        for record in self:
+            rows = []
+            for name, old in before.get(record.id, {}).items():
+                field = record._fields[name]
+                new = record[name]
+                if old == new:
+                    continue
+                rows.append(Markup('<li><b>%s</b>: %s &rarr; %s</li>') % (
+                    field.string,
+                    record._ibs_format_audit(field, old),
+                    record._ibs_format_audit(field, new)))
+            if rows:
+                record.message_post(
+                    body=Markup('<p>%s</p><ul>%s</ul>') % (
+                        _('Employee record updated'),
+                        Markup('').join(rows)))
 
     # ------------------------------------------------------------------
     # Migration bookkeeping
@@ -369,7 +494,18 @@ class HrEmployee(models.Model):
 
     def write(self, vals):
         self._normalise_employee_code(vals)
-        return super().write(vals)
+        # CR 2.3 -- capture the before image of anything Odoo will not track
+        # for us, so the log notes carry the full history.
+        audited = (
+            [] if self.env.context.get('ellithy_migration')
+            else self._ibs_audit_fields(vals))
+        before = (
+            {record.id: {name: record[name] for name in audited}
+             for record in self} if audited else {})
+        result = super().write(vals)
+        if before:
+            self._ibs_post_audit(before)
+        return result
 
     @staticmethod
     def _normalise_employee_code(vals):
@@ -385,6 +521,46 @@ class HrEmployee(models.Model):
         code = vals.get('employee_code')
         if isinstance(code, str):
             vals['employee_code'] = code.strip().upper() or False
+
+
+    # ------------------------------------------------------------------
+    # CR 2.5 -- the welcome mail
+    # ------------------------------------------------------------------
+    # Sent from a button rather than on create. Creating an employee record
+    # and welcoming a person are not the same act: a record is often opened
+    # days before the joiner starts, corrected twice, or created in bulk from
+    # an import -- none of which should put mail in someone's inbox. HR now
+    # decides when, sees exactly what goes out, and can edit it first.
+    welcome_email_sent = fields.Boolean(
+        string='Welcome Email Sent', readonly=True, copy=False,
+        help='Set once the onboarding mail has gone out. The button hides '
+             'itself afterwards so nobody is welcomed twice.')
+    welcome_email_sent_on = fields.Datetime(
+        string='Welcome Email Sent On', readonly=True, copy=False)
+    welcome_email_sent_by = fields.Many2one(
+        'res.users', string='Welcome Email Sent By', readonly=True,
+        copy=False)
+
+    def action_send_welcome_mail(self):
+        """Open the onboarding mail for review before it is sent."""
+        self.ensure_one()
+        if self.welcome_email_sent:
+            raise ValidationError(_(
+                'The onboarding mail has already been sent to %(name)s '
+                'on %(date)s.', name=self.name,
+                date=self.welcome_email_sent_on))
+        if not self.work_email:
+            raise ValidationError(_(
+                'Set a work email on %(name)s before sending the onboarding '
+                'mail -- there is nowhere to send it.', name=self.name))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Send Onboarding Mail'),
+            'res_model': 'ellithy.hr.welcome.mail.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_employee_id': self.id},
+        }
 
     def _sync_document_lines(self):
         """Give every employee one line per active document type."""
@@ -450,17 +626,6 @@ class HrEmployee(models.Model):
     # ------------------------------------------------------------------
     # Actions
     # ------------------------------------------------------------------
-    def action_open_status_wizard(self):
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Change Employee Status'),
-            'res_model': 'ellithy.hr.employee.status.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {'default_employee_id': self.id},
-        }
-
     def action_force_logout(self):
         """Drop every active web session for the linked user.
 

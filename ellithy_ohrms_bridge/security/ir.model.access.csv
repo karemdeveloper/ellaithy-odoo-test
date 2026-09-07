@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clearance_hr,hr.resignation.clearance.hr,model_hr_resignation_clearance,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
+access_clearance_mgr,hr.resignation.clearance.mgr,model_hr_resignation_clearance,hr.group_hr_user,1,1,1,0
+access_clearance_user,hr.resignation.clearance.user,model_hr_resignation_clearance,base.group_user,1,1,0,0
+access_clearance_wizard,hr.resignation.clearance.wizard,model_hr_resignation_clearance_wizard,hr.group_hr_user,1,1,1,1

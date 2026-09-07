@@ -25,12 +25,6 @@ class TestAttendanceDay(IbsHrCommon):
                          check_out='2026-06-02 17:00:00')
         self.assertFalse(both.single_punch)
 
-    def test_single_punch_penalised_at_half_a_day(self):
-        self._day(1, check_in='2026-06-01 09:00:00')
-        slip = self._payslip()
-        slip.action_compute()
-        self.assertAlmostEqual(slip.single_fingerprint_penalty, 50.0, places=2)
-
     def test_shortfall_is_floored_at_zero(self):
         """Working longer than scheduled is overtime, never negative
         shortfall."""

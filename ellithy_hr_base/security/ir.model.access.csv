@@ -13,9 +13,9 @@ access_ellithy_hr_dependant_hr,ellithy.hr.dependant.hr,model_ellithy_hr_dependan
 access_ellithy_hr_document_hr,ellithy.hr.document.hr,model_ellithy_hr_document,group_ellithy_hr_personnel,1,1,1,1
 access_ellithy_hr_account_hr,ellithy.hr.account.hr,model_ellithy_hr_account,group_ellithy_hr_personnel,1,1,1,1
 access_ellithy_hr_account_self,ellithy.hr.account.self,model_ellithy_hr_account,base.group_user,1,0,0,0
-access_ellithy_hr_status_wizard,ellithy.hr.employee.status.wizard,model_ellithy_hr_employee_status_wizard,group_ellithy_hr_personnel,1,1,1,1
 access_ellithy_hr_uniform_user,ellithy.hr.uniform.user,model_ellithy_hr_uniform,base.group_user,1,0,0,0
 access_ellithy_hr_uniform_admin,ellithy.hr.uniform.admin,model_ellithy_hr_uniform,group_ellithy_hr_admin,1,1,1,1
 access_ellithy_hr_line_user,ellithy.hr.line.user,model_ellithy_hr_line,base.group_user,1,0,0,0
 access_ellithy_hr_line_hr,ellithy.hr.line.hr,model_ellithy_hr_line,group_ellithy_hr_personnel,1,1,1,0
 access_ellithy_hr_line_admin,ellithy.hr.line.admin,model_ellithy_hr_line,group_ellithy_hr_admin,1,1,1,1
+access_ellithy_hr_welcome_mail_wizard,ellithy.hr.welcome.mail.wizard,model_ellithy_hr_welcome_mail_wizard,group_ellithy_hr_personnel,1,1,1,1

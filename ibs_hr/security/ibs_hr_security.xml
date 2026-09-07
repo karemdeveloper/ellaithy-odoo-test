@@ -13,22 +13,19 @@
             <field name="implied_ids" eval="[(4, ref('group_ibs_payroll_officer'))]"/>
         </record>
 
-        <record id="rule_payslip_own" model="ir.rule">
-            <field name="name">Payslip: own only</field>
-            <field name="model_id" ref="model_ibs_hr_payslip"/>
-            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="False"/>
-            <field name="perm_create" eval="False"/>
-            <field name="perm_unlink" eval="False"/>
-        </record>
+        <!--
+            CR 2.13: administrative penalties are approved by a named group
+            rather than by whoever happens to hold HR Personnel. Membership is
+            assigned per approver from Settings > Users.
 
-        <record id="rule_payslip_payroll" model="ir.rule">
-            <field name="name">Payslip: payroll sees all</field>
-            <field name="model_id" ref="model_ibs_hr_payslip"/>
-            <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(4, ref('group_ibs_payroll_officer'))]"/>
+            It implies HR Personnel so an approver can open the record it is
+            asked to approve, and Payroll Manager implies it so payroll is
+            never blocked waiting for a separate assignment.
+        -->
+        <record id="group_ibs_admin_penalty_approver" model="res.groups">
+            <field name="name">Administrative Penalty Approver</field>
+            <field name="category_id" ref="ellithy_hr_base.module_category_ellithy_hr"/>
+            <field name="implied_ids" eval="[(4, ref('ellithy_hr_base.group_ellithy_hr_personnel'))]"/>
         </record>
 
         <record id="rule_warning_branch" model="ir.rule">

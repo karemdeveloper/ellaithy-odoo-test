@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            CR 2.12: the disciplinary deduction reaches the payslip as an
+            input rather than as arithmetic inside the rule, because the
+            amount is not a function of this payslip alone: it depends on
+            what earlier months already took against the five-day ceiling.
+            ``hr.payslip.get_inputs`` fills the amount in.
+        -->
+        <record id="hr_salary_rule_penalty" model="hr.salary.rule">
+            <field name="code">PENALTY</field>
+            <field name="name">Disciplinary Penalty</field>
+            <field name="category_id" ref="hr_payroll_community.DED"/>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = inputs.PENALTY and - (inputs.PENALTY.amount)</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="180"/>
+            <field name="note">Days of pay withheld for approved disciplinary
+                penalties, capped at the monthly ceiling held in the
+                ``ibs_hr.max_penalty_days_per_month`` system parameter.
+                Anything above the ceiling carries into a later payslip.
+            </field>
+        </record>
+
+        <record id="hr_rule_input_penalty" model="hr.rule.input">
+            <field name="code">PENALTY</field>
+            <field name="name">Disciplinary Penalty</field>
+            <field name="input_id" ref="hr_salary_rule_penalty"/>
+        </record>
+    </data>
+</odoo>

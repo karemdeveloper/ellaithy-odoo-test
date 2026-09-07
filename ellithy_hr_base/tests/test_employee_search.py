@@ -75,7 +75,10 @@ class TestEmployeeSearch(TransactionCase):
     def test_new_employee_gets_a_generated_code(self):
         fresh = self.env['hr.employee'].create({
             'name': 'Generated Code Person', 'branch_id': self.branch.id})
-        self.assertTrue(fresh.employee_code.startswith('EMP-'))
+        # CR 2.1 -- the EMP- prefix was dropped; a generated code is now
+        # the bare sequence number.
+        self.assertTrue(fresh.employee_code)
+        self.assertFalse(fresh.employee_code.startswith('EMP-'))
 
     def test_display_name_is_not_double_prefixed(self):
         """Reading twice must not stack the prefix."""

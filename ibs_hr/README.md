@@ -1,12 +1,40 @@
 # IBS HR Flow
 
-Everything that feeds payroll, migrated from the legacy Laravel HR platform.
+The attendance and discipline records that feed payroll, migrated from the
+legacy Laravel HR platform.
 
 ```
 attendance + leave  ->  ibs.hr.attendance.day  --+
-violations          ->  ibs.hr.warning         --+--> ibs.hr.payslip
-loans / advances    ->  ibs.hr.loan.line       --+
+violations          ->  ibs.hr.warning         --+--> hr.payslip
 ```
+
+## 18.0.1.1.0 — the custom payroll engine was withdrawn
+
+`ibs.hr.payslip` and `ibs.hr.loan` are gone. Payroll is
+`hr_payroll_community`'s `hr.payslip`; loans and advances are OpenHRMS's
+`hr.loan` and `salary.advance`, with Ellithy's policy rules living in
+`ellithy_ohrms_bridge`.
+
+What survived the move, because it has nowhere else to live:
+
+* `ibs.hr.warning` — the labour-law discipline ladder.
+* `ibs.hr.warning.deduction` — the ledger enforcing CR 2.12's five-day
+  monthly ceiling, with the remainder carried into following months. A
+  penalty is a balance drawn down over months, not a one-off charge, so the
+  link to a payslip is a ledger rather than a foreign key.
+* The `PENALTY` salary rule and its input, which is how the capped amount
+  reaches a standard payslip.
+
+`migrations/18.0.1.1.0/pre-migrate.py` clears the `payslip_id` columns that
+still held `ibs_hr_payslip` primary keys. It deliberately does not drop
+`ibs_hr_payslip`, `ibs_hr_loan` or `ibs_hr_loan_line` — those hold migrated
+history, and dropping them is a decision for whoever runs the upgrade. Row
+counts are logged.
+
+The rules below were verified against the legacy data while that engine was
+being built. They still describe what the legacy platform did, and remain the
+reference for reconciling migrated payslips — but this module no longer
+computes them.
 
 ## Rules verified against production data
 
@@ -55,21 +83,22 @@ in `legacy_action` for audit.
 
 ## Tests
 
-44 tests, all passing against Odoo 18.0.
-
 ```bash
 cd .devstack
 docker compose run --rm --no-deps -T odoo \
-  odoo -d hrtest -u ellithy_hr_base,ibs_hr \
-  --test-enable --test-tags ibs_payroll --stop-after-init --http-port=8099
+  odoo -d hrtest -u ellithy_hr_base,ibs_hr,ellithy_ohrms_bridge \
+  --test-enable --test-tags ibs_payroll,ellithy_hr \
+  --stop-after-init --http-port=8099
 ```
 
-Coverage: daily-rate basis, month boundaries incl. leap years, the
-net/allowance/deduction invariant, insurance inclusion, absence vs paid
-leave, weekend and holiday handling, escalation across occurrences, the
-fifth-offence case, approval gating, double-deduction prevention,
-cross-midnight shifts, single-punch detection, shortfall flooring, loan
-rounding, and instalment release on payslip reset.
+Coverage: escalation across occurrences, the fifth-offence case, approval
+gating, the five-day monthly ceiling and its carry-over, execution-date
+selection, oldest-penalty-first ordering, release on payslip reset,
+cross-midnight shifts, single-punch detection and shortfall flooring, and
+CR 2.6's annual leave tiers -- 15 days in the first year, 21 after it, 30 on
+ten years of insured service, with the boundaries and the allocation
+prefill. The loan, advance and resignation rules are tested in
+`ellithy_ohrms_bridge`.
 
 ## Attendance migration
 

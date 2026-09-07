@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ellithy_hr_welcome_mail_wizard_view_form" model="ir.ui.view">
+        <field name="name">ellithy.hr.welcome.mail.wizard.form</field>
+        <field name="model">ellithy.hr.welcome.mail.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send Onboarding Mail">
+                <div class="alert alert-info" role="status">
+                    The message below is filled in from the onboarding
+                    template. Edit it if you need to; changes apply to this
+                    message only and leave the template alone for the next
+                    joiner.
+                </div>
+                <group>
+                    <group>
+                        <field name="employee_id" readonly="1"/>
+                        <field name="company_id" readonly="1"
+                               groups="base.group_multi_company"/>
+                    </group>
+                    <group>
+                        <field name="email_to"/>
+                        <field name="email_cc" placeholder="Line manager, onboarding buddy..."/>
+                    </group>
+                </group>
+                <group>
+                    <field name="subject" nolabel="1" colspan="2"
+                           placeholder="Subject"/>
+                </group>
+                <field name="body_html" widget="html"
+                       options="{'style-inline': true}"/>
+                <field name="attachment_ids" widget="many2many_binary"
+                       string="Attach handbook or policies"/>
+                <footer>
+                    <button name="action_send" type="object"
+                            string="Send Onboarding Mail" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

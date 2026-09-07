@@ -6,6 +6,7 @@ STATUS = [
     ('pending', 'Pending'),
     ('approved', 'Approved'),
     ('rejected', 'Rejected'),
+    ('cancel', 'Cancelled'),
 ]
 
 
@@ -37,7 +38,16 @@ class IbsHrWarning(models.Model):
         'hr.employee', string='Issued By', ondelete='restrict')
     date = fields.Date(
         string='Date', required=True, default=fields.Date.context_today,
-        tracking=True)
+        tracking=True, help='When the violation occurred.')
+    execution_date = fields.Date(
+        string='Execution Date', required=True, tracking=True,
+        compute='_compute_execution_date', store=True, readonly=False,
+        precompute=True,
+        help='CR 2.11 -- the date the deduction becomes payroll-effective. '
+             'Payroll selects penalties by this date, not by the date of the '
+             'violation, so a penalty raised late is still taken in the month '
+             'management intends. Defaults to the date of the violation; set '
+             'it forward to defer the deduction.')
 
     occurrence = fields.Integer(
         string='Occurrence', compute='_compute_occurrence', store=True,
@@ -76,8 +86,25 @@ class IbsHrWarning(models.Model):
         help='Legacy parent_warning_id -- links a repeat offence to the '
              'previous one in the chain.')
     payslip_id = fields.Many2one(
-        'ibs.hr.payslip', string='Deducted On', readonly=True, copy=False,
-        ondelete='set null')
+        'hr.payslip', string='Fully Deducted On', readonly=True, copy=False,
+        ondelete='set null',
+        help='Set once the penalty has been taken in full. A penalty spread '
+             'across months by the CR 2.12 cap stays blank until the last '
+             'instalment.')
+
+    # ---- CR 2.12: the five-day monthly ceiling and its carry-over --------
+    deduction_ids = fields.One2many(
+        'ibs.hr.warning.deduction', 'warning_id', string='Deductions Taken')
+    days_settled = fields.Float(
+        string='Days Taken', digits=(6, 2), compute='_compute_settlement',
+        store=True)
+    days_remaining = fields.Float(
+        string='Days Outstanding', digits=(6, 2),
+        compute='_compute_settlement', store=True,
+        help='Days still to be deducted in a future month because the '
+             'monthly ceiling was reached.')
+    is_settled = fields.Boolean(
+        string='Fully Deducted', compute='_compute_settlement', store=True)
 
     legacy_id = fields.Integer(string='Legacy ID', index=True, copy=False)
 
@@ -143,6 +170,27 @@ class IbsHrWarning(models.Model):
         for record in self:
             record.deducted_amount = record.penalty_days * record._daily_rate()
 
+    @api.depends('date')
+    def _compute_execution_date(self):
+        """Default the execution date to the date of the violation.
+
+        Only fills a blank one: once management has deferred a penalty,
+        correcting the violation date must not silently pull it back.
+        """
+        for record in self:
+            if not record.execution_date:
+                record.execution_date = record.date
+
+    @api.depends('penalty_days', 'deduction_ids.days')
+    def _compute_settlement(self):
+        for record in self:
+            taken = sum(record.deduction_ids.mapped('days'))
+            record.days_settled = taken
+            remaining = (record.penalty_days or 0.0) - taken
+            record.days_remaining = max(remaining, 0.0)
+            record.is_settled = (
+                bool(record.penalty_days) and remaining <= 0.000001)
+
     def _daily_rate(self):
         """Daily rate = basic salary / 30.
 
@@ -165,9 +213,39 @@ class IbsHrWarning(models.Model):
         return super().create(vals_list)
 
     def action_submit(self):
-        self.filtered(lambda r: r.status == 'draft').write({'status': 'pending'})
+        pending = self.filtered(lambda r: r.status == 'draft')
+        pending.write({'status': 'pending'})
+        pending._ibs_notify_pending()
+
+    def _ibs_approver_group(self):
+        """The group whose members sign a penalty off."""
+        return self.env.ref(
+            'ibs_hr.group_ibs_admin_penalty_approver',
+            raise_if_not_found=False)
+
+    def _ibs_approver_emails(self):
+        """Comma-separated approver addresses, for the pending-approval mail.
+
+        Called from the mail template, so it must always return a string --
+        an empty one simply means nothing is sent.
+        """
+        group = self._ibs_approver_group()
+        if not group:
+            return ''
+        return ','.join(
+            email for email in group.sudo().users.mapped('email') if email)
+
+    def _ibs_notify_pending(self):
+        """Tell the approvers there is something waiting."""
+        template = self.env.ref(
+            'ibs_hr.mail_template_penalty_pending', raise_if_not_found=False)
+        if not template:
+            return
+        for record in self:
+            template.send_mail(record.id, force_send=False)
 
     def action_approve(self):
+        """CR 2.14 -- one approval settles a penalty. No second signature."""
         for record in self:
             if record.status != 'pending':
                 raise ValidationError(_(
@@ -179,6 +257,7 @@ class IbsHrWarning(models.Model):
             })
 
     def action_reject(self):
+        """CR 2.14 -- rejecting requires a reason."""
         for record in self:
             if not record.review_comment:
                 raise ValidationError(_(
@@ -189,6 +268,28 @@ class IbsHrWarning(models.Model):
                 'reviewed_at': fields.Datetime.now(),
             })
 
+    def action_cancel(self):
+        """CR 2.14 -- cancelling requires a reason, like rejecting."""
+        for record in self:
+            if record.deduction_ids:
+                raise ValidationError(_(
+                    'This penalty has already been deducted on a payslip and '
+                    'cannot be cancelled. Reset the payslip first.'))
+            if not record.review_comment:
+                raise ValidationError(_(
+                    'Cancelling a penalty requires a reason in the review '
+                    'comment.'))
+            record.write({
+                'status': 'cancel',
+                'reviewed_by': self.env.user.id,
+                'reviewed_at': fields.Datetime.now(),
+            })
+
     def action_reset_draft(self):
+        for record in self:
+            if record.deduction_ids:
+                raise ValidationError(_(
+                    'This penalty has already been deducted on a payslip and '
+                    'cannot be reset. Reset the payslip first.'))
         self.write({'status': 'draft', 'reviewed_by': False,
                     'reviewed_at': False})

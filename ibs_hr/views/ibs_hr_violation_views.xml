@@ -3,7 +3,8 @@
     <record id="ibs_hr_violation_view_list" model="ir.ui.view">
         <field name="name">ibs.hr.violation.list</field>
         <field name="model">ibs.hr.violation</field>
-        <field name="arch" type="xml"><list><field name="code"/><field name="name"/></list></field>
+        <field name="arch" type="xml">
+            <list><field name="code"/><field name="name"/></list></field>
     </record>
     <record id="ibs_hr_violation_view_form" model="ir.ui.view">
         <field name="name">ibs.hr.violation.form</field>

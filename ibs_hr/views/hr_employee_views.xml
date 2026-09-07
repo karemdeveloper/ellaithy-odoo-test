@@ -19,6 +19,17 @@
                            string="Investigations"/>
                 </button>
             </div>
+
+            <!--
+                CR 2.6: the entitlement an allocation of the statutory annual
+                type will be pre-filled with. Shown read-only so HR can see
+                which tier the employee is in before raising one.
+            -->
+            <xpath expr="//page[@name='hr_settings']" position="inside">
+                <group string="Leave Entitlement">
+                    <field name="annual_leave_entitlement"/>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

@@ -5,13 +5,74 @@
         <field name="model">hr.contract</field>
         <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
         <field name="arch" type="xml">
-            <field name="wage" position="after">
+
+            <!--
+                Anchored on the salary GROUP, not on the wage field.
+                Stock wraps the wage in <div class="o_row mw-50"> together
+                with its "/ month" caption; inserting after the field put
+                these five monetary inputs inside that narrow inline row,
+                unlabelled, and squashed the wage itself down with them.
+            -->
+            <xpath expr="//group[@name='salary']" position="inside">
                 <field name="subscription_wage"/>
                 <field name="total_wage"/>
                 <field name="transportation_allowance"/>
                 <field name="other_allowance"/>
                 <field name="bonus"/>
-            </field>
+            </xpath>
+
+            <!--
+                Insurance is a term of the engagement, so it is entered here.
+                The employee form mirrors it read-only.
+            -->
+            <xpath expr="//page[@name='information']" position="after">
+                <page string="Insurance" name="ellithy_insurance">
+                    <group>
+                        <group string="Social">
+                            <field name="has_social_insurance"/>
+                            <field name="social_insurance_office_id"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_number"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_start_date"
+                                   invisible="not has_social_insurance"/>
+                            <div colspan="2" class="text-muted"
+                                 invisible="not has_social_insurance">
+                                Contributions are calculated on the
+                                subscription salary, set under Salary
+                                Information.
+                            </div>
+                        </group>
+                        <group string="Medical">
+                            <field name="medical_insurance_type"/>
+                            <field name="medical_insurance_date"/>
+                            <field name="medical_card_number"/>
+                            <field name="medical_cost_per_year"/>
+                            <field name="medical_cost_per_month"/>
+                            <field name="medical_employee_share"/>
+                            <field name="has_medical_relative"/>
+                            <div colspan="2" class="text-muted"
+                                 invisible="not has_medical_relative">
+                                Covered relatives are listed on the employee,
+                                since a dependant belongs to the person rather
+                                than to this contract.
+                            </div>
+                        </group>
+                    </group>
+                    <group string="Superseded Insurance Columns"
+                           groups="base.group_no_one">
+                        <group>
+                            <field name="insurance_number"/>
+                            <field name="insurance_office"/>
+                            <field name="insurance_entered_date"/>
+                        </group>
+                        <group>
+                            <field name="insurance_salary"/>
+                            <field name="social_insurance_price"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
         </field>
     </record>
 </odoo>

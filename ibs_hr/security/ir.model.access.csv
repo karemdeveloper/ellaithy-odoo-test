@@ -7,12 +7,6 @@ access_ibs_warning_hr,ibs.hr.warning.hr,model_ibs_hr_warning,ellithy_hr_base.gro
 access_ibs_warning_mgr,ibs.hr.warning.mgr,model_ibs_hr_warning,ellithy_hr_base.group_ellithy_hr_branch_manager,1,1,1,0
 access_ibs_attendance_day_hr,ibs.hr.attendance.day.hr,model_ibs_hr_attendance_day,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
 access_ibs_attendance_day_user,ibs.hr.attendance.day.user,model_ibs_hr_attendance_day,base.group_user,1,0,0,0
-access_ibs_loan_hr,ibs.hr.loan.hr,model_ibs_hr_loan,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
-access_ibs_loan_line_hr,ibs.hr.loan.line.hr,model_ibs_hr_loan_line,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
-access_ibs_payslip_officer,ibs.hr.payslip.officer,model_ibs_hr_payslip,group_ibs_payroll_officer,1,1,1,0
-access_ibs_payslip_manager,ibs.hr.payslip.manager,model_ibs_hr_payslip,group_ibs_payroll_manager,1,1,1,1
-access_ibs_payslip_self,ibs.hr.payslip.self,model_ibs_hr_payslip,base.group_user,1,0,0,0
-access_ibs_payslip_batch,ibs.hr.payslip.batch,model_ibs_hr_payslip_batch,group_ibs_payroll_officer,1,1,1,1
 access_ibs_admin_penalty_user,ibs.hr.admin.penalty.user,model_ibs_hr_admin_penalty,base.group_user,1,0,0,0
 access_ibs_admin_penalty_admin,ibs.hr.admin.penalty.admin,model_ibs_hr_admin_penalty,ellithy_hr_base.group_ellithy_hr_admin,1,1,1,1
 access_ibs_admin_penalty_record_hr,ibs.hr.admin.penalty.record.hr,model_ibs_hr_admin_penalty_record,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
@@ -25,3 +19,5 @@ access_ibs_investigation_emp_hr,ibs.hr.investigation.employee.hr,model_ibs_hr_in
 access_ibs_investigation_emp_mgr,ibs.hr.investigation.employee.mgr,model_ibs_hr_investigation_employee,ellithy_hr_base.group_ellithy_hr_branch_manager,1,0,0,0
 access_ibs_permission_user,ibs.hr.permission.user,model_ibs_hr_permission,base.group_user,1,1,1,0
 access_ibs_permission_hr,ibs.hr.permission.hr,model_ibs_hr_permission,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
+access_ibs_warning_deduction_hr,ibs.hr.warning.deduction.hr,model_ibs_hr_warning_deduction,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
+access_ibs_warning_deduction_user,ibs.hr.warning.deduction.user,model_ibs_hr_warning_deduction,base.group_user,1,0,0,0

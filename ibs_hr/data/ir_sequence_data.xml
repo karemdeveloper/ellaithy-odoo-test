@@ -7,18 +7,6 @@
             <field name="prefix">WRN/%(year)s/</field>
             <field name="padding">5</field>
         </record>
-        <record id="seq_ibs_hr_loan" model="ir.sequence">
-            <field name="name">IBS HR Loan</field>
-            <field name="code">ibs.hr.loan</field>
-            <field name="prefix">LOAN/%(year)s/</field>
-            <field name="padding">5</field>
-        </record>
-        <record id="seq_ibs_hr_payslip" model="ir.sequence">
-            <field name="name">IBS HR Payslip</field>
-            <field name="code">ibs.hr.payslip</field>
-            <field name="prefix">SLIP/%(year)s/%(month)s/</field>
-            <field name="padding">5</field>
-        </record>
         <record id="seq_ibs_hr_admin_penalty_record" model="ir.sequence">
             <field name="name">IBS Admin Penalty Record</field>
             <field name="code">ibs.hr.admin.penalty.record</field>

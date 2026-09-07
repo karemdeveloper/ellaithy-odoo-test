@@ -21,12 +21,9 @@
 
     <!-- === 2. Employees === -->
     <!-- === 3. Time &amp; Attendance === -->
-    <menuitem id="hr_attendance.menu_hr_attendance_root"
-              name="Attendance"
-              parent="ellithy_hr_base.menu_time_attendance"
-              sequence="10"/>
+    <!-- Attendance is its own app again: see "restored to root" below. -->
 
-    <!-- === 4. Conduct === -->
+    <!-- === 4. Penalties === -->
     <!-- === 5. Payroll === -->
     <!-- The vendor root is folded in rather than left beside the curated
          Payroll section, so payslips are reachable one way only. -->
@@ -37,9 +34,14 @@
 
     <!-- === 6. Development === -->
     <!-- === restored to root === -->
-    <!-- Time Off, Surveys and Payroll are their own apps again. Removing the
-         re-parenting entry is not enough on its own: the change is already in
-         the database, so parent_id has to be cleared explicitly. -->
+    <!-- Attendance, Time Off, Surveys and Payroll are their own apps again.
+         Removing the re-parenting entry is not enough on its own: the change
+         is already in the database, so parent_id has to be cleared
+         explicitly. -->
+    <record id="hr_attendance.menu_hr_attendance_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+
     <record id="hr_holidays.menu_hr_holidays_root" model="ir.ui.menu">
         <field name="parent_id" eval="False"/>
     </record>

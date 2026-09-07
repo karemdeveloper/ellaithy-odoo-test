@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Inherits ohrms_loan_accounting's view rather than ohrms_loan's,
+        because that module REPLACES the whole header. Anchoring on the
+        original header would leave the result dependent on which sibling
+        inheritance is applied last.
+    -->
+    <record id="hr_loan_view_form_ellithy" model="ir.ui.view">
+        <field name="name">hr.loan.view.form.inherit.ellithy</field>
+        <field name="model">hr.loan</field>
+        <field name="inherit_id" ref="ohrms_loan_accounting.hr_loan_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- CR 2.17: name the two signatures, and who gives each. -->
+            <xpath expr="//button[@name='action_approve']" position="attributes">
+                <attribute name="string">HR Approve</attribute>
+                <attribute name="groups">ellithy_hr_base.group_ellithy_hr_personnel</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_double_approve']" position="attributes">
+                <attribute name="string">Finance Approve</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_refuse']" position="after">
+                <button name="action_reset_to_draft" type="object"
+                        string="Set to Draft"
+                        invisible="state not in ('refuse', 'cancel')"/>
+            </xpath>
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,waiting_approval_1,waiting_approval_2,approve</attribute>
+            </xpath>
+
+            <!-- CR 2.16: name the broken rules before the request is sent. -->
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div class="alert alert-warning" role="alert"
+                     invisible="not eligibility_warning">
+                    <strong>This request does not meet the loan rules:</strong>
+                    <field name="eligibility_warning" nolabel="1" readonly="1"/>
+                </div>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page name="approvals" string="Approvals">
+                    <group>
+                        <group string="HR">
+                            <field name="hr_approved_by"/>
+                            <field name="hr_approved_at"/>
+                        </group>
+                        <group string="Finance">
+                            <field name="finance_approved_by"/>
+                            <field name="finance_approved_at"/>
+                        </group>
+                    </group>
+                    <field name="refusal_reason"
+                           placeholder="Reason -- required to refuse this request"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_loan_view_tree_ellithy" model="ir.ui.view">
+        <field name="name">hr.loan.view.tree.inherit.ellithy</field>
+        <field name="model">hr.loan</field>
+        <field name="inherit_id" ref="ohrms_loan.hr_loan_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="hr_approved_by" optional="hide"/>
+                <field name="finance_approved_by" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>

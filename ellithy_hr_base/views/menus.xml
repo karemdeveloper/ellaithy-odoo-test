@@ -10,7 +10,7 @@
           1  Dashboard        (hrms_dashboard)
           3  Employees        (hr.menu_hr_employee_payroll)
          10  Time & Attendance
-         15  Conduct
+         15  Penalties
          20  Payroll          (ellithy_ohrms_bridge)
          25  Development
          95  Reporting        (hr.hr_menu_hr_reports)
@@ -32,9 +32,11 @@
               sequence="10"
               groups="ellithy_hr_base.group_ellithy_hr_assistant"/>
 
-    <!-- ============ 15. Conduct ============ -->
+    <!-- ============ 15. Penalties ============ -->
+    <!-- The xmlid stays ``menu_conduct``: renaming it would orphan the live
+         menu and every child that points at it. Only the label changes. -->
     <menuitem id="menu_conduct"
-              name="Conduct"
+              name="Penalties"
               parent="hr.menu_hr_root"
               sequence="15"
               groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>

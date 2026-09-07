@@ -10,9 +10,13 @@
                 <field name="slug" readonly="1" groups="base.group_no_one"/>
                 <field name="legacy_allocated" readonly="1" groups="base.group_no_one"/>
                 <field name="early_exit"/>
+                <!-- CR 2.6: marks the type whose allocations are pre-filled
+                     from length of service. -->
+                <field name="is_annual_entitlement"/>
             </field>
         </field>
     </record>
+
 
     <record id="hr_leave_view_form_inherit" model="ir.ui.view">
         <field name="name">hr.leave.form.ibs</field>

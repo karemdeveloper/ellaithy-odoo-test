@@ -4,7 +4,8 @@
         <record id="seq_ellithy_hr_employee_code" model="ir.sequence">
             <field name="name">Ellithy Employee Code</field>
             <field name="code">ellithy.hr.employee.code</field>
-            <field name="prefix">EMP-</field>
+            <!-- CR 2.1: employee code no longer carries the EMP prefix. -->
+            <field name="prefix"></field>
             <field name="padding">1</field>
             <field name="number_next">1400</field>
             <field name="number_increment">1</field>

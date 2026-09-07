@@ -25,9 +25,11 @@
               action="ibs_hr_mission_action"
               sequence="50"/>
 
-    <!-- ============ Conduct ============ -->
+    <!-- ============ Penalties ============ -->
+    <!-- Named for the ladder it opens rather than "Penalties", which is now
+         the parent section's name. -->
     <menuitem id="menu_conduct_penalties"
-              name="Penalties"
+              name="Disciplinary Penalties"
               parent="ellithy_hr_base.menu_conduct"
               action="ibs_hr_warning_action"
               sequence="20"/>

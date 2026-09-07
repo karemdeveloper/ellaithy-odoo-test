@@ -107,21 +107,31 @@ class TestPenaltyEscalation(IbsHrCommon):
         self._warn(1)
         self._warn(2)
         slip = self._payslip(month=6)
-        slip.action_compute()
-        self.assertAlmostEqual(slip.misconduct_penalty, 25.0, places=2)
-        self.assertEqual(len(slip.warning_ids), 2)
+        # 0 days for the first offence, 0.25 for the second, at 100/day.
+        self.assertAlmostEqual(slip.penalty_amount, 25.0, places=2)
+        self.assertAlmostEqual(slip.penalty_days_taken, 0.25, places=2)
 
     def test_unapproved_warnings_do_not_reach_the_payslip(self):
         self._warn(1, approve=False)
         slip = self._payslip(month=6)
-        slip.action_compute()
-        self.assertEqual(slip.misconduct_penalty, 0.0)
+        self.assertEqual(slip.penalty_amount, 0.0)
 
     def test_a_warning_is_not_deducted_twice(self):
         self._warn(1)
+        self._warn(2)
         june = self._payslip(month=6)
-        june.action_compute()
-        june.action_confirm()
+        june.action_payslip_done()
+        self.assertAlmostEqual(june.penalty_days_taken, 0.25, places=2)
         july = self._payslip(month=7)
-        july.action_compute()
-        self.assertEqual(july.misconduct_penalty, 0.0)
+        self.assertEqual(july.penalty_days_taken, 0.0)
+
+    def test_resetting_a_payslip_returns_the_days(self):
+        """Releasing the booking must make the penalty outstanding again."""
+        self._warn(1)
+        warning = self._warn(2)
+        june = self._payslip(month=6)
+        june.action_payslip_done()
+        self.assertTrue(warning.is_settled)
+        june.action_payslip_draft()
+        self.assertFalse(warning.is_settled)
+        self.assertAlmostEqual(warning.days_remaining, 0.25, places=2)

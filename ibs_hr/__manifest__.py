@@ -1,28 +1,34 @@
 {
     'name': 'IBS HR Flow',
-    'version': '18.0.1.0.0',
-    'summary': 'Payroll input chain: attendance day, discipline, loans, advances and payslip',
+    'version': '18.0.1.1.1',
+    'summary': 'Attendance days, discipline and the penalty deduction ledger '
+               'that feeds the standard payslip',
     'description': """
 IBS HR Flow
 ===========
-Everything that feeds payroll, migrated from the legacy Laravel HR platform.
-
-The chain, in dependency order:
+The attendance and discipline records that feed payroll, migrated from the
+legacy Laravel HR platform.
 
     attendance + leave  ->  ibs.hr.attendance.day  ->+
-    violations          ->  ibs.hr.warning         ->+--> ibs.hr.payslip
-    loans / advances    ->  instalments            ->+
+    violations          ->  ibs.hr.warning         ->+--> hr.payslip
 
-Component names and arithmetic follow the legacy ``user_payroll_summaries``
-table, verified against 9,976 historical payslips.
+Payroll itself is ``hr_payroll_community``. The custom ``ibs.hr.payslip``
+engine and ``ibs.hr.loan`` model were withdrawn in 18.0.1.1.0 in favour of
+the standard ``hr.payslip``, ``hr.loan`` and ``salary.advance`` models; the
+loan and advance policy rules now live in ``ellithy_ohrms_bridge``.
+
+What this module still owns
+---------------------------
+* ``ibs.hr.attendance.day`` -- the daily attendance roll-up.
+* The discipline ladder: ``ibs.hr.violation`` and ``ibs.hr.warning``.
+* ``ibs.hr.warning.deduction`` -- the ledger enforcing CR 2.12's five-day
+  monthly ceiling, with the remainder carried into following months.
+* Administrative, commission and investigation records.
 
 Rules confirmed against production data
 ---------------------------------------
 * Daily rate is ``base_salary / 30``. Implied day counts resolve to clean
   integers (1, 2, 3, 21, 25) across 3,174 rows.
-* ``net = total_allowance - total_deduction`` holds on 9,959 of 9,976 rows.
-* Employee social insurance share is 11% of the subscription salary, the
-  Egyptian statutory rate.
 * Penalty values in ``violation_penalties`` are expressed in DAYS.
 
 Known legacy defects, deliberately not reproduced -- see README.
@@ -34,11 +40,14 @@ Known legacy defects, deliberately not reproduced -- see README.
     'depends': [
         'ellithy_hr_base',
         'hr_holidays',
+        'hr_payroll_community',
     ],
     'data': [
         'security/ibs_hr_security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'data/mail_template_data.xml',
+        'data/hr_salary_rule_data.xml',
         'views/ibs_hr_violation_views.xml',
         'views/ibs_hr_admin_penalty_views.xml',
         'views/ibs_hr_admin_penalty_record_views.xml',
@@ -48,9 +57,8 @@ Known legacy defects, deliberately not reproduced -- see README.
         'views/hr_leave_views.xml',
         'views/hr_employee_views.xml',
         'views/ibs_hr_warning_views.xml',
+        'views/hr_payslip_views.xml',
         'views/ibs_hr_attendance_day_views.xml',
-        'views/ibs_hr_loan_views.xml',
-        'views/ibs_hr_payslip_views.xml',
         'views/menus.xml',
     ],
     'icon': '/ibs_hr/static/description/icon.png',

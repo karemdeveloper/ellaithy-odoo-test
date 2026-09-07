@@ -7,15 +7,35 @@
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
 
+            <!--
+                CR 2.5: the onboarding mail sits beside Launch Plan, because
+                welcoming a joiner and starting their onboarding plan are the
+                same moment in HR's day. It disappears once sent, so nobody
+                is welcomed twice.
+            -->
+            <xpath expr="//header" position="inside">
+                <button name="action_send_welcome_mail" type="object"
+                        string="Send Onboarding Mail" class="oe_highlight"
+                        groups="ellithy_hr_base.group_ellithy_hr_personnel"
+                        invisible="not active or not id or welcome_email_sent or not work_email"/>
+                <field name="welcome_email_sent" invisible="1"/>
+                <field name="welcome_email_sent_on" invisible="1"/>
+            </xpath>
+
+            <!-- CR 2.2: stock hr labels this tab "Private Information". -->
+            <xpath expr="//page[@name='personal_information']" position="attributes">
+                <attribute name="string">Personal Information</attribute>
+            </xpath>
+
             <div name="button_box" position="inside">
-                <button name="action_open_status_wizard" type="object"
-                        class="oe_stat_button" icon="fa-user-times"
-                        groups="ellithy_hr_base.group_ellithy_hr_personnel">
-                    <div class="o_stat_info">
-                        <span class="o_stat_text">Change</span>
-                        <span class="o_stat_text">Status</span>
-                    </div>
-                </button>
+                <!--
+                    "Change Status" is gone: exits, suspensions and
+                    blacklisting are all hr.resignation requests now, reached
+                    from the Resignation smart button that
+                    ellithy_ohrms_bridge adds. A second way to archive an
+                    employee is a second way to do it without a reviewable
+                    record.
+                -->
                 <button name="action_force_logout" type="object"
                         class="oe_stat_button" icon="fa-sign-out"
                         confirm="End every active session for this employee?"
@@ -69,46 +89,61 @@
 
                 <page string="Insurance" name="ellithy_insurance"
                       groups="ellithy_hr_base.group_ellithy_hr_personnel">
-                    <group>
+                    <div class="alert alert-info" role="status"
+                         invisible="not contract_id">
+                        Insurance is entered on the running contract. The
+                        figures below are shown from it and cannot be edited
+                        here, so renewing a contract does not rewrite what the
+                        previous one was filed under.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="contract_id">
+                        This employee has no running contract, so there is
+                        nowhere to record insurance yet. Create a contract
+                        first.
+                    </div>
+                    <field name="contract_id" invisible="1"/>
+                    <group invisible="not contract_id">
+                        <!-- readonly on the FORM, writable on the model: an
+                             import aimed at the employee must land on the
+                             contract rather than be silently dropped. -->
                         <group string="Medical">
-                            <field name="medical_insurance_type"/>
-                            <field name="medical_insurance_date"/>
-                            <field name="medical_card_number"/>
-                            <field name="medical_cost_per_year"/>
-                            <field name="medical_cost_per_month"/>
-                            <field name="medical_employee_share"/>
-                            <field name="has_medical_relative"/>
+                            <field name="medical_insurance_type" readonly="1"/>
+                            <field name="medical_insurance_date" readonly="1"/>
+                            <field name="medical_card_number" readonly="1"/>
+                            <field name="medical_cost_per_year" readonly="1"/>
+                            <field name="medical_cost_per_month" readonly="1"/>
+                            <field name="medical_employee_share" readonly="1"/>
+                            <field name="has_medical_relative" readonly="1"/>
                         </group>
                         <group string="Social">
-                            <field name="has_social_insurance"/>
-                            <field name="social_insurance_office_id"
+                            <field name="has_social_insurance" readonly="1"/>
+                            <field name="social_insurance_office_id" readonly="1"
                                    invisible="not has_social_insurance"/>
-                            <field name="social_insurance_number"
+                            <field name="social_insurance_number" readonly="1"
                                    invisible="not has_social_insurance"/>
-                            <field name="social_insurance_start_date"
+                            <field name="social_insurance_start_date" readonly="1"
                                    invisible="not has_social_insurance"/>
-                            <field name="contract_id" invisible="1"/>
+                            <!-- Salary stays writable: HR has always set a
+                                 raise from the employee file, and the edit
+                                 lands on the running contract. -->
                             <field name="basic_salary"/>
                             <field name="subscription_salary"/>
                             <field name="total_salary"/>
                             <field name="profession"/>
-                            <div colspan="2" class="text-muted"
-                                 invisible="contract_id">
-                                No running contract, so the salary figures
-                                cannot be set here yet.
-                            </div>
                         </group>
                     </group>
                     <group string="Superseded Insurance Columns"
-                           groups="base.group_no_one">
+                           groups="base.group_no_one"
+                           invisible="not contract_id">
                         <group>
-                            <field name="insurance_number"/>
-                            <field name="insurance_office"/>
-                            <field name="insurance_entered_date"/>
+                            <field name="insurance_number" readonly="1"/>
+                            <field name="insurance_office" readonly="1"/>
+                            <field name="insurance_entered_date" readonly="1"/>
                         </group>
                         <group>
-                            <field name="insurance_salary"/>
-                            <field name="social_insurance_price"/>
+                            <field name="insurance_salary" readonly="1"/>
+                            <field name="social_insurance_price" readonly="1"/>
                         </group>
                     </group>
                     <separator string="Covered Relatives"/>
@@ -159,7 +194,7 @@
                             <field name="sequence" column_invisible="1"/>
                             <field name="type_id" readonly="1"/>
                             <field name="required" readonly="1" optional="show"/>
-                            <field name="received" widget="boolean_toggle"/>
+                            <field name="copy_type"/>
                             <field name="document" filename="filename" widget="binary"/>
                             <field name="filename" column_invisible="1"/>
                             <field name="received_date"/>

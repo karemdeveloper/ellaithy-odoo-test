@@ -50,14 +50,17 @@ class TestBlankForms(IbsHrCommon):
         self.assertEqual(record.deducted_amount, 0.0)
 
     def test_blank_payslip_form(self):
-        record = self._open_blank('ibs.hr.payslip')
-        self.assertEqual(record.net_salary, 0.0)
-        self.assertFalse(record.date_from)
+        record = self._open_blank('hr.payslip')
+        self.assertEqual(record.penalty_days_taken, 0.0)
+        self.assertEqual(record.penalty_days_deferred, 0.0)
 
     def test_blank_loan_form(self):
-        record = self._open_blank('ibs.hr.loan')
-        self.assertEqual(record.installment_amount, 0.0)
-        self.assertEqual(record.balance, 0.0)
+        record = self._open_blank('hr.loan')
+        self.assertEqual(record.balance_amount, 0.0)
+
+    def test_blank_salary_advance_form(self):
+        record = self._open_blank('salary.advance')
+        self.assertFalse(record.advance)
 
     def test_blank_attendance_day_form(self):
         record = self._open_blank('ibs.hr.attendance.day')

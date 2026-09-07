@@ -3,7 +3,8 @@
     <record id="ibs_hr_warning_view_list" model="ir.ui.view">
         <field name="name">ibs.hr.warning.list</field>
         <field name="model">ibs.hr.warning</field>
-        <field name="arch" type="xml"><list><field name="name"/><field name="employee_id"/><field name="branch_id"/><field name="violation_id"/><field name="date"/><field name="occurrence"/><field name="action"/><field name="penalty_days"/><field name="deducted_amount"/><field name="status"/></list></field>
+        <field name="arch" type="xml">
+            <list><field name="name"/><field name="employee_id"/><field name="branch_id"/><field name="violation_id"/><field name="date"/><field name="execution_date"/><field name="occurrence"/><field name="action"/><field name="penalty_days"/><field name="days_settled"/><field name="days_remaining"/><field name="deducted_amount"/><field name="status"/></list></field>
     </record>
     <record id="ibs_hr_warning_view_form" model="ir.ui.view">
         <field name="name">ibs.hr.warning.form</field>
@@ -13,6 +14,7 @@
                     <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="status != 'draft'"/>
                     <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="status != 'pending'"/>
                     <button name="action_reject" type="object" string="Reject" invisible="status != 'pending'"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="status not in ('pending', 'approved')"/>
                     <button name="action_reset_draft" type="object" string="Reset" invisible="status == 'draft'"/>
                     <field name="status" widget="statusbar" statusbar_visible="draft,pending,approved"/>
                 </header>
@@ -24,6 +26,9 @@
                             <field name="branch_id"/>
                             <field name="violation_id"/>
                             <field name="date"/>
+                            <!-- CR 2.11: payroll selects on this, not on the
+                                 date of the violation. -->
+                            <field name="execution_date"/>
                             <field name="giver_id"/>
                         </group>
                         <group>
@@ -34,12 +39,31 @@
                             <field name="custom_penalty_days"/>
                             <field name="deducted_amount"/>
                             <field name="currency_id" invisible="1"/>
+                            <!-- CR 2.12: a penalty above the monthly ceiling
+                                 is settled over several payslips, so what
+                                 matters is the outstanding balance. -->
+                            <field name="days_settled"/>
+                            <field name="days_remaining"/>
+                            <field name="is_settled"/>
                             <field name="payslip_id"/>
                         </group>
                     </group>
                     <group string="Review">
                         <field name="reviewed_by"/><field name="reviewed_at"/>
-                        <field name="review_comment"/>
+                        <!-- CR 2.14: mandatory when rejecting or cancelling. -->
+                        <field name="review_comment"
+                               placeholder="Reason -- required to reject or cancel"/>
+                    </group>
+                    <group string="Deductions Taken" invisible="not deduction_ids">
+                        <field name="deduction_ids" nolabel="1" colspan="2" readonly="1">
+                            <list>
+                                <field name="date"/>
+                                <field name="payslip_id"/>
+                                <field name="days"/>
+                                <field name="amount"/>
+                                <field name="currency_id" column_invisible="1"/>
+                            </list>
+                        </field>
                     </group>
                     <field name="notes" placeholder="Notes"/>
                 </sheet>

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ CR 2.10: the clearance form ============ -->
+    <record id="hr_resignation_clearance_view_list" model="ir.ui.view">
+        <field name="name">hr.resignation.clearance.list</field>
+        <field name="model">hr.resignation.clearance</field>
+        <field name="arch" type="xml">
+            <list string="Clearance" editable="bottom"
+                  decoration-success="state == 'approved'"
+                  decoration-danger="state == 'rejected'">
+                <field name="sequence" widget="handle"/>
+                <field name="department_id" readonly="1"/>
+                <field name="manager_id" readonly="1" optional="show"/>
+                <field name="employee_id" column_invisible="1"/>
+                <field name="state" readonly="1"/>
+                <!-- Who signed, and when. The whole point of the form. -->
+                <field name="approved_by" readonly="1" optional="show"/>
+                <field name="approved_at" readonly="1" optional="show"/>
+                <field name="amount_due" sum="Total Due" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="rejection_reason" optional="hide"/>
+                <field name="note" optional="hide"/>
+                <button name="action_approve" type="object" string="Clear"
+                        icon="fa-check" title="Sign this department off"
+                        invisible="state == 'approved'"/>
+                <button name="action_reject" type="object" string="Block"
+                        icon="fa-ban" title="Block clearance"
+                        invisible="state == 'rejected'"/>
+                <button name="action_reset" type="object" string="Reset"
+                        icon="fa-undo" invisible="state == 'pending'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_resignation_clearance_action" model="ir.actions.act_window">
+        <field name="name">Clearance</field>
+        <field name="res_model">hr.resignation.clearance</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- ============ CR 2.7 / 2.8 / 2.9 / 2.10 on the resignation ============ -->
+    <record id="hr_resignation_view_form_ellithy" model="ir.ui.view">
+        <field name="name">hr.resignation.view.form.inherit.ellithy</field>
+        <field name="model">hr.resignation</field>
+        <field name="inherit_id" ref="hr_resignation.hr_resignation_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- CR 2.8: the line manager endorses before HR approves. -->
+            <xpath expr="//button[@name='action_approve_resignation']"
+                   position="before">
+                <button string="Endorse" type="object"
+                        name="action_endorse_resignation"
+                        class="oe_highlight"
+                        invisible="state != 'confirm'"
+                        groups="hr.group_hr_user"/>
+            </xpath>
+
+            <xpath expr="//button[@name='action_approve_resignation']"
+                   position="attributes">
+                <attribute name="invisible">state != 'endorsed'</attribute>
+                <attribute name="class">oe_highlight</attribute>
+                <attribute name="groups">hr.group_hr_manager</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_reject_resignation']"
+                   position="attributes">
+                <attribute name="invisible">state not in ('confirm', 'endorsed')</attribute>
+            </xpath>
+
+            <!--
+                Clearance is driven from the header: started from a wizard,
+                confirmed once every department has signed. The exit cannot
+                be approved until that final confirmation exists.
+            -->
+            <xpath expr="//button[@name='action_reject_resignation']"
+                   position="after">
+                <button string="Start Clearance" type="object"
+                        name="action_open_clearance_wizard"
+                        class="oe_highlight"
+                        invisible="request_type != 'exit' or state not in ('confirm', 'endorsed') or clearance_state != 'none'"
+                        groups="hr.group_hr_user"/>
+                <button string="Add Departments" type="object"
+                        name="action_open_clearance_wizard"
+                        invisible="request_type != 'exit' or clearance_state != 'progress'"
+                        groups="hr.group_hr_user"/>
+                <button string="Confirm Clearance" type="object"
+                        name="action_confirm_clearance"
+                        class="oe_highlight"
+                        invisible="request_type != 'exit' or clearance_state != 'progress' or not clearance_complete"
+                        groups="hr.group_hr_user"/>
+                <button string="Reopen Clearance" type="object"
+                        name="action_reopen_clearance"
+                        invisible="request_type != 'exit' or clearance_state != 'done' or state == 'approved'"
+                        groups="hr.group_hr_user"/>
+                <field name="clearance_state" invisible="1"/>
+                <field name="clearance_complete" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,confirm,endorsed,approved</attribute>
+            </xpath>
+
+            <!--
+                Suspension and blacklisting moved here from the employee
+                form's Change Status wizard, so every way an employee stops
+                working leaves one reviewable record.
+            -->
+            <xpath expr="//field[@name='change_employee']" position="before">
+                <field name="request_type" widget="radio"
+                       options="{'horizontal': True}"
+                       readonly="state != 'draft'"/>
+            </xpath>
+
+            <xpath expr="//field[@name='resignation_type']" position="attributes">
+                <attribute name="invisible">request_type != 'exit'</attribute>
+                <attribute name="required">request_type == 'exit' and state != 'draft'</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='expected_revealing_date']" position="attributes">
+                <attribute name="invisible">request_type != 'exit'</attribute>
+                <attribute name="required">request_type == 'exit'</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='notice_period']" position="attributes">
+                <attribute name="invisible">request_type != 'exit'</attribute>
+            </xpath>
+
+            <!-- Anchored on a field rather than a group label: Odoo refuses
+                 @string as an inheritance selector. Two levels up from
+                 "reason" is the outer group, so these land beside it in the
+                 sheet rather than nested inside it. -->
+            <xpath expr="//field[@name='reason']/../.." position="after">
+                <group string="Suspension" invisible="request_type != 'suspension'">
+                    <field name="suspension_start"
+                           required="request_type == 'suspension'"
+                           readonly="state == 'approved'"/>
+                    <field name="suspension_end"
+                           readonly="state == 'approved'"
+                           placeholder="Leave empty to lift by hand"/>
+                    <field name="suspension_reason_id"
+                           readonly="state == 'approved'"/>
+                    <field name="suspension_comment"
+                           readonly="state == 'approved'"/>
+                </group>
+                <group string="Blacklist">
+                    <field name="blacklist" readonly="state == 'approved'"/>
+                    <field name="blacklist_reason"
+                           invisible="not blacklist"
+                           required="blacklist"
+                           readonly="state == 'approved'"/>
+                    <field name="disable_login" readonly="state == 'approved'"/>
+                </group>
+            </xpath>
+
+            <!-- CR 2.10: clearance is not optional, so it is not hidden. -->
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page name="clearance" string="Clearance"
+                          invisible="request_type != 'exit'">
+                        <group>
+                            <group>
+                                <field name="clearance_state"/>
+                                <field name="clearance_progress"/>
+                                <field name="clearance_complete" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="clearance_confirmed_by"
+                                       invisible="clearance_state != 'done'"/>
+                                <field name="clearance_confirmed_at"
+                                       invisible="clearance_state != 'done'"/>
+                                <field name="clearance_total_due"
+                                       invisible="clearance_state == 'none'"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+
+                        <div class="alert alert-info" role="status"
+                             invisible="clearance_state != 'none'">
+                            Clearance has not been started. Use
+                            <b>Start Clearance</b> to confirm the last working
+                            day and choose which departments have to sign.
+                        </div>
+
+                        <field name="clearance_line_ids" nolabel="1"
+                               invisible="clearance_state == 'none'"
+                               readonly="clearance_state == 'done' or state in ('approved', 'cancel')"
+                               context="{'default_resignation_id': id}"/>
+                    </page>
+                    <page name="approvals" string="Approvals">
+                        <group>
+                            <group string="Endorsement">
+                                <field name="endorsed_by"/>
+                                <field name="endorsed_at"/>
+                            </group>
+                            <group string="Approval">
+                                <field name="approved_by"/>
+                                <field name="approved_at"/>
+                            </group>
+                        </group>
+                        <field name="rejection_reason"
+                               placeholder="Reason -- required to reject"/>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_resignation_view_tree_ellithy" model="ir.ui.view">
+        <field name="name">hr.resignation.view.tree.inherit.ellithy</field>
+        <field name="model">hr.resignation</field>
+        <field name="inherit_id" ref="hr_resignation.hr_resignation_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="request_type"/>
+                <field name="clearance_state"/>
+                <field name="clearance_progress"/>
+            </field>
+        </field>
+    </record>
+
+    <!--
+        CR 2.7: one screen. The vendor splits resignations across a "Request"
+        menu that hides approved records and an "Approved" menu that shows
+        only those; a leaver's record therefore moves between two places
+        depending on its state. One unfiltered action replaces both.
+    -->
+    <record id="hr_resignation.hr_resignation_action" model="ir.actions.act_window">
+        <field name="name">Resignations</field>
+        <field name="domain">[]</field>
+    </record>
+
+    <record id="hr_resignation.hr_resignation_menu_request" model="ir.ui.menu">
+        <field name="name">Resignations</field>
+    </record>
+
+    <record id="hr_resignation.hr_resignation_menu_approved_request"
+            model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+</odoo>

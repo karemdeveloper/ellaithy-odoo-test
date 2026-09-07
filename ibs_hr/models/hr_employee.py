@@ -4,18 +4,16 @@ from odoo import _, api, fields, models
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
-    payslip_ids = fields.One2many(
-        'ibs.hr.payslip', 'employee_id', string='Payslips')
+    # ``payslip_ids`` pointed at the withdrawn ``ibs.hr.payslip``. It is not
+    # replaced: ``hr_payroll_community`` already gives the employee
+    # ``slip_ids`` on ``hr.payslip``, and a second one2many over the same
+    # rows would only be a synonym. The loan relation moved to
+    # ``ellithy_ohrms_bridge``, the module that can see ``hr.loan``.
     warning_ids = fields.One2many(
         'ibs.hr.warning', 'employee_id', string='Warnings')
-    loan_ids = fields.One2many(
-        'ibs.hr.loan', 'employee_id', string='Loans')
     attendance_day_ids = fields.One2many(
         'ibs.hr.attendance.day', 'employee_id', string='Attendance Days')
 
-    open_loan_balance = fields.Monetary(
-        string='Open Loan Balance', compute='_compute_open_loan_balance',
-        currency_field='currency_id')
     warning_count = fields.Integer(
         string='Warning Count', compute='_compute_warning_count')
     investigation_line_ids = fields.One2many(
@@ -48,12 +46,6 @@ class HrEmployee(models.Model):
             return contracts
         return self.env['hr.contract'].search(
             [('employee_id', '=', self.id)], order='date_start desc', limit=1)
-
-    @api.depends('loan_ids.balance', 'loan_ids.state')
-    def _compute_open_loan_balance(self):
-        for record in self:
-            record.open_loan_balance = sum(record.loan_ids.filtered(
-                lambda l: l.state == 'running').mapped('balance'))
 
     def _compute_warning_count(self):
         data = self.env['ibs.hr.warning']._read_group(
