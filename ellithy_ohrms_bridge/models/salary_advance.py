@@ -36,7 +36,7 @@ class SalaryAdvance(models.Model):
         contract = self.employee_id.sudo()._ibs_contract_on(self.date)
         if not contract or not contract.wage:
             return 0.0
-        return (contract.wage / DAYS_IN_MONTH_BASIS) * self.date.day
+        return (contract.wage / DAYS_IN_MONTH_BASIS) * min(self.date.day, 30)
 
     @api.depends('employee_id', 'date')
     def _compute_earned_to_date(self):
@@ -46,6 +46,12 @@ class SalaryAdvance(models.Model):
     @api.constrains('advance', 'date', 'employee_id')
     def _check_advance_ceiling(self):
         for advance in self:
+            if advance.date and advance.date > fields.Date.context_today(advance):
+                raise ValidationError(_(
+                    'A salary advance cannot be dated in the future. '
+                    'Use today or an earlier date so the ceiling reflects earned pay.'))
+            if advance.advance < 0:
+                raise ValidationError(_('A salary advance must be a positive amount.'))
             if not advance.advance:
                 continue
             earned = advance._earned_to_date()

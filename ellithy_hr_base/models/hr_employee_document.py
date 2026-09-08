@@ -8,8 +8,13 @@ class EllithyHrDocument(models.Model):
     """
 
     _name = 'ellithy.hr.document'
+    _inherit = ['ellithy.employee.child.audit']
     _description = 'Employee HR Document'
     _order = 'employee_id, sequence, id'
+
+    # Always shown on an "Updated" log even when the type itself is unchanged,
+    # so a filename/date change alone still says which document it concerns.
+    _audit_context_fields = ('type_id',)
 
     employee_id = fields.Many2one(
         'hr.employee', string='Employee', required=True, ondelete='cascade',

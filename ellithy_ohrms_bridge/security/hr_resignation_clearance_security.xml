@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Nothing in ir.model.access.csv or here restricted this model
+             before: every internal user could read (and, per the ACL,
+             write) every clearance line for every employee, company-wide.
+             HR keeps full visibility; everyone else sees only their own
+             exit's clearance, or a department they manage. -->
+        <record id="rule_hr_resignation_clearance_hr" model="ir.rule">
+            <field name="name">Clearance: HR sees all</field>
+            <field name="model_id" ref="model_hr_resignation_clearance"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('ellithy_hr_base.group_ellithy_hr_personnel'))]"/>
+        </record>
+
+        <!-- The leaver sees their own clearance only once it is fully
+             signed: there is nothing to act on before then, and an
+             in-progress sheet can carry a department's remarks not meant
+             for them. A department manager needs it while it is still in
+             progress, to sign their own department's line. -->
+        <record id="rule_hr_resignation_clearance_self_or_manager" model="ir.rule">
+            <field name="name">Clearance: own completed exit, or own department</field>
+            <field name="model_id" ref="model_hr_resignation_clearance"/>
+            <field name="domain_force">
+                ['|',
+                    '&amp;', ('employee_id.user_id', '=', user.id),
+                             ('resignation_id.clearance_state', '=', 'done'),
+                    ('department_id.manager_id.user_id', '=', user.id)]
+            </field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+    </data>
+</odoo>

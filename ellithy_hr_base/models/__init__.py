@@ -4,6 +4,8 @@ from . import ellithy_hr_reference
 from . import hr_department
 from . import hr_job
 from . import hr_employee
+from . import hr_employee_child_audit
+from . import hr_action_notification
 from . import hr_employee_dependant
 from . import hr_employee_document
 from . import hr_employee_account

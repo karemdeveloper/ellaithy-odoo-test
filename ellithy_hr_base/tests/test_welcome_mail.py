@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase, tagged
 
@@ -26,6 +28,28 @@ class TestWelcomeMail(TransactionCase):
     def _wizard(self, employee):
         return self.env['ellithy.hr.welcome.mail.wizard'].create(
             {'employee_id': employee.id})
+
+    def setUp(self):
+        super().setUp()
+        # Exercise mail.mail's real success path without a network delivery.
+        for name, value in [('connect', MagicMock()), ('send_email', '<welcome-test@example.invalid>')]:
+            mock = patch.object(type(self.env['ir.mail_server']), name, return_value=value)
+            mock.start()
+            self.addCleanup(mock.stop)
+
+    def test_failed_delivery_remains_unsent_and_can_retry(self):
+        employee = self._employee()
+        wizard = self._wizard(employee)
+        with patch.object(type(self.env['ir.mail_server']), 'connect', side_effect=OSError('SMTP unavailable')):
+            result = wizard.action_send()
+        self.assertEqual(result['tag'], 'display_notification')
+        self.assertFalse(employee.welcome_email_sent)
+        failed_mail = wizard.mail_id
+        self.assertEqual(failed_mail.state, 'exception')
+        wizard.action_send()
+        self.assertEqual(wizard.mail_id, failed_mail)
+        self.assertEqual(failed_mail.state, 'sent')
+        self.assertTrue(employee.welcome_email_sent)
 
     # ---- no longer automatic ------------------------------------------
     def test_creating_an_employee_sends_nothing(self):

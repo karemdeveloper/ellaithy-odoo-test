@@ -34,7 +34,7 @@
                 <group>
                     <group>
                         <field name="employee_id"/><field name="branch_id"/>
-                        <field name="penalty_id"/><field name="date"/>
+                        <field name="penalty_id"/><field name="date"/><field name="execution_date"/>
                         <field name="giver_id"/>
                     </group>
                     <group>

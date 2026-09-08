@@ -115,7 +115,13 @@ class HrPayslip(models.Model):
         if len(self) != 1 or self.penalty_deduction_ids:
             return [], 0.0, 0.0
         rate = self._ibs_daily_rate()
-        budget = self.env['ibs.hr.warning.deduction'].monthly_cap_days()
+        ledger = self.env['ibs.hr.warning.deduction'].sudo()
+        already_taken = ledger.search([
+            ('employee_id', '=', self.employee_id.id),
+            ('date', '>=', fields.Date.start_of(self.date_to, 'month')),
+            ('date', '<=', fields.Date.end_of(self.date_to, 'month')),
+        ]) if self.employee_id and self.date_to else ledger
+        budget = max(0.0, ledger.monthly_cap_days() - sum(already_taken.mapped('days')))
         lines, taken, deferred = [], 0.0, 0.0
         for warning in self._ibs_outstanding_penalties():
             outstanding = warning.days_remaining
@@ -184,15 +190,30 @@ class HrPayslip(models.Model):
         return result
 
     def action_payslip_done(self):
-        result = super().action_payslip_done()
-        self._ibs_apply_penalty_plan()
+        self._ibs_lock_payroll_employees()
+        result = True
+        # Book each slip before computing another slip's remaining budget.
+        for payslip in self:
+            result = super(HrPayslip, payslip).action_payslip_done()
+            payslip._ibs_apply_penalty_plan()
         return result
 
+    def _ibs_lock_payroll_employees(self):
+        self.check_access('write')
+        self.env.flush_all()
+        for employee in self.employee_id.sorted('id'):
+            # A row version change makes concurrent REPEATABLE READ payroll
+            # transactions retry, so they cannot book from an old snapshot.
+            # No employee value changes; this is only a serialization lock.
+            self.env.cr.execute('UPDATE hr_employee SET id = id WHERE id = %s', [employee.id])
+
     def action_payslip_draft(self):
+        self._ibs_lock_payroll_employees()
         self._ibs_release_penalty_plan()
         return super().action_payslip_draft()
 
     def action_payslip_cancel(self):
+        self._ibs_lock_payroll_employees()
         self._ibs_release_penalty_plan()
         return super().action_payslip_cancel()
 

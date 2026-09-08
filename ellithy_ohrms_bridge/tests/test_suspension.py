@@ -163,14 +163,6 @@ class TestSuspensionAndBlacklist(EllithyBridgeCommon):
         })
         resignation.action_confirm_resignation()
         resignation.action_endorse_resignation()
-        wizard = self.env['hr.resignation.clearance.wizard'].create({
-            'resignation_id': resignation.id,
-            'last_working_day': resignation.expected_revealing_date,
-            'department_ids': [(6, 0, self.dept_it.ids)],
-        })
-        wizard.action_start_clearance()
-        resignation.clearance_line_ids.action_approve()
-        resignation.action_confirm_clearance()
         resignation.action_approve_resignation()
         self.employee.invalidate_recordset()
         self.assertFalse(self.employee.active)

@@ -75,6 +75,15 @@ class IbsHrAdminPenaltyRecord(models.Model):
         'hr.employee', string='Given By', ondelete='restrict')
     date = fields.Date(
         required=True, default=fields.Date.context_today, tracking=True)
+    execution_date = fields.Date(
+        string='Execution Date', compute='_compute_execution_date', store=True,
+        readonly=False, required=True, tracking=True, precompute=True)
+
+    @api.depends('date')
+    def _compute_execution_date(self):
+        for record in self:
+            if not record.execution_date:
+                record.execution_date = record.date
 
     name_snapshot = fields.Char(
         string='Penalty (as issued)', readonly=True,

@@ -1,6 +1,6 @@
 {
     'name': 'Ellithy / OpenHRMS Bridge',
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.4.0',
     'summary': 'Ellithy HR policy on the OpenHRMS loan, advance and '
                'resignation models, plus the joining-date conflict fix',
     'description': """
@@ -40,7 +40,8 @@ Policy on the OpenHRMS models
 ``hr.resignation``
     CR 2.7 -- one screen, reached from the employee by smart button.
     CR 2.8 -- confirm, endorse, approve. CR 2.9 -- the agreed type wording.
-    CR 2.10 -- a clearance checklist that must be complete before approval.
+    CR 2.10 -- a clearance checklist, run after approval on the employee's
+    actual last working day.
 
 Migration bookkeeping
 ---------------------
@@ -68,6 +69,7 @@ already carry, so a migration re-run matches rather than duplicates.
     ],
     'data': [
         'security/ir.model.access.csv',
+        'security/hr_resignation_clearance_security.xml',
         'views/hr_loan_views.xml',
         'views/salary_advance_views.xml',
         'views/hr_resignation_views.xml',

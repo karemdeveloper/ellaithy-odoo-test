@@ -20,6 +20,7 @@
 
             <xpath expr="//button[@name='action_double_approve']" position="attributes">
                 <attribute name="string">Finance Approve</attribute>
+                <attribute name="groups">account.group_account_user</attribute>
             </xpath>
 
             <xpath expr="//button[@name='action_refuse']" position="after">

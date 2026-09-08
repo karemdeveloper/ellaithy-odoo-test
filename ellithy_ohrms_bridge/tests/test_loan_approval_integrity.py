@@ -1,0 +1,133 @@
+from datetime import date
+from unittest.mock import patch
+
+from odoo import fields
+from odoo.exceptions import ValidationError
+from odoo.tests import tagged
+
+from .common import EllithyBridgeCommon
+
+
+@tagged('post_install', '-at_install', 'ellithy_hr')
+class TestLoanApprovalIntegrity(EllithyBridgeCommon):
+    def _loan(self, **kwargs):
+        vals = {'employee_id': self.employee.id, 'loan_amount': 3000,
+                'installment': 3, 'payment_date': '2026-06-01'}
+        vals.update(kwargs)
+        return self.env['hr.loan'].create(vals)
+
+    def _finance(self):
+        return self.env['res.users'].with_context(no_reset_password=True).create({
+            'name': 'Loan Finance', 'login': 'loan.finance.integrity',
+            'email': 'finance@example.invalid',
+            'groups_id': [(6, 0, [self.env.ref('account.group_account_user').id])]})
+
+    def test_changed_amount_rechecked_by_hr(self):
+        loan = self._loan()
+        loan.action_submit()
+        loan.loan_amount = 6000.01
+        with self.assertRaises(ValidationError):
+            loan.action_approve()
+
+    def test_actual_schedule_outside_year_rejected(self):
+        loan = self._loan()
+        loan.action_submit()
+        loan.action_compute_installment()
+        loan.loan_lines[-1].date = '2027-01-01'
+        with self.assertRaises(ValidationError):
+            loan.action_approve()
+
+    def test_schedule_amounts_must_equal_principal(self):
+        loan = self._loan()
+        loan.action_submit()
+        loan.action_compute_installment()
+        loan.loan_lines[0].amount = 1
+        with self.assertRaises(ValidationError):
+            loan.action_approve()
+
+    def test_finance_cannot_take_hr_step_even_with_existing_lines(self):
+        loan = self._loan()
+        loan.action_submit()
+        loan.action_compute_installment()
+        finance = self._finance()
+        self.assertFalse(finance.has_group('ellithy_hr_base.group_ellithy_hr_personnel'))
+        with self.assertRaises(ValidationError):
+            loan.with_user(finance).action_approve()
+        with self.assertRaises(ValidationError):
+            loan.with_user(finance).write({'state': 'waiting_approval_2'})
+
+    def test_hr_cannot_take_finance_step(self):
+        loan = self._loan()
+        loan.action_submit()
+        loan.action_approve()
+        self.assertFalse(self.hr_user.has_group('account.group_account_user'))
+        with self.assertRaises(ValidationError):
+            loan.with_user(self.hr_user).action_double_approve()
+
+    def test_approved_terms_and_lines_cannot_be_changed(self):
+        loan = self._loan()
+        loan.action_submit()
+        loan.action_approve()
+        with self.assertRaises(ValidationError):
+            loan.loan_amount = 4000
+        with self.assertRaises(ValidationError):
+            loan.loan_lines[0].date = '2027-01-01'
+        with self.assertRaises(ValidationError):
+            loan.loan_lines[0].unlink()
+
+    def test_each_handoff_queues_one_email_for_the_right_group(self):
+        self.hr_user.email = 'hr@example.invalid'
+        finance = self._finance()
+        loan = self._loan()
+        domain = [('model', '=', 'hr.loan'), ('res_id', '=', loan.id)]
+        loan.action_submit()
+        first = self.env['mail.mail'].search(domain)
+        self.assertEqual(len(first), 1)
+        self.assertIn(self.hr_user.email, first.email_to)
+        self.assertNotIn(finance.email, first.email_to)
+        loan.action_approve()
+        second = self.env['mail.mail'].search(domain) - first
+        self.assertEqual(len(second), 1)
+        self.assertIn(finance.email, second.email_to)
+        self.assertNotIn(self.hr_user.email, second.email_to)
+        self.assertIn('model=hr.loan', second.body_html)
+        with self.assertRaises(ValidationError):
+            loan.action_approve()
+        self.assertEqual(self.env['mail.mail'].search_count(domain), 2)
+
+    def test_nonpositive_installments_cannot_submit(self):
+        for count in (0, -1):
+            with self.assertRaises(ValidationError):
+                self._loan(installment=count).action_submit()
+
+    def test_finance_can_post_after_hr_and_cannot_post_twice(self):
+        finance = self._finance()
+        loan = self._loan()
+        loan.write({
+            'employee_account_id': self.env['account.account'].search([
+                ('account_type', '=', 'asset_current')], limit=1).id,
+            'treasury_account_id': self.env['account.account'].search([
+                ('account_type', '=', 'asset_cash')], limit=1).id,
+            'journal_id': self.env['account.journal'].search([('type', '=', 'general')], limit=1).id,
+        })
+        self.assertTrue(loan.employee_account_id and loan.treasury_account_id and loan.journal_id)
+        loan.action_submit()
+        loan.with_user(self.hr_user).action_approve()
+        loan.with_user(finance).action_double_approve()
+        self.assertEqual(loan.state, 'approve')
+        self.assertEqual(loan.finance_approved_by, finance)
+        moves = self.env['account.move'].search([('ref', '=', loan.name)])
+        self.assertEqual(len(moves), 1)
+        self.assertEqual(moves.state, 'posted')
+        with self.assertRaises(ValidationError):
+            loan.with_user(finance).action_double_approve()
+
+    def test_future_advance_rejected_and_day_31_capped(self):
+        with patch.object(fields.Date, 'context_today', return_value=date(2026, 9, 8)):
+            with self.assertRaises(ValidationError):
+                self.env['salary.advance'].create({'employee_id': self.employee.id,
+                                                  'date': '2026-09-30', 'advance': 3000})
+        with patch.object(fields.Date, 'context_today', return_value=date(2026, 10, 31)):
+            advance = self.env['salary.advance'].create({'employee_id': self.employee.id,
+                                                        'date': '2026-10-31', 'advance': 3000})
+            self.assertEqual(advance.earned_to_date, 3000)

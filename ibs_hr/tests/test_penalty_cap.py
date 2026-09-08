@@ -5,6 +5,25 @@ from .common import IbsHrCommon
 
 @tagged('post_install', '-at_install', 'ibs_payroll')
 class TestPenaltyCap(IbsHrCommon):
+
+    def test_two_payslips_in_one_month_share_the_cap(self):
+        warning = self._penalty(7.0)
+        first, second = self._payslip(), self._payslip()
+        (first | second).action_payslip_done()
+        self.assertEqual(sum((first | second).penalty_deduction_ids.mapped('days')), 5)
+        self.assertEqual(warning.days_remaining, 2)
+        july = self._payslip(month=7)
+        july.action_payslip_done()
+        self.assertEqual(sum(july.penalty_deduction_ids.mapped('days')), 2)
+
+    def test_reset_releases_monthly_budget_for_another_slip(self):
+        self._penalty(7.0)
+        first = self._payslip()
+        first.action_payslip_done()
+        second = self._payslip()
+        self.assertEqual(second._ibs_penalty_plan()[1], 0)
+        first.action_payslip_draft()
+        self.assertEqual(second._ibs_penalty_plan()[1], 5)
     """CR 2.12 -- five days a month, the rest carried over.
 
     The fixture pays 3,000 basic, so a day is worth exactly 100 and the

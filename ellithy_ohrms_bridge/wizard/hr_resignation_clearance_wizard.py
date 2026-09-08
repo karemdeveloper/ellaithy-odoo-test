@@ -64,10 +64,14 @@ class HrResignationClearanceWizard(models.TransientModel):
         if resignation.request_type != 'exit':
             raise ValidationError(
                 _('Clearance applies to an exit, not to a suspension.'))
-        if resignation.state not in ('confirm', 'endorsed'):
+        if resignation.state != 'approved':
             raise ValidationError(_(
-                'Clearance starts once the resignation has been confirmed, '
-                'and before it is approved.'))
+                'Clearance starts once the exit is approved.'))
+        if (resignation.clearance_state == 'none'
+                and self.last_working_day != fields.Date.context_today(self)):
+            raise ValidationError(_(
+                'Clearance starts on the last working day (%(day)s), not '
+                'before.', day=self.last_working_day))
 
         resignation.write({
             'expected_revealing_date': self.last_working_day,

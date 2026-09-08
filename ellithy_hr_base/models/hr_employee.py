@@ -1,3 +1,5 @@
+import hashlib
+
 from markupsafe import Markup
 
 from odoo import _, api, fields, models
@@ -326,12 +328,8 @@ class HrEmployee(models.Model):
         'investigation_count', 'resignation_count', 'display_name',
     }
 
-    # Field types that have no readable before/after form. A binary renders as
-    # its base64 payload and an x2many as ``model(id, id, ...)``, so logging
-    # them fills the chatter with noise -- the document lines in particular are
-    # written by ``_sync_document_lines`` on every create. Changes inside those
-    # relations are audited on the line models themselves.
-    _AUDIT_EXCLUDE_TYPES = {'binary', 'image', 'one2many', 'many2many', 'html'}
+    # Child rows log their own CRUD operations, including direct ORM edits.
+    _AUDIT_EXCLUDE_TYPES = {'one2many'}
 
     def _ibs_audit_fields(self, vals):
         """Stored, writable, non-tracked fields being changed by this write."""
@@ -350,6 +348,13 @@ class HrEmployee(models.Model):
         return names
 
     def _ibs_format_audit(self, field, value):
+        if field.type in ('binary', 'image'):
+            if not value:
+                return _('No file')
+            payload = value.encode() if isinstance(value, str) else value
+            return _('File fingerprint: %s', hashlib.sha256(payload).hexdigest()[:16])
+        if field.type == 'many2many':
+            return ', '.join(value.mapped('display_name')) or '—'
         if field.type == 'many2one':
             return value.display_name or '—' if value else '—'
         if field.type == 'boolean':
@@ -359,9 +364,8 @@ class HrEmployee(models.Model):
         if field.type == 'selection':
             return dict(field._description_selection(self.env)).get(value, value)
         text = str(value)
-        # A long note or free-text field would otherwise push the whole
-        # previous value into the log line.
-        return text if len(text) <= 120 else text[:117] + '...'
+        # Keep the complete value for an audit rather than a shortened preview.
+        return text
 
     def _ibs_post_audit(self, before):
         # ``message_post`` escapes a plain string body, so the note has to be

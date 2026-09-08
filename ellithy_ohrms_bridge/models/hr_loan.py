@@ -26,7 +26,8 @@ class HrLoan(models.Model):
       against the user who gave it.
     """
 
-    _inherit = 'hr.loan'
+    _name = 'hr.loan'
+    _inherit = ['hr.loan', 'ellithy.hr.action.notification']
 
     hr_approved_by = fields.Many2one(
         'res.users', string='HR Approved By', readonly=True, copy=False)
@@ -96,7 +97,7 @@ class HrLoan(models.Model):
         """
         self.ensure_one()
         params = self._loan_rule_params()
-        employee = self.employee_id
+        employee = self.employee_id.sudo()
         start = self.payment_date or self.date or fields.Date.context_today(
             self)
         failures = []
@@ -136,9 +137,9 @@ class HrLoan(models.Model):
                     ceiling=ceiling, amount=self.loan_amount))
 
         # (c) at most ten instalments
-        if self.installment > params['max_installments']:
+        if self.installment < 1 or self.installment > params['max_installments']:
             failures.append(_(
-                'Rule C (instalments): a loan may run for at most %(max)s '
+                'Rule C (instalments): a loan must have between 1 and %(max)s '
                 'instalments. Requested %(count)s.',
                 max=params['max_installments'], count=self.installment))
 
@@ -151,10 +152,23 @@ class HrLoan(models.Model):
                 '%(year_end)s. This schedule runs to %(final)s.',
                 year_end=year_end, final=final_due))
 
+        if self.loan_amount <= 0:
+            failures.append(_('Rule B (amount): the loan amount must be positive.'))
+        if self.loan_lines:
+            if any(line.date < start or line.date > year_end for line in self.loan_lines):
+                failures.append(_('Rule D (financial year): every actual installment must fall '
+                                  'between the payment start date and %s.', year_end))
+            if (len(self.loan_lines) != self.installment
+                    or any(line.amount <= 0 for line in self.loan_lines)
+                    or self.currency_id.compare_amounts(
+                        sum(self.loan_lines.mapped('amount')), self.loan_amount)):
+                failures.append(_('The installment schedule must match the installment count '
+                                  'and total loan amount, with positive amounts. Recompute it.'))
+
         return failures
 
     @api.depends('employee_id', 'loan_amount', 'installment', 'payment_date',
-                 'state')
+                 'state', 'loan_lines.date', 'loan_lines.amount')
     def _compute_eligibility_warning(self):
         """Show the rules a draft breaks before the requester submits it."""
         for loan in self:
@@ -183,6 +197,47 @@ class HrLoan(models.Model):
         self.action_check_eligibility()
         return super().action_submit()
 
+    def _check_approval_role(self, group, description):
+        if not self.env.su and not self.env.user.has_group(group):
+            raise ValidationError(_('Only %s may perform this approval.', description))
+
+    def write(self, vals):
+        vals = dict(vals)
+        terms = {'employee_id', 'loan_amount', 'installment', 'payment_date', 'loan_lines'}
+        if terms & vals.keys() and any(r.state in (HR_APPROVED, 'approve') for r in self):
+            raise ValidationError(_('Loan terms cannot change after HR approval.'))
+        target = vals.get('state')
+        if target in ('waiting_approval_1', HR_APPROVED, 'approve'):
+            source = {'waiting_approval_1': 'draft', HR_APPROVED: 'waiting_approval_1', 'approve': HR_APPROVED}[target]
+            if any(r.state != source for r in self):
+                raise ValidationError(_('Follow the loan approval order: Submit, HR, then Finance.'))
+            if target == HR_APPROVED:
+                self._check_approval_role('ellithy_hr_base.group_ellithy_hr_personnel', _('HR Personnel'))
+                vals.update(hr_approved_by=self.env.user.id, hr_approved_at=fields.Datetime.now())
+            elif target == 'approve':
+                self._check_approval_role('account.group_account_user', _('Finance'))
+                vals.update(finance_approved_by=self.env.user.id, finance_approved_at=fields.Datetime.now())
+        elif target == 'draft' and any(r.state not in ('refuse', 'cancel') for r in self):
+            raise ValidationError(_('Only refused or cancelled loans can be reset.'))
+        audit = {'hr_approved_by', 'hr_approved_at', 'finance_approved_by', 'finance_approved_at'}
+        if not target and audit & vals.keys() and not self.env.su:
+            raise ValidationError(_('Approval details are recorded by the approval actions.'))
+        result = super().write(vals)
+        if target in ('waiting_approval_1', HR_APPROVED, 'approve'):
+            self.action_check_eligibility()
+        if target == 'waiting_approval_1':
+            self._notify_approval_group('ellithy_hr_base.group_ellithy_hr_personnel', _('Loan awaiting HR approval'))
+        elif target == HR_APPROVED:
+            self._notify_approval_group('account.group_account_user', _('Loan awaiting Finance approval'))
+        return result
+
+    @api.model
+    def create(self, vals):
+        if not self.env.su and (vals.get('state', 'draft') != 'draft' or any(
+                vals.get(n) for n in ('hr_approved_by', 'hr_approved_at', 'finance_approved_by', 'finance_approved_at'))):
+            raise ValidationError(_('Create a draft loan and use the approval actions.'))
+        return super().create(vals)
+
     def action_approve(self):
         """HR's signature -- the first of the two.
 
@@ -192,6 +247,8 @@ class HrLoan(models.Model):
         is the single-signature behaviour CR 2.17 replaces. Writing the HR
         step directly makes the second signature unconditional.
         """
+        self._check_approval_role('ellithy_hr_base.group_ellithy_hr_personnel', _('HR Personnel'))
+        self.action_check_eligibility()
         for loan in self:
             if loan.state != 'waiting_approval_1':
                 raise ValidationError(
@@ -211,22 +268,20 @@ class HrLoan(models.Model):
         The vendor method posts the journal entry and moves the request to
         Approved; all this adds is the gate and the record of who signed.
         """
+        self._check_approval_role('account.group_account_user', _('Finance'))
+        self.action_check_eligibility()
         for loan in self:
             if loan.state != HR_APPROVED:
                 raise ValidationError(_(
                     'Finance approves only after HR has approved. Ask HR to '
                     'review this request first.'))
         result = super().action_double_approve()
-        self.write({
-            'finance_approved_by': self.env.user.id,
-            'finance_approved_at': fields.Datetime.now(),
-        })
         return result
 
     def action_refuse(self):
         """CR 2.14's principle applied to loans: refusal carries a reason."""
         for loan in self:
-            if not loan.refusal_reason:
+            if not (loan.refusal_reason or '').strip():
                 raise ValidationError(
                     _('Refusing a request requires a reason.'))
         return super().action_refuse()
@@ -238,3 +293,29 @@ class HrLoan(models.Model):
             'hr_approved_by': False, 'hr_approved_at': False,
             'finance_approved_by': False, 'finance_approved_at': False,
         })
+
+
+class HrLoanLine(models.Model):
+    _inherit = 'hr.loan.line'
+
+    def _check_terms_editable(self):
+        if any(r.loan_id.state in (HR_APPROVED, 'approve') for r in self):
+            raise ValidationError(_('Installment terms cannot change after HR approval.'))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        loans = self.env['hr.loan'].browse([v['loan_id'] for v in vals_list if v.get('loan_id')])
+        if any(r.state in (HR_APPROVED, 'approve') for r in loans):
+            raise ValidationError(_('Installments cannot be added after HR approval.'))
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if {'date', 'amount', 'loan_id', 'employee_id'} & vals.keys():
+            self._check_terms_editable()
+            if vals.get('loan_id') and self.env['hr.loan'].browse(vals['loan_id']).state in (HR_APPROVED, 'approve'):
+                raise ValidationError(_('Installments cannot be moved to an approved loan.'))
+        return super().write(vals)
+
+    def unlink(self):
+        self._check_terms_editable()
+        return super().unlink()

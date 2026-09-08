@@ -18,6 +18,7 @@ class EllithyHrAccount(models.Model):
     """
 
     _name = 'ellithy.hr.account'
+    _inherit = ['ellithy.employee.child.audit']
     _description = 'Employee Payout Account'
     _order = 'employee_id, is_primary desc, id'
 

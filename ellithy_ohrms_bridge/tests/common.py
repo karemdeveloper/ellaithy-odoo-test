@@ -39,3 +39,18 @@ class EllithyBridgeCommon(TransactionCase):
             'login': 'bridge.plain.user',
             'groups_id': [(6, 0, [cls.env.ref('base.group_user').id])],
         })
+        # ``oh_employee_creation_from_user`` auto-creates a matching
+        # employee for every new user, so this is the one to use for a
+        # "the leaver themselves" test -- ``cls.employee`` cannot also be
+        # pointed at this user without violating hr_employee_user_uniq.
+        cls.plain_employee = cls.plain_user.employee_id
+        cls.plain_employee.joining_date = '2023-01-01'
+        # The vendor's own approval step requires a contract to exist at
+        # all, regardless of clearance.
+        cls.plain_contract = cls.env['hr.contract'].create({
+            'name': 'Plain Employee Contract',
+            'employee_id': cls.plain_employee.id,
+            'wage': 3000.0,
+            'date_start': '2023-01-01',
+            'state': 'open',
+        })

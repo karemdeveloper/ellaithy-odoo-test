@@ -1,5 +1,5 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
 
 # CR 2.9 -- the agreed wording. The stock OpenHRMS pair is "Normal
 # Resignation" / "Fired by the company", which reads as an accusation on a
@@ -40,8 +40,8 @@ class HrResignation(models.Model):
     * CR 2.8 -- an approval cycle: the employee confirms, the line manager
       endorses, HR approves.
     * CR 2.9 -- the agreed type wording.
-    * CR 2.10 -- a clearance checklist that must be complete before the exit
-      is approved.
+    * CR 2.10 -- a clearance checklist, run after the exit is approved, on
+      the employee's actual last working day.
     """
 
     _inherit = 'hr.resignation'
@@ -115,6 +115,85 @@ class HrResignation(models.Model):
         compute='_compute_expected_revealing_date', store=True,
         readonly=False, precompute=True, required=False)
 
+    # The vendor makes this required unconditionally, which does not fit a
+    # suspension: it already has its own ``suspension_reason_id`` /
+    # ``suspension_comment``, so a generic "Resignation Details" reason
+    # would be a second, differently-labelled place to say the same thing
+    # -- and it is hidden from the form for a suspension besides (see the
+    # view), which would leave a required field nobody could fill in.
+    # Required only for an exit, alongside the other exit-only fields, in
+    # ``_check_request_shape``.
+    reason = fields.Text(required=False)
+
+    # ------------------------------------------------------------------
+    # Employee self-service: what HR decides, not the leaver
+    # ------------------------------------------------------------------
+    # A normal employee raises an exit, never a suspension, and cannot pick
+    # how it is legally classified, blacklist themselves, or switch off
+    # their own login -- those are HR's calls, made while confirming or
+    # endorsing the request. The form hides these fields from anyone
+    # outside HR (``groups="hr.group_hr_user"``), but hiding a field from
+    # the form does not stop an RPC/import call from setting it, so the
+    # same list is enforced here too.
+    _HR_ONLY_FIELDS = {
+        'request_type', 'resignation_type', 'blacklist', 'blacklist_reason',
+        'disable_login', 'suspension_start', 'suspension_end',
+        'suspension_reason_id', 'suspension_comment',
+    }
+
+    def _is_hr_reviewer(self):
+        return self.env.su or self.env.user.has_group('hr.group_hr_user')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        if not self._is_hr_reviewer():
+            for vals in vals_list:
+                blocked = self._HR_ONLY_FIELDS & vals.keys()
+                if blocked:
+                    raise AccessError(_(
+                        'Only HR can set %(fields)s.',
+                        fields=', '.join(sorted(blocked))))
+                vals['request_type'] = 'exit'
+                vals.setdefault('resignation_type', 'resigned')
+        return super().create(vals_list)
+
+    # ``employee_contract`` is the vendor's free-text copy of the contract's
+    # name, kept as-is (retyping it in place fails outright: migrated rows
+    # hold values Postgres cannot cast to an integer, e.g. the literal text
+    # "New"). A real relation alongside it instead, which is also the one
+    # shown on the form -- the plain text column is dropped from the view
+    # entirely rather than merely hidden from the employee.
+    # Stored and precomputed, like ``joined_date`` above, so it is filled in
+    # on a plain ``create()`` too -- not just when the employee is picked
+    # interactively and the onchange happens to run -- while staying
+    # editable for HR afterward.
+    employee_contract_id = fields.Many2one(
+        'hr.contract', string='Contract', ondelete='set null',
+        compute='_compute_employee_contract_id', store=True,
+        readonly=False, precompute=True)
+
+    @api.depends('employee_id')
+    def _compute_employee_contract_id(self):
+        for resignation in self:
+            if not resignation.employee_contract_id:
+                # The same "current contract" lookup payroll and loan
+                # eligibility already use: the one covering today, or --
+                # for someone whose contract was never dated to cover the
+                # present, which is exactly the shape a resignation deals
+                # with -- their last one.
+                resignation.employee_contract_id = (
+                    resignation.employee_id._ibs_contract_on(
+                        fields.Date.context_today(resignation)))
+
+    def write(self, vals):
+        if not self._is_hr_reviewer():
+            blocked = self._HR_ONLY_FIELDS & vals.keys()
+            if blocked:
+                raise AccessError(_(
+                    'Only HR can change %(fields)s.',
+                    fields=', '.join(sorted(blocked))))
+        return super().write(vals)
+
     @api.depends('request_type', 'suspension_start')
     def _compute_expected_revealing_date(self):
         for resignation in self:
@@ -126,7 +205,7 @@ class HrResignation(models.Model):
                 resignation.expected_revealing_date = False
 
     @api.constrains('request_type', 'suspension_start', 'suspension_end',
-                    'resignation_type', 'expected_revealing_date')
+                    'resignation_type', 'expected_revealing_date', 'reason')
     def _check_request_shape(self):
         for resignation in self:
             if resignation.request_type == 'suspension':
@@ -142,6 +221,8 @@ class HrResignation(models.Model):
             if not resignation.expected_revealing_date:
                 raise ValidationError(
                     _('An exit needs a last day of employment.'))
+            if not resignation.reason:
+                raise ValidationError(_('An exit needs a reason.'))
             if not resignation.resignation_type:
                 # Only enforced once the request leaves draft: the type is
                 # chosen during review, not necessarily when raising it.
@@ -191,9 +272,11 @@ class HrResignation(models.Model):
         historical resignation, which after the migration is most ex-staff.
         """
         self.joined_date = self.employee_id.joining_date
-        contract = self.env['hr.contract'].search(
-            [('employee_id', '=', self.employee_id._origin.id),
-             ('state', '=', 'open')], limit=1)
+        # ``employee_contract_id`` is handled by its own compute above,
+        # which runs here too since it depends on ``employee_id``. Only the
+        # vendor's legacy text copy and the notice period still need
+        # setting explicitly.
+        contract = self.employee_contract_id
         if contract:
             self.employee_contract = contract.name
             self.notice_period = contract.notice_days
@@ -231,7 +314,7 @@ class HrResignation(models.Model):
     clearance_state = fields.Selection(
         [('none', 'Not Started'),
          ('progress', 'In Progress'),
-         ('done', 'Confirmed')],
+         ('done', 'Cleared')],
         string='Clearance', default='none', required=True, tracking=True,
         copy=False)
     clearance_line_ids = fields.One2many(
@@ -282,11 +365,31 @@ class HrResignation(models.Model):
                 resignation.clearance_line_ids.mapped('amount_due'))
 
     def action_open_clearance_wizard(self):
-        """Start clearance: confirm the last day, pick the departments."""
+        """Start clearance: confirm the last day, pick the departments.
+
+        Clearance now runs after the exit is approved, on the employee's
+        actual last working day -- handing back company property is
+        something that happens when they leave, not a precondition for
+        deciding they may. The wizard itself re-checks the date (a stale
+        open form should not let it through late), this is the button's own
+        gate.
+        """
         self.ensure_one()
         if self.request_type != 'exit':
             raise ValidationError(
                 _('Clearance applies to an exit, not to a suspension.'))
+        if self.state != 'approved':
+            raise ValidationError(
+                _('Clearance starts once the exit is approved.'))
+        # Only the first opening of this wizard is "starting" clearance;
+        # reopening it afterward to add one more department should not
+        # start refusing once the day has moved on.
+        if (self.clearance_state == 'none'
+                and self.expected_revealing_date != fields.Date.context_today(self)):
+            raise ValidationError(
+                _('Clearance starts on the last working day '
+                  '(%(day)s), not before.',
+                  day=self.expected_revealing_date))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Start Clearance'),
@@ -301,8 +404,8 @@ class HrResignation(models.Model):
 
         Kept separate from the departments' own sign-offs: the last one to
         clear should not silently close the form on everyone else's behalf,
-        and HR needs a moment to read the outstanding amounts before the
-        exit can be approved.
+        and HR needs a moment to read the outstanding amounts before
+        clearance itself is marked done.
         """
         for resignation in self:
             if resignation.clearance_state != 'progress':
@@ -327,12 +430,15 @@ class HrResignation(models.Model):
             })
 
     def action_reopen_clearance(self):
-        """Send a confirmed clearance back, when something was missed."""
+        """Send a confirmed clearance back, when something was missed.
+
+        No precondition on the resignation's own state: clearance now only
+        ever exists once an exit is already approved, so requiring that
+        here (as an earlier version of this method did, from when
+        clearance ran before approval) would block reopening outright,
+        always.
+        """
         for resignation in self:
-            if resignation.state == 'approved':
-                raise ValidationError(_(
-                    'The exit is already approved. Reset it to draft before '
-                    'reopening clearance.'))
             resignation.write({
                 'clearance_state': 'progress',
                 'clearance_confirmed_by': False,
@@ -356,8 +462,27 @@ class HrResignation(models.Model):
     def action_confirm_resignation(self):
         return super().action_confirm_resignation()
 
+    def action_cancel_resignation(self):
+        """The employee's own withdrawal -- only theirs to make, and only
+        before anyone else has acted on it.
+
+        The vendor method sets ``state = 'cancel'`` unconditionally, with no
+        regard to how far the request has already moved. Once a manager has
+        endorsed it (or further), withdrawing is no longer a unilateral
+        thing the leaver can do by themselves.
+        """
+        for resignation in self:
+            if resignation.state not in ('draft', 'confirm'):
+                raise ValidationError(_(
+                    'This request has already moved past confirmation and '
+                    'can no longer be withdrawn. Ask HR to reject it '
+                    'instead.'))
+        return super().action_cancel_resignation()
+
     def action_endorse_resignation(self):
         """The line manager's endorsement, between confirm and HR approval."""
+        if not self._is_hr_reviewer():
+            raise AccessError(_('Only HR can endorse a resignation.'))
         for resignation in self:
             if resignation.state != 'confirm':
                 raise ValidationError(_(
@@ -515,12 +640,19 @@ class HrResignation(models.Model):
     def action_approve_resignation(self):
         """HR's approval, and the last of the three.
 
-        Two gates the stock method does not have: the manager must have
-        endorsed, and clearance must be complete. Both are checked before
-        delegating, because the stock method deactivates the employee and
-        closes the contract -- by the time it has run there is nothing left
-        to refuse.
+        One gate the stock method does not have: the manager must have
+        endorsed. Checked before delegating, because the stock method
+        deactivates the employee and closes the contract -- by the time it
+        has run there is nothing left to refuse.
+
+        Clearance is not a precondition here: it is handing company
+        property back on the leaver's actual last day, which comes after
+        the decision to approve the exit, not before it. It can only be
+        started once this method has run (see
+        ``action_open_clearance_wizard``).
         """
+        if not (self.env.su or self.env.user.has_group('hr.group_hr_manager')):
+            raise AccessError(_('Only HR management can approve a resignation.'))
         for resignation in self:
             if resignation.state != 'endorsed':
                 raise ValidationError(_(
@@ -529,17 +661,6 @@ class HrResignation(models.Model):
                     state=dict(
                         self._fields['state']._description_selection(self.env)
                     ).get(resignation.state, resignation.state)))
-            # Clearance is about handing company property back on the way
-            # out. A suspended employee is coming back, so it does not apply.
-            if (resignation.request_type == 'exit'
-                    and resignation.clearance_state != 'done'):
-                raise ValidationError(_(
-                    'Clearance must be confirmed before the exit is '
-                    'approved. It is currently %(state)s (%(progress)s).',
-                    state=dict(self._fields['clearance_state']
-                               ._description_selection(self.env)).get(
-                                   resignation.clearance_state),
-                    progress=resignation.clearance_progress))
         # Archive first, so the stock method's own archive block -- the half
         # that cannot satisfy the constraint -- is skipped as already done,
         # while everything else it does still runs.
@@ -547,6 +668,18 @@ class HrResignation(models.Model):
         exits = self.filtered(lambda r: r.request_type == 'exit')
         if exits:
             super(HrResignation, exits).action_approve_resignation()
+            # The stock method only flips ``state`` to 'approved' inside its
+            # own "contract is still open" branch -- but ``_apply_employee_exit``
+            # above has *just* closed that same contract for any exit whose
+            # last day has already arrived, which is silently the common
+            # case (approving something that is due now or overdue). Left
+            # alone, that leaves the record stuck on 'endorsed' forever:
+            # the click "succeeds" with no error, and nothing visibly
+            # happens. Every gate above has already passed, so it is
+            # approved regardless of what the stock method's own contract
+            # lookup happened to find.
+            exits.filtered(lambda r: r.state != 'approved').write({
+                'state': 'approved'})
         # The stock method cancels the contract and stamps a departure
         # reason, neither of which belongs on a suspension: the employee is
         # coming back to the same contract.
@@ -696,6 +829,21 @@ class HrResignationClearance(models.Model):
             raise ValidationError(_(
                 'Clearance for %(department)s is signed by its manager or by '
                 'HR.', department=line.department_id.display_name))
+
+    # Only the signature itself is gated -- HR Personnel keep the plain ACL
+    # write they already have for the amount/note columns; it is setting
+    # the outcome that is reserved for HR management or the department's
+    # own manager.
+    _SIGNATURE_FIELDS = {'state', 'approved_by', 'approved_at'}
+
+    def write(self, vals):
+        # The action methods below already call ``_check_approver``; this
+        # closes the same gate against a direct write (RPC/import) that
+        # skips them entirely -- an employee is not the ACL, and the ACL
+        # alone lets any employee write to any clearance line.
+        if self._SIGNATURE_FIELDS & vals.keys():
+            self._check_approver()
+        return super().write(vals)
 
     def action_approve(self):
         self._check_approver()

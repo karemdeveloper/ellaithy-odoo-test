@@ -10,3 +10,19 @@ __pycache__/
 *.sql
 *.zip
 .devstack/
+
+# AI-review / acceptance-pack output: generated reports, checklists, test
+# logs and probe data -- not application code, not meant to be versioned.
+# Scoped to these two directories rather than blanket *.md/*.html/*.csv,
+# since real modules in this repo (and Odoo itself) legitimately ship
+# tracked README.md/README.rst and static/description/index.html files
+# that must NOT be ignored.
+docs/
+scripts/
+
+# The same categories of file, wherever they turn up elsewhere: none of
+# these are ever meant to be committed to this repo.
+*.docx
+*.json
+*.log
+~$*

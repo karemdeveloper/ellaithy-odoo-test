@@ -13,6 +13,7 @@ class EllithyHrDependant(models.Model):
     """
 
     _name = 'ellithy.hr.dependant'
+    _inherit = ['ellithy.employee.child.audit']
     _description = 'Employee Medical Dependant'
     _order = 'employee_id, id'
 
