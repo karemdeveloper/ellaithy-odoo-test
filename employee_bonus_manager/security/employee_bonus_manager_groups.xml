@@ -29,9 +29,10 @@
         <field name="users"
                eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
-    <!-- Add the default user to the security group User -->
+    <!-- Do not assign the legacy bonus-user group to newly created users.
+         Bonus access is granted exclusively through Odoo's HR groups. -->
     <record id="base.default_user" model="res.users">
         <field name="groups_id"
-               eval="[(4,ref('employee_bonus_manager_group_user'))]"/>
+               eval="[(3, ref('employee_bonus_manager_group_user'))]"/>
     </record>
 </odoo>

@@ -7,10 +7,15 @@
                   web_icon="hr_recruitment,static/description/icon.png"
                   sequence="4"/>
 
-        <menuitem id="hr_attendance.menu_hr_attendance_root"
-                  name="Attendances" sequence="7"
-                  groups="hr_attendance.group_hr_attendance_own_reader"
-                  web_icon="hr_attendance,static/description/icon.png"/>
+        <!-- Explicitly clear parent_id: menuitem updates otherwise retain the
+             parent set by the Attendance module, keeping it nested. -->
+        <record id="hr_attendance.menu_hr_attendance_root" model="ir.ui.menu">
+            <field name="name">Attendances</field>
+            <field name="parent_id" eval="False"/>
+            <field name="sequence">7</field>
+            <field name="groups_id" eval="[(6, 0, [ref('hr_attendance.group_hr_attendance_own_reader')])]"/>
+            <field name="web_icon">hr_attendance,static/description/icon.png</field>
+        </record>
 
         <menuitem name="Leaves"
                   id="hr_holidays.menu_hr_holidays_root"

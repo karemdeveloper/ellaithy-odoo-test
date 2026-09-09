@@ -16,21 +16,21 @@
                             string="Approve by Department"
                             invisible="state != 'submitted'"
                             class="btn-primary"
-                            groups="employee_bonus_manager.employee_bonus_manager_group_department"/>
+                            groups="hr.group_hr_user,hr.group_hr_manager"/>
                     <button name="action_manager_approve" type="object"
                             string="Approve by Manager"
                             invisible="state != 'department_approved'"
                             class="btn-primary"
-                            groups="employee_bonus_manager.employee_bonus_manager_group_manager"/>
+                            groups="hr.group_hr_manager"/>
                     <button name="action_reject" type="object" string="Reject"
-                            groups="employee_bonus_manager.employee_bonus_manager_group_department"
+                            groups="hr.group_hr_user,hr.group_hr_manager"
                             invisible="state != 'submitted'"/>
                     <button name="action_reject" type="object" string="Reject"
-                            groups="employee_bonus_manager.employee_bonus_manager_group_manager"
+                            groups="hr.group_hr_manager"
                             invisible="state != 'department_approved'"/>
                     <button name="action_reset_to_draft" type="object"
                             string="Reset to Draft"
-                            groups="employee_bonus_manager.employee_bonus_manager_group_department"
+                            groups="hr.group_hr_user,hr.group_hr_manager"
                             invisible="state != 'rejected'"/>
                     <button name="action_post_journal_entry" type="object"
                             string="Accounting Head Approval"
