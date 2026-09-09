@@ -118,4 +118,47 @@
             </field>
         </field>
     </record>
+
+    <!-- ============ Loan management ============ -->
+    <!-- ``ohrms_loan.hr_loan_menu`` ("Loan") has sat empty since the vendor
+         module shipped it: a parent menu item with no action and no
+         children, so it never actually rendered. "Request for Loan" was the
+         only door in, and its default "My Requests" filter means an HR or
+         Finance user opening it lands on their own requests (usually none),
+         not the queue waiting on their signature. This finishes it as the
+         management screen CR 2.17's two-signature flow needs: every loan,
+         unfiltered, restricted to the roles who can act on one. -->
+    <record id="hr_loan_view_search_ellithy" model="ir.ui.view">
+        <field name="name">hr.loan.view.search.inherit.ellithy</field>
+        <field name="model">hr.loan</field>
+        <field name="inherit_id" ref="ohrms_loan.hr_loan_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="myrequest" position="after">
+                <filter string="Pending HR Approval" name="pending_hr"
+                        domain="[('state', '=', 'waiting_approval_1')]"/>
+                <filter string="Pending Finance Approval" name="pending_finance"
+                        domain="[('state', '=', 'waiting_approval_2')]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="action_hr_loan_all" model="ir.actions.act_window">
+        <field name="name">All Loans</field>
+        <field name="res_model">hr.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="ohrms_loan.hr_loan_view_search"/>
+        <field name="context">{'search_default_status': 1}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">No loan requests yet.</p>
+        </field>
+    </record>
+
+    <!-- HR and Finance are the two roles CR 2.17 gives a signature to; a
+         plain employee stays on "Request for Loan" only, which
+         ``hr_loan_rule_employee`` already limits to their own record. -->
+    <record id="ohrms_loan.hr_loan_menu" model="ir.ui.menu">
+        <field name="name">All Loans</field>
+        <field name="action" ref="action_hr_loan_all"/>
+        <field name="groups_id" eval="[(6, 0, [ref('hr.group_hr_user'), ref('account.group_account_user')])]"/>
+    </record>
 </odoo>
