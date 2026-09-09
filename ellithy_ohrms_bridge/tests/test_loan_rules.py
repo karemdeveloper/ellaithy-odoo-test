@@ -1,3 +1,6 @@
+from unittest.mock import patch
+
+from odoo import fields
 from odoo.exceptions import ValidationError
 from odoo.tests import tagged
 
@@ -17,6 +20,33 @@ class TestLoanRules(EllithyBridgeCommon):
         }
         values.update(kwargs)
         return self.env['hr.loan'].create(values)
+
+    # ---- defaults: a real starting point, not "today, one instalment" --
+    def test_default_payment_date_is_the_first_of_next_month(self):
+        with patch.object(fields.Date, 'context_today',
+                          return_value=fields.Date.to_date('2026-09-07')):
+            loan = self.env['hr.loan'].create({
+                'employee_id': self.employee.id, 'loan_amount': 3000.0})
+        self.assertEqual(loan.payment_date, fields.Date.to_date('2026-10-01'))
+        self.assertEqual(loan.installment, 3)
+
+    def test_the_default_schedule_is_three_monthly_installments(self):
+        with patch.object(fields.Date, 'context_today',
+                          return_value=fields.Date.to_date('2026-09-07')):
+            loan = self.env['hr.loan'].create({
+                'employee_id': self.employee.id, 'loan_amount': 3000.0})
+        loan.action_compute_installment()
+        self.assertEqual(
+            sorted(loan.loan_lines.mapped('date')),
+            [fields.Date.to_date(d)
+             for d in ('2026-10-01', '2026-11-01', '2026-12-01')])
+
+    def test_default_payment_date_rolls_over_the_year(self):
+        with patch.object(fields.Date, 'context_today',
+                          return_value=fields.Date.to_date('2026-12-25')):
+            loan = self.env['hr.loan'].create({
+                'employee_id': self.employee.id, 'loan_amount': 3000.0})
+        self.assertEqual(loan.payment_date, fields.Date.to_date('2027-01-01'))
 
     # ---- CR 2.15 -----------------------------------------------------
     def test_a_compliant_request_submits(self):

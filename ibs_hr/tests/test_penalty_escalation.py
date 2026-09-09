@@ -103,6 +103,19 @@ class TestPenaltyEscalation(IbsHrCommon):
         with self.assertRaises(ValidationError):
             warning.action_reject()
 
+    def test_hr_without_approver_group_cannot_approve(self):
+        """CR 2.13 -- only the named approver group may decide a warning."""
+        user = self.env['res.users'].with_context(no_reset_password=True).create({
+            'name': 'Warning HR author', 'login': 'warning.hr.author',
+            'groups_id': [(6, 0, [self.env.ref(
+                'ellithy_hr_base.group_ellithy_hr_personnel').id])]})
+        warning = self._warn(1, approve=False).with_user(user)
+        warning.action_submit()
+        self.assertFalse(user.has_group(
+            'ibs_hr.group_ibs_admin_penalty_approver'))
+        with self.assertRaises(ValidationError):
+            warning.action_approve()
+
     def test_approved_warnings_reach_the_payslip(self):
         self._warn(1)
         self._warn(2)

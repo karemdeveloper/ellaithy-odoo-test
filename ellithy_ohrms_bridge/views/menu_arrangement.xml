@@ -25,19 +25,24 @@
 
     <!-- === 4. Penalties === -->
     <!-- === 5. Payroll === -->
-    <!-- The vendor root is folded in rather than left beside the curated
-         Payroll section, so payslips are reachable one way only. -->
-    <menuitem id="ohrms_loan.hr_loan_menu_root"
-              name="Loans"
-              parent="hr_payroll_community.menu_hr_payroll_community_root"
-              sequence="40"/>
-
     <!-- === 6. Development === -->
     <!-- === restored to root === -->
     <!-- Attendance, Time Off, Surveys and Payroll are their own apps again.
          Removing the re-parenting entry is not enough on its own: the change
          is already in the database, so parent_id has to be cleared
          explicitly. -->
+    <!-- Loans is employee self-service (an employee can already read/write
+         their own request per ``hr_loan_rule_employee``): it was tucked
+         under Payroll, which is not where anyone requesting their own loan
+         would think to look, and not somewhere a plain employee has any
+         other reason to open. Its own app instead, the way Resignation
+         already is. No ``web_icon`` was ever set on it (it was always a
+         submenu before, submenus do not need one), so one is added here. -->
+    <record id="ohrms_loan.hr_loan_menu_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+        <field name="web_icon">ohrms_loan,static/description/icon.png</field>
+    </record>
+
     <record id="hr_attendance.menu_hr_attendance_root" model="ir.ui.menu">
         <field name="parent_id" eval="False"/>
     </record>

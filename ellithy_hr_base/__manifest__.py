@@ -1,6 +1,6 @@
 {
     'name': 'Ellaithy HR Base',
-    'version': '18.0.1.5.0',
+    'version': '18.0.1.6.0',
     'summary': 'Employee directory, org structure and HR master data migrated from the legacy Laravel HR platform',
     'description': """
 Ellithy HR Base

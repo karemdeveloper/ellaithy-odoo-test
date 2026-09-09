@@ -87,14 +87,20 @@
                     </group>
                 </page>
 
-                <page string="Insurance" name="ellithy_insurance"
+                <!--
+                    Two tabs mirroring the contract's two: social and medical
+                    are separate schemes, and HR reads one or the other. Both
+                    are shown from the running contract and cannot be edited
+                    here, so renewing a contract does not rewrite what the
+                    previous one was filed under.
+                -->
+                <page string="Social Insurance" name="ellithy_social_insurance"
                       groups="ellithy_hr_base.group_ellithy_hr_personnel">
                     <div class="alert alert-info" role="status"
                          invisible="not contract_id">
-                        Insurance is entered on the running contract. The
-                        figures below are shown from it and cannot be edited
-                        here, so renewing a contract does not rewrite what the
-                        previous one was filed under.
+                        Social insurance is entered on the running contract.
+                        The registration below is shown from it and cannot be
+                        edited here.
                     </div>
                     <div class="alert alert-warning" role="alert"
                          invisible="contract_id">
@@ -107,16 +113,7 @@
                         <!-- readonly on the FORM, writable on the model: an
                              import aimed at the employee must land on the
                              contract rather than be silently dropped. -->
-                        <group string="Medical">
-                            <field name="medical_insurance_type" readonly="1"/>
-                            <field name="medical_insurance_date" readonly="1"/>
-                            <field name="medical_card_number" readonly="1"/>
-                            <field name="medical_cost_per_year" readonly="1"/>
-                            <field name="medical_cost_per_month" readonly="1"/>
-                            <field name="medical_employee_share" readonly="1"/>
-                            <field name="has_medical_relative" readonly="1"/>
-                        </group>
-                        <group string="Social">
+                        <group string="Registration">
                             <field name="has_social_insurance" readonly="1"/>
                             <field name="social_insurance_office_id" readonly="1"
                                    invisible="not has_social_insurance"/>
@@ -124,6 +121,8 @@
                                    invisible="not has_social_insurance"/>
                             <field name="social_insurance_start_date" readonly="1"
                                    invisible="not has_social_insurance"/>
+                        </group>
+                        <group string="Contribution Basis">
                             <!-- Salary stays writable: HR has always set a
                                  raise from the employee file, and the edit
                                  lands on the running contract. -->
@@ -146,8 +145,44 @@
                             <field name="social_insurance_price" readonly="1"/>
                         </group>
                     </group>
+                </page>
+
+                <page string="Medical Insurance" name="ellithy_medical_insurance"
+                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                    <div class="alert alert-info" role="status"
+                         invisible="not contract_id">
+                        The tier and its costs are entered on the running
+                        contract and shown here read-only. Covered relatives
+                        belong to the person, so they are recorded below and
+                        may equally be edited from the contract.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="contract_id">
+                        This employee has no running contract, so there is no
+                        medical tier to show. Relatives can still be recorded
+                        below.
+                    </div>
+                    <group invisible="not contract_id">
+                        <group string="Coverage">
+                            <field name="medical_insurance_type" readonly="1"/>
+                            <field name="medical_insurance_date" readonly="1"/>
+                            <field name="medical_card_number" readonly="1"/>
+                            <field name="has_medical_relative" readonly="1"/>
+                        </group>
+                        <group string="Cost">
+                            <field name="medical_cost_per_year" readonly="1"/>
+                            <field name="medical_cost_per_month" readonly="1"/>
+                            <field name="medical_employee_share" readonly="1"/>
+                        </group>
+                    </group>
                     <separator string="Covered Relatives"/>
-                    <field name="dependant_ids" invisible="not has_medical_relative">
+                    <!--
+                        Shown whatever the contract says. The list is the
+                        employee's own, so it stays reachable for someone
+                        between contracts, and the coverage flag on the
+                        contract no longer hides rows that exist.
+                    -->
+                    <field name="dependant_ids">
                         <list editable="bottom">
                             <field name="name"/>
                             <field name="relation"/>
@@ -164,6 +199,10 @@
                             <field name="currency_id" column_invisible="1"/>
                         </list>
                     </field>
+                    <div class="text-muted">
+                        Also listed on the contract's Medical Insurance tab.
+                        Either screen may edit them.
+                    </div>
                 </page>
 
                 <page string="Payout" name="ellithy_payout"
@@ -228,39 +267,6 @@
                             <field name="medical_price"/>
                             <field name="detection_price"/>
                             <field name="personal_card_price"/>
-                        </group> -->
-                    </group>
-                </page>
-
-                <page string="Exit" name="ellithy_exit"
-                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
-                    <div class="alert alert-info" role="status">
-                        Resignation date and last working day may only be set on an
-                        archived employee, and archiving requires both. Use the
-                        Change Status button rather than editing these directly.
-                    </div>
-                    <group>
-                        <group string="Departure">
-                            <field name="inactive_type"/>
-                            <field name="resignation_type"/>
-                            <field name="resignation_date"/>
-                            <field name="last_working_day"/>
-                            <field name="settlement_done"/>
-                        </group>
-                        <group string="Suspension">
-                            <field name="suspension_start"/>
-                            <field name="suspension_end"/>
-                            <field name="suspension_reason_id"/>
-                            <field name="suspension_comment"/>
-                        </group>
-                        <group string="Blacklist">
-                            <field name="blacklist"/>
-                            <field name="blacklist_reason" invisible="not blacklist"
-                                   required="blacklist"/>
-                        </group>
-                        <!-- <group string="Migration" groups="base.group_no_one">
-                            <field name="legacy_id" readonly="1"/>
-                            <field name="legacy_odoo_id" readonly="1"/>
                         </group> -->
                     </group>
                 </page>

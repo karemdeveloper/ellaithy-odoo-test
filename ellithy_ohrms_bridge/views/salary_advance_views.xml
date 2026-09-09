@@ -9,9 +9,39 @@
         <field name="model">salary.advance</field>
         <field name="inherit_id" ref="ohrms_salary_advance.salary_advance_view_form"/>
         <field name="arch" type="xml">
+            <!--
+                The exception belongs beside the ceiling it lifts, not two
+                columns away under the reason, so it is taken out of the
+                vendor's group first and re-added below.
+            -->
+            <xpath expr="//field[@name='exceed_condition']" position="replace"/>
+
             <field name="advance" position="after">
                 <field name="earned_to_date" readonly="1"/>
+                <field name="exceed_condition"
+                       readonly="state in ('approve','cancel','reject')"
+                       groups="ellithy_hr_base.group_ellithy_hr_admin"/>
             </field>
+
+            <!--
+                The running contract is already implied by the employee, and
+                the ceiling beside the amount is what HR actually needs from
+                it. The field stays on the record: the vendor's
+                ``approve_request`` still reads it.
+            -->
+            <xpath expr="//field[@name='employee_contract_id']"
+                   position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!--
+                Ellithy runs a single company, so the company is never a
+                decision on the form. It keeps its default, which is what the
+                journal domain and the currency are drawn from.
+            -->
+            <xpath expr="//field[@name='company_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
         </field>
     </record>
 

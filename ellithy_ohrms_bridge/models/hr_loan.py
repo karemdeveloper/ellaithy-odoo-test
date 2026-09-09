@@ -29,6 +29,21 @@ class HrLoan(models.Model):
     _name = 'hr.loan'
     _inherit = ['hr.loan', 'ellithy.hr.action.notification']
 
+    # The vendor defaults to "today" and 1 installment, which is rarely
+    # what anyone actually requests: a loan is paid back starting next
+    # month, over more than one instalment. Defaulting to the 1st of next
+    # month and 3 instalments gives a schedule that is already a sensible
+    # starting point (e.g. requested 7 Sep -> 1 Oct, 1 Nov, 1 Dec) rather
+    # than one instalment due today, which every request would otherwise
+    # have to correct by hand. Rule C's ceiling of 10 is unchanged -- only
+    # the starting point moves.
+    def _default_payment_date(self):
+        return fields.Date.context_today(self) + relativedelta(
+            months=1, day=1)
+
+    payment_date = fields.Date(default=_default_payment_date)
+    installment = fields.Integer(default=3)
+
     hr_approved_by = fields.Many2one(
         'res.users', string='HR Approved By', readonly=True, copy=False)
     hr_approved_at = fields.Datetime(
@@ -203,9 +218,19 @@ class HrLoan(models.Model):
 
     def write(self, vals):
         vals = dict(vals)
-        terms = {'employee_id', 'loan_amount', 'installment', 'payment_date', 'loan_lines'}
-        if terms & vals.keys() and any(r.state in (HR_APPROVED, 'approve') for r in self):
-            raise ValidationError(_('Loan terms cannot change after HR approval.'))
+        # Locked the moment the request leaves draft, not only once HR has
+        # approved: between submission and HR's decision there is nothing
+        # left for the requester (or anyone else, through the form) to
+        # correct -- only to cancel and resubmit. ``action_approve`` still
+        # auto-computes a missing schedule for a request that skipped that
+        # step in draft: it does so through ``hr.loan.line`` directly, not
+        # through this write, so that safety net is unaffected.
+        terms = {'employee_id', 'loan_amount', 'installment', 'payment_date',
+                 'currency_id', 'loan_lines'}
+        if terms & vals.keys() and any(r.state != 'draft' for r in self):
+            raise ValidationError(
+                _('Loan terms cannot change once the request has been '
+                  'submitted. Cancel it and submit a new one instead.'))
         target = vals.get('state')
         if target in ('waiting_approval_1', HR_APPROVED, 'approve'):
             source = {'waiting_approval_1': 'draft', HR_APPROVED: 'waiting_approval_1', 'approve': HR_APPROVED}[target]
@@ -277,6 +302,24 @@ class HrLoan(models.Model):
                     'review this request first.'))
         result = super().action_double_approve()
         return result
+
+    def action_cancel(self):
+        """The requester's own withdrawal -- only theirs to make, and only
+        before HR has acted on it.
+
+        The vendor method sets ``state = 'cancel'`` with no regard to how
+        far the request has already moved, which would let a request with
+        money already released be cancelled out from under the ledger.
+        Once HR has approved (or further), withdrawing is no longer a
+        unilateral thing the requester can do by themselves.
+        """
+        for loan in self:
+            if loan.state not in ('draft', 'waiting_approval_1'):
+                raise ValidationError(_(
+                    'This request has already moved past submission and '
+                    'can no longer be withdrawn. Ask HR to refuse it '
+                    'instead.'))
+        return super().action_cancel()
 
     def action_refuse(self):
         """CR 2.14's principle applied to loans: refusal carries a reason."""

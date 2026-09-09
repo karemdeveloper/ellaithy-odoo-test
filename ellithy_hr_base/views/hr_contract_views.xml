@@ -24,11 +24,19 @@
             <!--
                 Insurance is a term of the engagement, so it is entered here.
                 The employee form mirrors it read-only.
+
+                Two tabs, not one: the two insurances are separate schemes
+                with separate registrations, separate numbers and separate
+                money, and HR works on one at a time: social when someone
+                is registered at an office, medical when a tier or a card
+                changes. Sixteen fields stacked on a single tab made the
+                reader hunt for which half they were in.
             -->
             <xpath expr="//page[@name='information']" position="after">
-                <page string="Insurance" name="ellithy_insurance">
+
+                <page string="Social Insurance" name="ellithy_social_insurance">
                     <group>
-                        <group string="Social">
+                        <group string="Registration">
                             <field name="has_social_insurance"/>
                             <field name="social_insurance_office_id"
                                    invisible="not has_social_insurance"/>
@@ -36,26 +44,14 @@
                                    invisible="not has_social_insurance"/>
                             <field name="social_insurance_start_date"
                                    invisible="not has_social_insurance"/>
-                            <div colspan="2" class="text-muted"
-                                 invisible="not has_social_insurance">
-                                Contributions are calculated on the
-                                subscription salary, set under Salary
-                                Information.
-                            </div>
                         </group>
-                        <group string="Medical">
-                            <field name="medical_insurance_type"/>
-                            <field name="medical_insurance_date"/>
-                            <field name="medical_card_number"/>
-                            <field name="medical_cost_per_year"/>
-                            <field name="medical_cost_per_month"/>
-                            <field name="medical_employee_share"/>
-                            <field name="has_medical_relative"/>
-                            <div colspan="2" class="text-muted"
-                                 invisible="not has_medical_relative">
-                                Covered relatives are listed on the employee,
-                                since a dependant belongs to the person rather
-                                than to this contract.
+                        <group string="Contribution Basis"
+                               invisible="not has_social_insurance">
+                            <field name="subscription_wage" readonly="1"/>
+                            <div colspan="2" class="text-muted">
+                                Contributions are calculated on the
+                                subscription salary. Change it under Salary
+                                Information.
                             </div>
                         </group>
                     </group>
@@ -72,6 +68,56 @@
                         </group>
                     </group>
                 </page>
+
+                <page string="Medical Insurance" name="ellithy_medical_insurance">
+                    <group>
+                        <group string="Coverage">
+                            <field name="medical_insurance_type"/>
+                            <field name="medical_insurance_date"/>
+                            <field name="medical_card_number"/>
+                            <field name="has_medical_relative"/>
+                        </group>
+                        <group string="Cost">
+                            <field name="medical_cost_per_year"/>
+                            <field name="medical_cost_per_month"/>
+                            <field name="medical_employee_share"/>
+                        </group>
+                    </group>
+                    <separator string="Covered Relatives"/>
+                    <!--
+                        The same list the employee file shows: a dependant
+                        belongs to the person, so it is stored there and
+                        can be edited from either screen.
+                    -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="employee_id">
+                        Choose an employee first -- relatives are recorded
+                        against the person, not against this contract.
+                    </div>
+                    <field name="dependant_ids" invisible="not employee_id"
+                           context="{'default_medical_insurance_type': medical_insurance_type}">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="relation"/>
+                            <field name="birthday"/>
+                            <field name="age"/>
+                            <field name="medical_insurance_type"/>
+                            <field name="card_number"/>
+                            <field name="code"/>
+                            <field name="insurance_date"/>
+                            <field name="overage_price"/>
+                            <field name="cost_per_year"/>
+                            <field name="cost_per_month"/>
+                            <field name="employee_share"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <div class="text-muted" invisible="not employee_id">
+                        Also listed on the employee file. Either screen may
+                        edit them.
+                    </div>
+                </page>
+
             </xpath>
         </field>
     </record>

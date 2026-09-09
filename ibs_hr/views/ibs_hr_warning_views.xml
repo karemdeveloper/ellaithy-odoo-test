@@ -12,10 +12,10 @@
         <field name="arch" type="xml">
             <form><header>
                     <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="status != 'draft'"/>
-                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="status != 'pending'"/>
-                    <button name="action_reject" type="object" string="Reject" invisible="status != 'pending'"/>
-                    <button name="action_cancel" type="object" string="Cancel" invisible="status not in ('pending', 'approved')"/>
-                    <button name="action_reset_draft" type="object" string="Reset" invisible="status == 'draft'"/>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="status != 'pending'" groups="ibs_hr.group_ibs_admin_penalty_approver"/>
+                    <button name="action_reject" type="object" string="Reject" invisible="status != 'pending'" groups="ibs_hr.group_ibs_admin_penalty_approver"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="status not in ('pending', 'approved')" groups="ibs_hr.group_ibs_admin_penalty_approver"/>
+                    <button name="action_reset_draft" type="object" string="Reset" invisible="status == 'draft'" groups="ibs_hr.group_ibs_admin_penalty_approver"/>
                     <field name="status" widget="statusbar" statusbar_visible="draft,pending,approved"/>
                 </header>
                 <sheet>

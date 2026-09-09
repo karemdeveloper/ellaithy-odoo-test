@@ -64,9 +64,17 @@ class HrContract(models.Model):
         string='Employee Share (%)', digits=(5, 2))
     has_medical_relative = fields.Boolean(
         string='Has Covered Relatives',
-        help='Whether relatives are covered. The relatives themselves are '
-             'listed on the employee, since a dependant belongs to a person '
-             'rather than to an engagement.')
+        help='Whether relatives are covered.')
+
+    # The list itself belongs to the person, not to the engagement, so it is
+    # stored on the employee. It is reachable from here because the medical
+    # tier and the relatives it covers are decided in the same conversation:
+    # writable, so a relative added while filing the contract lands on the
+    # employee rather than being dropped. One list, two doors -- editing it
+    # here and editing it on the employee file are the same edit.
+    dependant_ids = fields.One2many(
+        related='employee_id.dependant_ids', readonly=False,
+        string='Covered Relatives')
 
     # ---- superseded insurance columns, kept for reference ---------------
     insurance_number = fields.Char(string='Insurance Number (legacy)')

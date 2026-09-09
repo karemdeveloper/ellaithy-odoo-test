@@ -22,12 +22,14 @@ class TestLoanApprovalIntegrity(EllithyBridgeCommon):
             'email': 'finance@example.invalid',
             'groups_id': [(6, 0, [self.env.ref('account.group_account_user').id])]})
 
-    def test_changed_amount_rechecked_by_hr(self):
+    def test_changed_amount_is_blocked_after_submission(self):
+        """Terms lock the moment the request leaves draft -- there is no
+        window left, between submission and HR's decision, for the amount
+        to be changed and only caught later at approval."""
         loan = self._loan()
         loan.action_submit()
-        loan.loan_amount = 6000.01
         with self.assertRaises(ValidationError):
-            loan.action_approve()
+            loan.loan_amount = 6000.01
 
     def test_actual_schedule_outside_year_rejected(self):
         loan = self._loan()
@@ -74,6 +76,52 @@ class TestLoanApprovalIntegrity(EllithyBridgeCommon):
             loan.loan_lines[0].date = '2027-01-01'
         with self.assertRaises(ValidationError):
             loan.loan_lines[0].unlink()
+
+    def test_every_term_is_blocked_once_submitted(self):
+        """Not just the amount: every term the requester could otherwise
+        tune after the fact, once there is nothing left to do but wait for
+        HR or cancel."""
+        loan = self._loan()
+        loan.action_submit()
+        other_employee = self.env['hr.employee'].create({'name': 'Someone Else'})
+        for vals in (
+            {'employee_id': other_employee.id},
+            {'installment': 5},
+            {'payment_date': '2026-07-01'},
+            {'currency_id': self.env.ref('base.USD').id},
+            {'loan_lines': [(5, 0, 0)]},
+        ):
+            with self.assertRaises(ValidationError):
+                loan.write(vals)
+
+    def test_compute_installment_still_works_through_hr_approval(self):
+        """The form's button and inline edits are blocked once submitted,
+        but ``action_approve``'s own auto-compute for a request that never
+        had its schedule computed in draft does not go through this guard
+        -- it must keep working regardless."""
+        loan = self._loan()
+        loan.action_submit()
+        self.assertFalse(loan.loan_lines)
+        loan.action_approve()
+        self.assertEqual(len(loan.loan_lines), loan.installment)
+
+    def test_cancelling_works_while_still_draft_or_submitted(self):
+        loan = self._loan()
+        loan.action_cancel()
+        self.assertEqual(loan.state, 'cancel')
+
+        loan = self._loan()
+        loan.action_submit()
+        loan.action_cancel()
+        self.assertEqual(loan.state, 'cancel')
+
+    def test_cancelling_is_blocked_once_hr_approves(self):
+        loan = self._loan()
+        loan.action_submit()
+        loan.action_approve()
+        with self.assertRaises(ValidationError):
+            loan.action_cancel()
+        self.assertEqual(loan.state, 'waiting_approval_2')
 
     def test_each_handoff_queues_one_email_for_the_right_group(self):
         self.hr_user.email = 'hr@example.invalid'

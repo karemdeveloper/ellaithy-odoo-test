@@ -29,8 +29,54 @@
                         invisible="state not in ('refuse', 'cancel')"/>
             </xpath>
 
+            <!-- The requester's own withdrawal, available while nobody has
+                 acted on it yet: not only in draft. Enforced in Python
+                 too, on ``action_cancel``. -->
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="invisible">state not in ('draft', 'waiting_approval_1')</attribute>
+            </xpath>
+
             <xpath expr="//field[@name='state']" position="attributes">
                 <attribute name="statusbar_visible">draft,waiting_approval_1,waiting_approval_2,approve</attribute>
+            </xpath>
+
+            <!-- Terms are locked the moment the request leaves draft, not
+                 only once HR has approved: the vendor left every one of
+                 these editable through both approval stages (and
+                 ``currency_id`` unconditionally, at every stage including
+                 approved), which let an amount or employee change slip
+                 past a signature that already happened. ``write()``
+                 enforces the same rule server-side. -->
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='loan_amount']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='installment']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_date']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='currency_id']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+
+            <!-- The installment schedule locks the same moment: recomputing
+                 or hand-editing it after submission is exactly the kind of
+                 term change this is meant to close off. HR approving a
+                 request that skipped this step in draft still gets a
+                 schedule: ``action_approve`` computes one itself when
+                 none exists, through ``hr.loan.line`` directly rather than
+                 through this form, so that safety net still works with
+                 the button gone. -->
+            <xpath expr="//field[@name='loan_lines']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_compute_installment']"
+                   position="attributes">
+                <attribute name="invisible">state != 'draft'</attribute>
             </xpath>
 
             <!-- CR 2.16: name the broken rules before the request is sent. -->
@@ -55,7 +101,7 @@
                         </group>
                     </group>
                     <field name="refusal_reason"
-                           placeholder="Reason -- required to refuse this request"/>
+                           placeholder="Reason: required to refuse this request"/>
                 </page>
             </xpath>
         </field>

@@ -244,8 +244,25 @@ class IbsHrWarning(models.Model):
         for record in self:
             template.send_mail(record.id, force_send=False)
 
+    def _check_approver(self):
+        """CR 2.13 -- only the named group decides a disciplinary penalty.
+
+        Mirrors ``ibs.hr.admin.penalty.record._check_approver``: enforced on
+        the record, not only hidden in the UI, since the list view's mass
+        actions and the ORM both reach these methods directly.
+        """
+        if self.env.su:
+            return
+        if not self.env.user.has_group(
+                'ibs_hr.group_ibs_admin_penalty_approver'):
+            raise ValidationError(_(
+                'Disciplinary penalties are decided by the Administrative '
+                'Penalty Approver group. Ask an approver to action this '
+                'record.'))
+
     def action_approve(self):
         """CR 2.14 -- one approval settles a penalty. No second signature."""
+        self._check_approver()
         for record in self:
             if record.status != 'pending':
                 raise ValidationError(_(
@@ -258,6 +275,7 @@ class IbsHrWarning(models.Model):
 
     def action_reject(self):
         """CR 2.14 -- rejecting requires a reason."""
+        self._check_approver()
         for record in self:
             if not record.review_comment:
                 raise ValidationError(_(
@@ -270,6 +288,7 @@ class IbsHrWarning(models.Model):
 
     def action_cancel(self):
         """CR 2.14 -- cancelling requires a reason, like rejecting."""
+        self._check_approver()
         for record in self:
             if record.deduction_ids:
                 raise ValidationError(_(
@@ -286,6 +305,7 @@ class IbsHrWarning(models.Model):
             })
 
     def action_reset_draft(self):
+        self._check_approver()
         for record in self:
             if record.deduction_ids:
                 raise ValidationError(_(
