@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+
+        <record id="hr_end_rewards_tree_view" model="ir.ui.view">
+            <field name="name">end.rewards.tree</field>
+            <field name="model">end.rewards</field>
+            <field name="arch" type="xml">
+                <list string="End Of Service ">
+                    <field name="employee_id"/>
+                    <field name="department_id"/>
+                    <field name="country_id"/>
+                    <field name="state" widget="badge" decoration-info="state == 'cancel'"
+                           decoration-warning="state == 'draft'" decoration-success="state == 'confirmed'"/>
+                    <field name="end_date" string="End date"/>
+                    <field name="total_rewords" string="Total financial dues"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="hr_end_rewards_search_view" model="ir.ui.view">
+            <field name="name">end.rewards.search</field>
+            <field name="model">end.rewards</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="employee_id"/>
+                    <field name="department_id"/>
+                    <field name="location_id"/>
+                    <field name="state"/>
+                    <field name="end_date" string="Date"/>
+                    <field name="total_rewords"/>
+
+
+                </search>
+            </field>
+        </record>
+
+
+        <record id="hr_end_rewards_form_view" model="ir.ui.view">
+            <field name="name">end.rewards.form</field>
+            <field name="model">end.rewards</field>
+            <field name="arch" type="xml">
+                <form string="Employee">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+
+                        <button name="action_confirm" type="object" string="Confirm" class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_draft" type="object" string="Set draft" class="oe_highlight"
+                                invisible="state != 'cancel'"/>
+
+                        <button name="action_cancel" type="object" string="cancel" class="oe_highlight"
+                                invisible="state == 'cancel'"/>
+
+
+                    </header>
+
+                    <sheet>
+
+                        <group>
+                            <group string="Statement of settlement of dues">
+                                <field name="employee_id"/>
+                                <field name="department_id"/>
+                                <field name="location_id"/>
+                                <field name="country_id"/>
+                                <field name="contract_id"/>
+                                <field name="con_year_id"/>
+                                <field name="wage"/>
+                                <field name="allowances"/>
+                                <field name="gross"/>
+                                <field name="hiring_date"/>
+                                <field name="payslip_date"/>
+                                <field name="end_date"/>
+
+
+                            </group>
+                            <group string="Calculate the salary due (days)">
+                                <field name="working_days"/>
+                                <field name="days_in_month"/>
+                                <field name="daily"/>
+                                <field name="salary_due"/>
+                                <field name="amount"/>
+                                <field name="reason_grant1" widget="many2many_tags"/>
+
+                                <field name="amount2"/>
+                                <field name="reason_grant2" widget="many2many_tags"/>
+
+                                <field name="amount_ded"/>
+                                <field name="reason_grant" widget="many2many_tags"/>
+
+
+                            </group>
+                            <group string="Calculate annual leave due (days)">
+                                <field name="leave_ids"
+                                       domain="[('employee_id','=', employee_id), ('holiday_status_id.name', 'ilike', 'Annual Leaves')]"/>
+                                <field name="actual_days"/>
+                                <field name="value"/>
+                                <field name="vacation_days"/>
+                                <field name="leave_allowance_end"/>
+
+
+                            </group>
+                        </group>
+
+                        <group string="End of service gratuity calculation">
+                            <group>
+                                <field name="salary_due" string="Working days"/>
+                                <field name="leave_allowance_end" string="Holiday balance"/>
+
+                            </group>
+                            <group string="ToTal financial">
+                                <field name="total_rewords" string="Total financial dues"/>
+
+                            </group>
+
+
+                        </group>
+
+
+                    </sheet>
+                    <chatter/>
+
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_end_rewards_action" model="ir.actions.act_window">
+            <field name="name">Leave settlement</field>
+            <field name="res_model">end.rewards</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="hr_end_rewards_search_view"/>  <!-- Link the search view here -->
+        </record>
+
+        <menuitem id="hr_end_rewards_category_menu" name="Employee Settlements"
+                  parent="hr.menu_hr_root"
+                  groups="base.group_user"
+                  sequence="99"/>
+        <menuitem id="hr_end_rewards_action_menu" name="Leave settlement"
+                  parent="hr_end_rewards_category_menu"
+                  groups="hr.group_hr_user,account.group_account_invoice"
+                  action="view_end_rewards_action" sequence="1"/>
+
+
+    </data>
+</odoo>
+
+
+
