@@ -17,7 +17,5 @@ access_ibs_investigation_hr,ibs.hr.investigation.hr,model_ibs_hr_investigation,e
 access_ibs_investigation_mgr,ibs.hr.investigation.mgr,model_ibs_hr_investigation,ellithy_hr_base.group_ellithy_hr_branch_manager,1,0,0,0
 access_ibs_investigation_emp_hr,ibs.hr.investigation.employee.hr,model_ibs_hr_investigation_employee,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
 access_ibs_investigation_emp_mgr,ibs.hr.investigation.employee.mgr,model_ibs_hr_investigation_employee,ellithy_hr_base.group_ellithy_hr_branch_manager,1,0,0,0
-access_ibs_permission_user,ibs.hr.permission.user,model_ibs_hr_permission,base.group_user,1,1,1,0
-access_ibs_permission_hr,ibs.hr.permission.hr,model_ibs_hr_permission,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
 access_ibs_warning_deduction_hr,ibs.hr.warning.deduction.hr,model_ibs_hr_warning_deduction,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
 access_ibs_warning_deduction_user,ibs.hr.warning.deduction.user,model_ibs_hr_warning_deduction,base.group_user,1,0,0,0

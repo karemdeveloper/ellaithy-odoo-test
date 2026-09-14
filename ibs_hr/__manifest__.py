@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Flow',
-    'version': '18.0.1.2.0',
+    'version': '18.0.1.3.0',
     'summary': 'Attendance days, discipline and the penalty deduction ledger '
                'that feeds the standard payslip',
     'description': """
@@ -15,7 +15,12 @@ legacy Laravel HR platform.
 Payroll itself is ``hr_payroll_community``. The custom ``ibs.hr.payslip``
 engine and ``ibs.hr.loan`` model were withdrawn in 18.0.1.1.0 in favour of
 the standard ``hr.payslip``, ``hr.loan`` and ``salary.advance`` models; the
-loan and advance policy rules now live in ``ellithy_ohrms_bridge``.
+loan and advance policy rules now live in ``ellithy_ohrms_bridge``. Hourly
+permission requests and field missions moved out to ``ibs_hr_permission`` in
+18.0.1.3.0: that model was a legacy-migration target (``legacy_id``, ``kind``
+telling Permission and Mission apart in one table); the replacement is a
+clean, non-legacy model with its own configuration and no dependency on this
+module.
 
 What this module still owns
 ---------------------------
@@ -53,7 +58,6 @@ Known legacy defects, deliberately not reproduced -- see README.
         'views/ibs_hr_admin_penalty_record_views.xml',
         'views/ibs_hr_commission_penalty_views.xml',
         'views/ibs_hr_investigation_views.xml',
-        'views/ibs_hr_permission_views.xml',
         'views/hr_leave_views.xml',
         'views/hr_employee_views.xml',
         'views/ibs_hr_warning_views.xml',

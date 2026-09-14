@@ -13,17 +13,7 @@
               action="ibs_hr_attendance_day_action"
               sequence="20"/>
 
-    <menuitem id="menu_ta_permissions"
-              name="Permissions"
-              parent="ellithy_hr_base.menu_time_attendance"
-              action="ibs_hr_permission_action"
-              sequence="40"/>
-
-    <menuitem id="menu_ta_missions"
-              name="Missions"
-              parent="ellithy_hr_base.menu_time_attendance"
-              action="ibs_hr_mission_action"
-              sequence="50"/>
+    <!-- Permissions and Missions moved to ibs_hr_permission in 18.0.1.3.0. -->
 
     <!-- ============ Penalties ============ -->
     <!-- Named for the ladder it opens rather than "Penalties", which is now

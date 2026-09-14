@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_mission_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.mission.list</field>
+        <field name="model">ibs.hr.mission</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="issue_date"/>
+                <field name="destination"/>
+                <field name="duration_hours" widget="float_time"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <record id="ibs_hr_mission_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.mission.form</field>
+        <field name="model">ibs.hr.mission</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_manager_approve" type="object" string="Manager Approve" class="btn-primary" invisible="state != 'pending'" groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'manager_approved'" groups="ellithy_hr_base.group_ellithy_hr_personnel"/>
+                    <button name="action_reject" type="object" string="Reject" invisible="state not in ('pending', 'manager_approved')" groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state in ('cancelled','draft')"/>
+                    <button name="action_reset" type="object" string="Reset" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,pending,manager_approved,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="branch_id"/>
+                            <field name="department_id"/>
+                            <field name="destination"/>
+                        </group>
+                        <group>
+                            <field name="issue_date"/>
+                            <field name="custom_hours"/>
+                            <field name="start_time" widget="float_time" invisible="not custom_hours" required="custom_hours"/>
+                            <field name="end_time" widget="float_time" invisible="not custom_hours" required="custom_hours"/>
+                            <field name="duration_hours" widget="float_time"/>
+                        </group>
+                    </group>
+                    <group string="Check-in / Check-out" invisible="custom_hours">
+                        <group>
+                            <widget name="ibs_mission_geo_button" method="action_check_in" label="Check In" invisible="checkin_time or state not in ('draft', 'pending')"/>
+                            <field name="checkin_time" readonly="1"/>
+                            <field name="checkin_location" readonly="1"/>
+                        </group>
+                        <group>
+                            <widget name="ibs_mission_geo_button" method="action_check_out" label="Check Out" invisible="not checkin_time or checkout_time or state not in ('draft', 'pending')"/>
+                            <field name="checkout_time" readonly="1"/>
+                            <field name="checkout_location" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reasons" placeholder="Reason for the request"/>
+                        <field name="admin_remark" placeholder="Admin remark"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="ibs_hr_mission_view_search" model="ir.ui.view">
+        <field name="name">ibs.hr.mission.search</field>
+        <field name="model">ibs.hr.mission</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="destination"/>
+                <filter name="f_pending" string="Pending" domain="[('state','=','pending')]"/>
+                <filter name="f_manager_approved" string="Manager Approved" domain="[('state','=','manager_approved')]"/>
+                <filter name="f_approved" string="Approved" domain="[('state','=','approved')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="g_employee" string="Employee" context="{'group_by':'employee_id'}"/>
+                    <filter name="g_branch" string="Branch" context="{'group_by':'branch_id'}"/>
+                    <filter name="g_state" string="Status" context="{'group_by':'state'}"/>
+                    <filter name="g_date" string="Date" context="{'group_by':'issue_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="ibs_hr_mission_action" model="ir.actions.act_window">
+        <field name="name">Missions</field>
+        <field name="res_model">ibs.hr.mission</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

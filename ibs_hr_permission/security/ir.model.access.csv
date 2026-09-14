@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ibs_permission_type_user,ibs.hr.permission.type.user,model_ibs_hr_permission_type,base.group_user,1,0,0,0
+access_ibs_permission_type_admin,ibs.hr.permission.type.admin,model_ibs_hr_permission_type,ellithy_hr_base.group_ellithy_hr_admin,1,1,1,1
+access_ibs_permission_user,ibs.hr.permission.user,model_ibs_hr_permission,base.group_user,1,1,1,0
+access_ibs_permission_hr,ibs.hr.permission.hr,model_ibs_hr_permission,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1
+access_ibs_mission_user,ibs.hr.mission.user,model_ibs_hr_mission,base.group_user,1,1,1,0
+access_ibs_mission_hr,ibs.hr.mission.hr,model_ibs_hr_mission,ellithy_hr_base.group_ellithy_hr_personnel,1,1,1,1

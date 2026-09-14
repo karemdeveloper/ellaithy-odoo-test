@@ -7,5 +7,4 @@ from . import hr_payslip
 from . import ibs_hr_admin_penalty
 from . import ibs_hr_commission_penalty
 from . import ibs_hr_investigation
-from . import ibs_hr_permission
 from . import hr_leave

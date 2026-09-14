@@ -25,17 +25,5 @@
             <field name="prefix">INV/%(year)s/</field>
             <field name="padding">5</field>
         </record>
-        <record id="seq_ibs_hr_permission" model="ir.sequence">
-            <field name="name">IBS Permission</field>
-            <field name="code">ibs.hr.permission</field>
-            <field name="prefix">PERM/%(year)s/</field>
-            <field name="padding">5</field>
-        </record>
-        <record id="seq_ibs_hr_mission" model="ir.sequence">
-            <field name="name">IBS Mission</field>
-            <field name="code">ibs.hr.mission</field>
-            <field name="prefix">MIS/%(year)s/</field>
-            <field name="padding">5</field>
-        </record>
     </data>
 </odoo>
