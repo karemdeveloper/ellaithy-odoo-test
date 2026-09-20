@@ -117,12 +117,10 @@ class HrEmployee(models.Model):
     joining_date = fields.Date(string='Joining Date', tracking=True)
     vacation_role = fields.Selection(
         VACATION_ROLE, string='Vacation Role', default='15',
-        help='Annual leave entitlement tier. A new joiner starts on the '
-             '15-day first-year tier, which is why that is the default; it '
-             'rises to 21 after a year and to 30 with ten years of insured '
-             'service. Raise it by hand for someone who arrives already '
-             'carrying that insured service -- the computed Annual Leave '
-             'Entitlement is the figure that follows the rule.')
+        help='Legacy vacation tier: 15 denotes 8 annual and 7 separate casual '
+             'days in the first year. The computed Annual Leave Entitlement '
+             'shows annual days only: 8 initially, 14 after a year and 30 '
+             'with ten years of insured service.')
     time_role = fields.Selection(TIME_ROLE, string='Time Role')
     work_type = fields.Selection(WORK_TYPE, string='Work Type')
     workspace_type = fields.Selection(WORKSPACE_TYPE, string='Workplace')

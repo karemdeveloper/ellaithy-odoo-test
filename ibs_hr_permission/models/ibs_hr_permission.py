@@ -50,10 +50,39 @@ class IbsHrPermission(models.Model):
     def _sequence_code(self):
         return 'ibs.hr.permission'
 
+    def action_submit(self):
+        for record in self:
+            record.env.flush_all()
+            record.env.cr.execute(
+                'UPDATE hr_employee SET id = id WHERE id = %s',
+                [record.employee_id.id])
+            record._check_date_window()
+        result = super().action_submit()
+        self._check_monthly_cap()
+        return result
+
+    def action_approve(self):
+        for record in self:
+            record._ensure_approval_group(
+                'ibs_hr_permission.permission_generalist')
+            record._ensure_not_self_approval()
+        result = super().action_approve()
+        if 'ibs.hr.attendance.day' in self.env:
+            for record in self:
+                self.env['ibs.hr.attendance.day'].sudo().generate_days(
+                    record.issue_date, record.issue_date, record.employee_id)
+        return result
+
     @api.constrains('issue_date')
     def _check_date_window(self):
         for record in self:
-            if record.env.user.has_group('ellithy_hr_base.group_ellithy_hr_admin'):
+            if record.env.user.has_group('ibs_hr_permission.permission_admin'):
+                today = fields.Date.context_today(record)
+                if (record.issue_date not in (
+                        today - timedelta(days=1), today, today + timedelta(days=1))
+                        and not record.reasons):
+                    raise ValidationError(_(
+                        'Enter a reason for an out-of-window date override.'))
                 continue
             today = fields.Date.context_today(record)
             allowed = (today - timedelta(days=1), today, today + timedelta(days=1))
@@ -79,7 +108,7 @@ class IbsHrPermission(models.Model):
                 ('employee_id', '=', record.employee_id.id),
                 ('issue_date', '>=', month_start),
                 ('issue_date', '<=', month_end),
-                ('state', '!=', 'cancelled'),
+                ('state', 'in', ('pending', 'approved')),
             ])
             total = sum(int(sibling.duration_minutes) for sibling in siblings)
             if total > cap:

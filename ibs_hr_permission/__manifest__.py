@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Permission',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.2.0',
     'summary': 'Hourly permission requests (lateness / early leave) and field '
                'missions, with admin-configurable types and monthly cap',
     'description': """
@@ -36,6 +36,8 @@ not shared, by design -- see the module README.
         'ellithy_hr_base',
     ],
     'data': [
+        'security/groups.xml',
+        'security/ibs_hr_permission_security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
         'data/ibs_hr_permission_type_data.xml',

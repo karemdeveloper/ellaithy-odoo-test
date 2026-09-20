@@ -303,12 +303,12 @@ class TestResignationFlow(EllithyBridgeCommon):
         menu = self.env.ref(
             'ellithy_ohrms_bridge.hr_resignation_menu_suspension')
         self.assertNotIn(self.env.ref('base.group_user'), menu.groups_id)
-        self.assertIn(self.env.ref('hr.group_hr_user'), menu.groups_id)
+        self.assertIn(self.env.ref('ellithy_ohrms_bridge.resignation_generalist'), menu.groups_id)
         # HR management reaches it too, by implication rather than needing
         # a second group on the menu -- confirmed here since it is what
         # makes one restriction cover both roles.
-        self.assertIn(self.env.ref('hr.group_hr_user'),
-                       self.env.ref('hr.group_hr_manager').trans_implied_ids)
+        self.assertIn(self.env.ref('ellithy_ohrms_bridge.resignation_generalist'),
+                       self.env.ref('ellithy_ohrms_bridge.resignation_admin').trans_implied_ids)
 
     # ---- withdrawing a request, and the contract relation --------------
     def test_cancelling_works_while_still_draft_or_confirmed(self):

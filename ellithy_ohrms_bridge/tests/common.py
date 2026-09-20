@@ -30,7 +30,7 @@ class EllithyBridgeCommon(TransactionCase):
             'name': 'HR Officer',
             'login': 'bridge.hr.officer',
             'groups_id': [(4, cls.env.ref(
-                'ellithy_hr_base.group_ellithy_hr_personnel').id)],
+                'ellithy_hr_base.group_ellithy_hr_generalist').id)],
         })
         cls.dept_it = cls.env['hr.department'].create({'name': 'IT'})
         cls.dept_finance = cls.env['hr.department'].create({'name': 'Finance'})

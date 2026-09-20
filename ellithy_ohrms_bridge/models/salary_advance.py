@@ -3,13 +3,13 @@ from odoo.exceptions import ValidationError
 
 # CR 2.18 -- the group that may raise an advance. Anyone outside it is a
 # self-service employee, who must go through HR instead.
-HR_GROUP = 'ellithy_hr_base.group_ellithy_hr_personnel'
+HR_GROUP = 'ellithy_ohrms_bridge.advance_generalist'
 
 # CR 2.19 -- the group that may waive the earned-to-date ceiling. Deliberately
 # narrower than HR_GROUP: raising a request is daily HR work, signing off on
 # breaking a policy ceiling is not. HR Admin implies HR Personnel, so an admin
 # can do both.
-CEILING_EXCEPTION_GROUP = 'ellithy_hr_base.group_ellithy_hr_admin'
+CEILING_EXCEPTION_GROUP = 'ellithy_ohrms_bridge.advance_admin'
 
 # Egyptian payroll convention, and the same basis the discipline ledger uses:
 # a month is thirty days regardless of the calendar.
@@ -25,7 +25,8 @@ class SalaryAdvance(models.Model):
       unless HR Admin grants the exception on the request itself.
     """
 
-    _inherit = 'salary.advance'
+    _name = 'salary.advance'
+    _inherit = ['salary.advance', 'ellithy.hr.action.notification']
 
     # The vendor calls this "Exceed than Maximum" and helps it as a
     # percentage of the salary structure, which is neither what it did there
@@ -162,11 +163,39 @@ class SalaryAdvance(models.Model):
     @api.model
     def create(self, vals):
         self._check_hr_author()
+        self._check_request_employee(vals.get('employee_id', self.env.user.employee_id.id),
+                                     'ellithy_ohrms_bridge.advance_generalist')
         if vals.get('exceed_condition'):
             self._check_ceiling_exception_granter()
         return super().create(vals)
 
     def write(self, vals):
+        if 'employee_id' in vals:
+            self._check_request_employee(vals['employee_id'], 'ellithy_ohrms_bridge.advance_generalist')
+        target = vals.get('state')
+        if target in ('cancel', 'reject') and any(record.state == 'approve' for record in self):
+            raise ValidationError(_('A released advance must be reversed through accounting and payroll.'))
+        if not self.env.su and {'employee_id', 'date', 'advance', 'currency_id'}.intersection(vals) and any(
+                record.state in ('waiting_approval', 'approve') for record in self):
+            raise ValidationError(_('The terms are locked after HR approval.'))
+        if not self.env.su:
+            if target == 'approve':
+                role, source = 'advance_finance', 'waiting_approval'
+            elif target == 'waiting_approval':
+                role, source = 'advance_generalist', 'submit'
+            elif target in ('submit', 'cancel', 'reject'):
+                role, source = 'advance_generalist', None
+            elif set(vals).issubset({'journal', 'journal_id', 'debit', 'credit'}):
+                role, source = 'advance_finance', None
+            else:
+                role, source = 'advance_generalist', None
+            if not self.env.user.has_group('ellithy_ohrms_bridge.' + role):
+                raise ValidationError(_('You are not authorized for this salary advance action.'))
+            if source and any(record.state != source for record in self):
+                raise ValidationError(_('Follow the salary advance approval order: HR then Finance.'))
+            if target in ('waiting_approval', 'approve') and any(
+                    record.employee_id.user_id == self.env.user for record in self):
+                raise ValidationError(_('You cannot approve your own salary advance.'))
         # Only granting the exception is gated. Withdrawing one makes the
         # request stricter, and the constraint above re-checks it.
         if vals.get('exceed_condition'):
@@ -181,4 +210,11 @@ class SalaryAdvance(models.Model):
                         vals['advance'], advance.advance) > 0:
                     self._check_ceiling_exception_granter()
                     break
-        return super().write(vals)
+        result = super().write(vals)
+        if target == 'submit':
+            self._notify_approval_group('ellithy_ohrms_bridge.advance_generalist', _('Salary advance awaiting HR approval'))
+        elif target == 'waiting_approval':
+            self._notify_approval_group('ellithy_ohrms_bridge.advance_finance', _('Salary advance awaiting Finance approval'))
+        elif target in ('approve', 'cancel', 'reject'):
+            self._notify_employee(_('Salary advance updated'))
+        return result

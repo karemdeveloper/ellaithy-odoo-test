@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_permission_own" model="ir.rule">
+        <field name="name">Permission: own requests</field>
+        <field name="model_id" ref="model_ibs_hr_permission"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_permission_manager_branch" model="ir.rule">
+        <field name="name">Permission: manager branch</field>
+        <field name="model_id" ref="model_ibs_hr_permission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_permission.permission_generalist')])]"/>
+    </record>
+    <record id="rule_permission_hr_all" model="ir.rule">
+        <field name="name">Permission: HR companies</field>
+        <field name="model_id" ref="model_ibs_hr_permission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_permission.permission_generalist')])]"/>
+    </record>
+
+    <record id="rule_mission_own" model="ir.rule">
+        <field name="name">Mission: own requests</field>
+        <field name="model_id" ref="model_ibs_hr_mission"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_mission_manager_branch" model="ir.rule">
+        <field name="name">Mission: manager branch</field>
+        <field name="model_id" ref="model_ibs_hr_mission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_permission.mission_generalist'), ref('ibs_hr_permission.mission_finance')])]"/>
+    </record>
+    <record id="rule_mission_hr_all" model="ir.rule">
+        <field name="name">Mission: HR companies</field>
+        <field name="model_id" ref="model_ibs_hr_mission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_permission.mission_generalist'), ref('ibs_hr_permission.mission_finance')])]"/>
+    </record>
+    <record id="rule_permission_global_company" model="ir.rule">
+        <field name="name">permission: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_permission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_mission_global_company" model="ir.rule">
+        <field name="name">mission: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_mission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

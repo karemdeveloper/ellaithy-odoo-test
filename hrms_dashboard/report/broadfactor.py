@@ -29,6 +29,7 @@ class EmployeeBroadFactor(models.Model):
     _description = "Employee Broadfactor"
     _auto = False
 
+    company_id = fields.Many2one('res.company', readonly=True)
     name = fields.Char(string="Name", help="Name for the record")
     no_of_occurrence = fields.Integer(string="No.of Occurrence",
                                       help="No.of Occurrence")
@@ -41,11 +42,11 @@ class EmployeeBroadFactor(models.Model):
         self._cr.execute("""
             create or replace view hr_employee_broad_factor as (
                 select
-                    e.id, e.name, count(h.*) as no_of_occurrence,
+                    e.id, e.name, e.company_id, count(h.*) as no_of_occurrence,
                     sum(h.number_of_days) as no_of_days,
                     count(h.*)*count(h.*)*sum(h.number_of_days) as broad_factor
                 from hr_employee e
-                    full join (select * from hr_leave where state = 'validate' 
+                    full join (select * from ibs_hr_time_off_request where state = 'approved'
                     and date_to <= now()::timestamp) h
                     on e.id =h.employee_id
                 group by e.id
@@ -57,9 +58,7 @@ class ReportOverdue(models.AbstractModel):
 
     @api.model
     def get_report_values(self, docids=None, data=None):
-        sql = """select * from hr_employee_broad_factor"""
-        self.env.cr.execute(sql)
-        lines = self.env.cr.dictfetchall()
+        lines = self.env['hr.employee.broad.factor'].search_read([])
         return {
             'doc_model': 'hr.employee.broad_factor',
             'lines': lines,

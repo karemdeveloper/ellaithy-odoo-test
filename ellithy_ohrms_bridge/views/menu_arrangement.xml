@@ -47,9 +47,6 @@
         <field name="parent_id" eval="False"/>
     </record>
 
-    <record id="hr_holidays.menu_hr_holidays_root" model="ir.ui.menu">
-        <field name="parent_id" eval="False"/>
-    </record>
 
     <record id="survey.menu_surveys" model="ir.ui.menu">
         <field name="parent_id" eval="False"/>
@@ -92,7 +89,4 @@
         <field name="active" eval="False"/>
     </record>
 
-    <record id="hr_reminder.hr_reminder_menu" model="ir.ui.menu">
-        <field name="active" eval="False"/>
-    </record>
 </odoo>

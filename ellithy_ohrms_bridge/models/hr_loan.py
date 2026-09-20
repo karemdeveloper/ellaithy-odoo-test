@@ -37,6 +37,11 @@ class HrLoan(models.Model):
     # than one instalment due today, which every request would otherwise
     # have to correct by hand. Rule C's ceiling of 10 is unchanged -- only
     # the starting point moves.
+    def unlink(self):
+        if not self.env.su and any(record.state not in ('draft',) for record in self):
+            raise ValidationError(_('Only draft documents can be deleted.'))
+        return super().unlink()
+
     def _default_payment_date(self):
         return fields.Date.context_today(self) + relativedelta(
             months=1, day=1)
@@ -213,10 +218,14 @@ class HrLoan(models.Model):
         return super().action_submit()
 
     def _check_approval_role(self, group, description):
+        if not self.env.su and any(loan.employee_id.user_id == self.env.user for loan in self):
+            raise ValidationError(_('You cannot approve or reject your own loan.'))
         if not self.env.su and not self.env.user.has_group(group):
             raise ValidationError(_('Only %s may perform this approval.', description))
 
     def write(self, vals):
+        if 'employee_id' in vals:
+            self._check_request_employee(vals['employee_id'], 'ellithy_ohrms_bridge.loan_generalist')
         vals = dict(vals)
         # Locked the moment the request leaves draft, not only once HR has
         # approved: between submission and HR's decision there is nothing
@@ -232,15 +241,23 @@ class HrLoan(models.Model):
                 _('Loan terms cannot change once the request has been '
                   'submitted. Cancel it and submit a new one instead.'))
         target = vals.get('state')
+        if target == 'refuse':
+            for loan in self:
+                role = 'loan_finance' if loan.state == HR_APPROVED else 'loan_generalist'
+                loan._check_approval_role('ellithy_ohrms_bridge.' + role, _('Authorized approvers'))
+                if not (vals.get('refusal_reason', loan.refusal_reason) or '').strip():
+                    raise ValidationError(_('Refusing a request requires a reason.'))
+        if target == 'cancel' and any(loan.state not in ('draft', 'waiting_approval_1') for loan in self):
+            raise ValidationError(_('Only draft or submitted loans can be withdrawn.'))
         if target in ('waiting_approval_1', HR_APPROVED, 'approve'):
             source = {'waiting_approval_1': 'draft', HR_APPROVED: 'waiting_approval_1', 'approve': HR_APPROVED}[target]
             if any(r.state != source for r in self):
                 raise ValidationError(_('Follow the loan approval order: Submit, HR, then Finance.'))
             if target == HR_APPROVED:
-                self._check_approval_role('ellithy_hr_base.group_ellithy_hr_personnel', _('HR Personnel'))
+                self._check_approval_role('ellithy_ohrms_bridge.loan_generalist', _('HR Generalist'))
                 vals.update(hr_approved_by=self.env.user.id, hr_approved_at=fields.Datetime.now())
             elif target == 'approve':
-                self._check_approval_role('account.group_account_user', _('Finance'))
+                self._check_approval_role('ellithy_ohrms_bridge.loan_finance', _('Finance'))
                 vals.update(finance_approved_by=self.env.user.id, finance_approved_at=fields.Datetime.now())
         elif target == 'draft' and any(r.state not in ('refuse', 'cancel') for r in self):
             raise ValidationError(_('Only refused or cancelled loans can be reset.'))
@@ -251,13 +268,17 @@ class HrLoan(models.Model):
         if target in ('waiting_approval_1', HR_APPROVED, 'approve'):
             self.action_check_eligibility()
         if target == 'waiting_approval_1':
-            self._notify_approval_group('ellithy_hr_base.group_ellithy_hr_personnel', _('Loan awaiting HR approval'))
+            self._notify_approval_group('ellithy_ohrms_bridge.loan_generalist', _('Loan awaiting HR approval'))
         elif target == HR_APPROVED:
-            self._notify_approval_group('account.group_account_user', _('Loan awaiting Finance approval'))
+            self._notify_approval_group('ellithy_ohrms_bridge.loan_finance', _('Loan awaiting Finance approval'))
+        if target in ('approve', 'refuse', 'cancel'):
+            self._notify_employee(_('Loan %s', dict(self._fields['state']._description_selection(self.env)).get(target, target)))
         return result
 
     @api.model
     def create(self, vals):
+        self._check_request_employee(vals.get('employee_id', self.env.user.employee_id.id),
+                                     'ellithy_ohrms_bridge.loan_generalist')
         if not self.env.su and (vals.get('state', 'draft') != 'draft' or any(
                 vals.get(n) for n in ('hr_approved_by', 'hr_approved_at', 'finance_approved_by', 'finance_approved_at'))):
             raise ValidationError(_('Create a draft loan and use the approval actions.'))
@@ -272,7 +293,7 @@ class HrLoan(models.Model):
         is the single-signature behaviour CR 2.17 replaces. Writing the HR
         step directly makes the second signature unconditional.
         """
-        self._check_approval_role('ellithy_hr_base.group_ellithy_hr_personnel', _('HR Personnel'))
+        self._check_approval_role('ellithy_ohrms_bridge.loan_generalist', _('HR Generalist'))
         self.action_check_eligibility()
         for loan in self:
             if loan.state != 'waiting_approval_1':
@@ -293,7 +314,7 @@ class HrLoan(models.Model):
         The vendor method posts the journal entry and moves the request to
         Approved; all this adds is the gate and the record of who signed.
         """
-        self._check_approval_role('account.group_account_user', _('Finance'))
+        self._check_approval_role('ellithy_ohrms_bridge.loan_finance', _('Finance'))
         self.action_check_eligibility()
         for loan in self:
             if loan.state != HR_APPROVED:

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="time_off_request_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.request.list</field>
+        <field name="model">ibs.hr.time.off.request</field>
+        <field name="arch" type="xml">
+            <list><field name="name"/><field name="employee_id"/>
+                <field name="type_id"/><field name="date_from"/>
+                <field name="date_to"/><field name="number_of_days"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <record id="time_off_request_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.request.form</field>
+        <field name="model">ibs.hr.time.off.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" type="object" string="Submit"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_manager_approve" type="object"
+                            string="HR Approve" class="btn-primary"
+                            groups="ibs_hr_time_off.ibs_hr_time_off_generalist"
+                            invisible="state != 'submitted' or approval_route == 'hr'"/>
+                    <button name="action_hr_approve" type="object"
+                            string="HR Approve" class="btn-primary"
+                            groups="ibs_hr_time_off.ibs_hr_time_off_generalist"
+                            invisible="state != 'submitted' or approval_route != 'hr'"/>
+                    <button name="action_hr_approve" type="object"
+                            string="HR Admin Approve" class="btn-primary"
+                            groups="ibs_hr_time_off.ibs_hr_time_off_admin"
+                            invisible="state != 'manager_approved'"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            groups="ibs_hr_time_off.ibs_hr_time_off_generalist"
+                            invisible="state not in ('submitted', 'manager_approved')"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('draft', 'cancelled')"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft"
+                            invisible="state not in ('submitted', 'manager_approved', 'rejected')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,manager_approved,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group><field name="employee_id"/><field name="type_id"/>
+                            <field name="type_code" invisible="1"/>
+                            <field name="approval_route" invisible="1"/>
+                            <field name="date_from"/><field name="date_to"/>
+                            <field name="number_of_days" readonly="1"/>
+                            <field name="balance" readonly="1"/>
+                        </group>
+                        <group><field name="holiday_id"
+                                      invisible="type_code != 'public_holiday'"/>
+                            <field name="rest_credit_id"
+                                   domain="[('employee_id', '=', employee_id), ('state', '=', 'available')]"
+                                   invisible="type_code != 'compensatory_rest'"/>
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                            <field name="manager_approved_by" readonly="1"/>
+                            <field name="hr_approved_by" readonly="1"/>
+                        </group>
+                    </group>
+                    <group><field name="reason"/><field name="rejection_reason"/></group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="time_off_request_action" model="ir.actions.act_window">
+        <field name="name">Time Off</field>
+        <field name="res_model">ibs.hr.time.off.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,4 +1,5 @@
-from odoo import fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 MEDICAL_TIER = [
     ('a', 'A'),
@@ -27,7 +28,7 @@ class HrContract(models.Model):
 
     # ---- salary ---------------------------------------------------------
     subscription_wage = fields.Monetary(
-        string='Subscription Salary',
+        string='Insurance Salary',
         help='Social insurance contribution basis. Often capped separately '
              'from the basic salary.')
     total_wage = fields.Monetary(
@@ -35,11 +36,22 @@ class HrContract(models.Model):
         help='Stored in the legacy system rather than computed -- source '
              'records carry a total above basic plus transport.')
     transportation_allowance = fields.Monetary(string='Transport Allowance')
+    transportation_allowance_daily = fields.Monetary(
+        string='Transportation Allowance per Day')
+    employment_allowance = fields.Monetary(string='Employment Allowance')
+    commitment_allowance = fields.Monetary(string='Commitment Allowance')
     other_allowance = fields.Monetary(string='Other Allowance')
     bonus = fields.Monetary(string='Bonus')
+    mobile_invoice_deduction = fields.Monetary(
+        string='Mobile Invoice Deduction')
 
     # ---- social insurance ----------------------------------------------
     has_social_insurance = fields.Boolean(string='Has Social Insurance')
+    social_insurance_percentage = fields.Float(
+        string='Social Insurance Percentage', default=11.25, digits=(5, 2))
+    social_insurance_amount = fields.Monetary(
+        string='Social Insurance Amount', compute='_compute_social_insurance_amount',
+        store=True)
     social_insurance_office_id = fields.Many2one(
         'ellithy.hr.insurance.office', string='Social Insurance Office',
         ondelete='restrict')
@@ -84,3 +96,34 @@ class HrContract(models.Model):
     social_insurance_price = fields.Monetary(string='Social Insurance Cost')
 
     legacy_id = fields.Integer(string='Legacy ID', index=True, copy=False)
+
+    @api.depends('has_social_insurance', 'subscription_wage',
+                 'social_insurance_percentage', 'currency_id')
+    def _compute_social_insurance_amount(self):
+        for contract in self:
+            amount = 0.0
+            if contract.has_social_insurance:
+                amount = (contract.subscription_wage
+                          * contract.social_insurance_percentage / 100.0)
+            contract.social_insurance_amount = contract.currency_id.round(amount)
+
+    @api.constrains(
+        'transportation_allowance_daily', 'employment_allowance',
+        'commitment_allowance', 'other_allowance',
+        'mobile_invoice_deduction', 'subscription_wage',
+        'social_insurance_percentage')
+    def _check_hcm_amounts(self):
+        for contract in self:
+            monetary_values = (
+                contract.transportation_allowance_daily,
+                contract.employment_allowance,
+                contract.commitment_allowance,
+                contract.other_allowance,
+                contract.mobile_invoice_deduction,
+                contract.subscription_wage,
+            )
+            if any(value < 0 for value in monetary_values):
+                raise ValidationError(_('Salary amounts cannot be negative.'))
+            if not 0.0 <= contract.social_insurance_percentage <= 100.0:
+                raise ValidationError(
+                    _('Social Insurance Percentage must be between 0 and 100.'))

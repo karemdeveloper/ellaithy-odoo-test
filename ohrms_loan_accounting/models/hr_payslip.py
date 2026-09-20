@@ -40,5 +40,5 @@ class HrPayslipAcc(models.Model):
                 babel.dates.format_date(date=tym, format='MMMM-y',
                                         locale=locale))
             if line.loan_line_id:
-                line.loan_line_id.action_paid_amount(month)
+                line.loan_line_id.sudo().action_paid_amount(month)
         return super(HrPayslipAcc, self).action_payslip_done()

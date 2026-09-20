@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_shift_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.shift.list</field>
+        <field name="model">ibs.hr.shift</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ibs_hr_shift_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.shift.form</field>
+        <field name="model">ibs.hr.shift</field>
+        <field name="arch" type="xml">
+            <form string="Shift">
+                <header>
+                    <button name="action_generate_attendance" type="object"
+                            string="Generate Attendance" class="btn-primary"
+                            groups="ibs_hr_shift.ibs_hr_shift_admin"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="day"/>
+                            <field name="from_time" widget="float_time"/>
+                            <field name="to_time" widget="float_time"/>
+                            <field name="number_of_hours" widget="float_time"/>
+                            <field name="is_off"/>
+                            <field name="is_flexible"/>
+                            <field name="flexible_hours" widget="float_time"
+                                   invisible="not is_flexible"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ibs_hr_shift_action" model="ir.actions.act_window">
+        <field name="name">Shifts</field>
+        <field name="res_model">ibs.hr.shift</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

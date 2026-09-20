@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="loan_category" model="ir.module.category"><field name="name">Loans</field><field name="sequence">25</field></record>
+    <record id="loan_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="loan_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('loan_user'))]"/></record>
+    <record id="loan_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="loan_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.loan_user')), (4, ref('hr.group_hr_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('loan_generalist'))]"/></record>
+    <record id="loan_finance" model="res.groups">
+        <field name="name">Financial Approval</field>
+        <field name="category_id" ref="loan_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.loan_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_financial_approval" model="res.groups"><field name="implied_ids" eval="[(4, ref('loan_finance'))]"/></record>
+    <record id="loan_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="loan_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.loan_generalist')), (4, ref('ellithy_ohrms_bridge.loan_finance'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('loan_admin'))]"/></record>
+    <record id="advance_category" model="ir.module.category"><field name="name">Salary Advances</field><field name="sequence">25</field></record>
+    <record id="advance_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="advance_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('advance_user'))]"/></record>
+    <record id="advance_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="advance_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.advance_user')), (4, ref('hr.group_hr_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('advance_generalist'))]"/></record>
+    <record id="advance_finance" model="res.groups">
+        <field name="name">Financial Approval</field>
+        <field name="category_id" ref="advance_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.advance_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_financial_approval" model="res.groups"><field name="implied_ids" eval="[(4, ref('advance_finance'))]"/></record>
+    <record id="advance_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="advance_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.advance_generalist')), (4, ref('ellithy_ohrms_bridge.advance_finance'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('advance_admin'))]"/></record>
+    <record id="resignation_category" model="ir.module.category"><field name="name">Resignation and Clearance</field><field name="sequence">25</field></record>
+    <record id="resignation_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="resignation_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('resignation_user'))]"/></record>
+    <record id="resignation_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="resignation_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.resignation_user')), (4, ref('hr.group_hr_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('resignation_generalist'))]"/></record>
+    <record id="resignation_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="resignation_category"/>
+        <field name="implied_ids" eval="[(4, ref('ellithy_ohrms_bridge.resignation_generalist'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('resignation_admin'))]"/></record>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ellithy_ohrms_bridge'"/>
+        <value eval="'loan'"/>
+        <value eval="True"/>
+    </function>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ellithy_ohrms_bridge'"/>
+        <value eval="'advance'"/>
+        <value eval="True"/>
+    </function>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ellithy_ohrms_bridge'"/>
+        <value eval="'resignation'"/>
+        <value eval="False"/>
+    </function>
+</odoo>

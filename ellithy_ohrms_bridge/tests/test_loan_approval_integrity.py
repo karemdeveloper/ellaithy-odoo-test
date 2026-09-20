@@ -14,13 +14,30 @@ class TestLoanApprovalIntegrity(EllithyBridgeCommon):
         vals = {'employee_id': self.employee.id, 'loan_amount': 3000,
                 'installment': 3, 'payment_date': '2026-06-01'}
         vals.update(kwargs)
+        if not vals.get('employee_account_id'):
+            account = self.env['account.account'].search([
+                ('account_type', '=', 'asset_current'), ('company_ids', 'in', self.env.company.id)], limit=1)
+            if not account:
+                account = self.env['account.account'].create({
+                    'name': 'Test Employee Loan', 'code': 'HCMLOAN',
+                    'account_type': 'asset_current', 'company_ids': [(4, self.env.company.id)]})
+            treasury = self.env['account.account'].search([('code', '=', 'HCMTREAS'), ('company_ids', 'in', self.env.company.id)], limit=1)
+            treasury = treasury or self.env['account.account'].create({
+                'name': 'Test Treasury', 'code': 'HCMTREAS',
+                'account_type': 'asset_cash', 'company_ids': [(4, self.env.company.id)]})
+            journal = self.env['account.journal'].search([('code', '=', 'HCL'), ('company_id', '=', self.env.company.id)], limit=1)
+            journal = journal or self.env['account.journal'].create({
+                'name': 'Test Loan Journal', 'code': 'HCL', 'type': 'general',
+                'company_id': self.env.company.id})
+            vals.update(employee_account_id=account.id, treasury_account_id=treasury.id, journal_id=journal.id)
+
         return self.env['hr.loan'].create(vals)
 
     def _finance(self):
         return self.env['res.users'].with_context(no_reset_password=True).create({
             'name': 'Loan Finance', 'login': 'loan.finance.integrity',
             'email': 'finance@example.invalid',
-            'groups_id': [(6, 0, [self.env.ref('account.group_account_user').id])]})
+            'groups_id': [(6, 0, [self.env.ref('ellithy_ohrms_bridge.loan_finance').id])]})
 
     def test_changed_amount_is_blocked_after_submission(self):
         """Terms lock the moment the request leaves draft -- there is no
@@ -52,7 +69,7 @@ class TestLoanApprovalIntegrity(EllithyBridgeCommon):
         loan.action_submit()
         loan.action_compute_installment()
         finance = self._finance()
-        self.assertFalse(finance.has_group('ellithy_hr_base.group_ellithy_hr_personnel'))
+        self.assertFalse(finance.has_group('ellithy_hr_base.group_ellithy_hr_generalist'))
         with self.assertRaises(ValidationError):
             loan.with_user(finance).action_approve()
         with self.assertRaises(ValidationError):
@@ -62,7 +79,7 @@ class TestLoanApprovalIntegrity(EllithyBridgeCommon):
         loan = self._loan()
         loan.action_submit()
         loan.action_approve()
-        self.assertFalse(self.hr_user.has_group('account.group_account_user'))
+        self.assertFalse(self.hr_user.has_group('ellithy_ohrms_bridge.loan_finance'))
         with self.assertRaises(ValidationError):
             loan.with_user(self.hr_user).action_double_approve()
 

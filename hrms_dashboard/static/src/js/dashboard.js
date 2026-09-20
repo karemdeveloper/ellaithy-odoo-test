@@ -492,7 +492,7 @@ export class HrDashboard extends Component{
         this.action.doAction({
             name: _t("Leave Request"),
             type: 'ir.actions.act_window',
-            res_model: 'hr.leave',
+            res_model: 'ibs.hr.time.off.request',
             view_mode: 'form',
             views: [[false, 'form']],
             target: 'new'
@@ -502,7 +502,7 @@ export class HrDashboard extends Component{
         this.action.doAction({
             name: _t("Leave Request"),
             type: 'ir.actions.act_window',
-            res_model: 'hr.leave',
+            res_model: 'ibs.hr.time.off.request',
             view_mode: 'form',
             views: [[false, 'form']],
             target: 'new'
@@ -522,23 +522,15 @@ export class HrDashboard extends Component{
         this.action.doAction({
             name: _t("Leave Request"),
             type: 'ir.actions.act_window',
-            res_model: 'hr.leave',
+            res_model: 'ibs.hr.time.off.request',
             view_mode: 'tree,form,calendar',
             views: [[false, 'list'],[false, 'form']],
-            domain: [['state','in',['confirm','validate1']]],
+            domain: [['state','in',['submitted','manager_approved']]],
             target: 'current'
         });
     }
     leave_allocations_to_approve() {
-        this.action.doAction({
-            name: _t("Leave Allocation Request"),
-            type: 'ir.actions.act_window',
-            res_model: 'hr.leave.allocation',
-            view_mode: 'tree,form,calendar',
-            views: [[false, 'list'],[false, 'form']],
-            domain: [['state','in',['confirm', 'validate1']]],
-            target: 'current'
-        })
+        this.action.doAction('ibs_hr_time_off.time_off_ledger_action');
     }
     job_applications_to_approve(){
         this.action.doAction({
@@ -557,10 +549,10 @@ export class HrDashboard extends Component{
         this.action.doAction({
             name: _t("Leaves Today"),
             type: 'ir.actions.act_window',
-            res_model: 'hr.leave',
+            res_model: 'ibs.hr.time.off.request',
             view_mode: 'tree,form,calendar',
             views: [[false, 'list'],[false, 'form']],
-            domain: [['date_from','<=', date], ['date_to', '>=', date], ['state','=','validate']],
+            domain: [['date_from','<=', date], ['date_to', '>=', date], ['state','=','approved']],
             target: 'current'
         })
     }
@@ -573,10 +565,10 @@ export class HrDashboard extends Component{
         this.action.doAction({
             name: _t("This Month Leaves"),
             type: 'ir.actions.act_window',
-            res_model: 'hr.leave',
+            res_model: 'ibs.hr.time.off.request',
             view_mode: 'tree,form,calendar',
             views: [[false, 'list'],[false, 'form']],
-            domain: [['date_from','>', fday],['state','=','validate'],['date_from','<', lday]],
+            domain: [['date_from','>', fday],['state','=','approved'],['date_from','<', lday]],
             target: 'current'
         })
     }
@@ -614,12 +606,12 @@ export class HrDashboard extends Component{
         this.action.doAction({
             name: _t("Leave Request"),
             type: 'ir.actions.act_window',
-            res_model: 'hr.leave',
+            res_model: 'ibs.hr.time.off.request',
             view_mode: 'tree,form,calendar',
             views: [[false, 'list'],[false, 'form']],
-            domain: [['state','in',['validate']],['employee_id','=', this.state.login_employee.id],['date_to','<=',today]],
+            domain: [['state','in',['approved']],['employee_id','=', this.state.login_employee.id],['date_to','<=',today]],
             target: 'current',
-            context:{'order':'duration_display'}
+            context:{'order':'number_of_days'}
         })
     }
      attendance_sign_in_out() {

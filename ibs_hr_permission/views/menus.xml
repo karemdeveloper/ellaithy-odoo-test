@@ -14,8 +14,8 @@
 
     <menuitem id="menu_cfg_permission_types"
               name="Permission Types"
-              parent="hr.menu_human_resources_configuration"
+              parent="ellithy_hr_base.menu_time_attendance_configuration"
               action="ibs_hr_permission_type_action"
               sequence="40"
-              groups="ellithy_hr_base.group_ellithy_hr_admin"/>
+              groups="ibs_hr_permission.permission_admin"/>
 </odoo>

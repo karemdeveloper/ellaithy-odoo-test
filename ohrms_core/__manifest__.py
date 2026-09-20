@@ -49,7 +49,7 @@
         'hr_employee_updation',
         'hr_recruitment',
         'hr_attendance',
-        'hr_holidays',
+        'ibs_hr_time_off',
         'hr_payroll_community',
         'hr_expense',
         'hr_leave_request_aliasing',

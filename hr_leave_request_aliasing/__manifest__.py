@@ -33,7 +33,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.openhrms.com",
-    'depends': ['hr_holidays'],
+    'depends': ['ibs_hr_time_off'],
     'data': [
         'data/mail_alias_data.xml',
         'views/res_config_settings_views.xml',

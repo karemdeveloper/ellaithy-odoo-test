@@ -23,6 +23,9 @@ class TestPermission(IbsHrPermissionCommon):
             'duration_minutes': '30',
         }
         values.update(kwargs)
+        if self.env.user.has_group(
+                'ellithy_hr_base.group_ellithy_hr_admin'):
+            values.setdefault('reasons', 'Admin test override')
         return self.env['ibs.hr.permission'].create(values)
 
     def _make_admin(self):
@@ -59,46 +62,53 @@ class TestPermission(IbsHrPermissionCommon):
     def test_admin_can_bypass_date_window(self):
         self._make_admin()
         today = Date.context_today(self.env['ibs.hr.permission'])
-        request = self._request(issue_date=today - timedelta(days=30))
+        request = self._request(
+            issue_date=today - timedelta(days=30), reasons='Admin correction')
         self.assertTrue(request.id)
 
     # -- monthly cap ------------------------------------------------------
 
     def test_monthly_cap_allows_exact_limit(self):
         self._make_admin()
-        self._request(issue_date='2026-03-05', duration_minutes='120')
+        self._request(issue_date='2026-03-05', duration_minutes='120').action_submit()
         request = self._request(issue_date='2026-03-10', duration_minutes='120')
-        self.assertTrue(request.id)  # exactly 240 minutes: allowed
+        request.action_submit()
+        self.assertEqual(request.state, 'pending')  # exactly 240 minutes: allowed
 
     def test_monthly_cap_rejects_overage(self):
         self._make_admin()
-        self._request(issue_date='2026-03-05', duration_minutes='120')
-        self._request(issue_date='2026-03-10', duration_minutes='120')
+        self._request(issue_date='2026-03-05', duration_minutes='120').action_submit()
+        self._request(issue_date='2026-03-10', duration_minutes='120').action_submit()
+        request = self._request(issue_date='2026-03-15', duration_minutes='30')
         with self.assertRaises(ValidationError):
-            self._request(issue_date='2026-03-15', duration_minutes='30')
+            request.action_submit()
 
     def test_monthly_cap_resets_next_month(self):
         self._make_admin()
-        self._request(issue_date='2026-03-05', duration_minutes='120')
-        self._request(issue_date='2026-03-10', duration_minutes='120')
+        self._request(issue_date='2026-03-05', duration_minutes='120').action_submit()
+        self._request(issue_date='2026-03-10', duration_minutes='120').action_submit()
         request = self._request(issue_date='2026-04-01', duration_minutes='120')
-        self.assertTrue(request.id)
+        request.action_submit()
+        self.assertEqual(request.state, 'pending')
 
     def test_cancelled_excluded_from_cap(self):
         self._make_admin()
         first = self._request(issue_date='2026-03-05', duration_minutes='120')
-        self._request(issue_date='2026-03-10', duration_minutes='120')
+        first.action_submit()
+        self._request(issue_date='2026-03-10', duration_minutes='120').action_submit()
         first.action_cancel()
         third = self._request(issue_date='2026-03-15', duration_minutes='120')
-        self.assertTrue(third.id)
+        third.action_submit()
+        self.assertEqual(third.state, 'pending')
 
     def test_custom_cap_via_config_parameter(self):
         self._make_admin()
         self.env['ir.config_parameter'].sudo().set_param(
             'ibs_hr_permission.monthly_cap_minutes', '60')
-        self._request(issue_date='2026-03-05', duration_minutes='60')
+        self._request(issue_date='2026-03-05', duration_minutes='60').action_submit()
+        request = self._request(issue_date='2026-03-06', duration_minutes='30')
         with self.assertRaises(ValidationError):
-            self._request(issue_date='2026-03-06', duration_minutes='30')
+            request.action_submit()
 
     # -- approval workflow --------------------------------------------
 

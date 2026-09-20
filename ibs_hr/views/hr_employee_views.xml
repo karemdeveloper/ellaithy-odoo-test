@@ -14,7 +14,7 @@
                 </button>
                 <button name="action_view_investigations" type="object"
                         class="oe_stat_button" icon="fa-search"
-                        groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                        groups="ellithy_hr_base.group_ellithy_hr_generalist">
                     <field name="investigation_count" widget="statinfo"
                            string="Investigations"/>
                 </button>

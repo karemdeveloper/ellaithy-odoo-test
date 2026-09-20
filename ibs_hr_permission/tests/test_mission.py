@@ -26,6 +26,11 @@ class TestMission(IbsHrPermissionCommon):
         mission.action_check_out(latitude=30.06, longitude=31.24)
         return mission
 
+    def _complete(self, mission):
+        mission.action_check_in(latitude=30.05, longitude=31.23)
+        mission.action_check_out(latitude=30.06, longitude=31.24)
+        return mission
+
     # -- duration / time span (custom hours) -----------------------------
 
     def test_duration_computed_from_custom_hours(self):
@@ -73,23 +78,26 @@ class TestMission(IbsHrPermissionCommon):
 
     def test_cannot_check_in_twice(self):
         mission = self._mission(custom_hours=False, start_time=0.0, end_time=0.0)
-        mission.action_check_in()
+        mission.action_check_in(latitude=30.05, longitude=31.23)
         with self.assertRaises(ValidationError):
-            mission.action_check_in()
+            mission.action_check_in(latitude=30.05, longitude=31.23)
 
     def test_submit_requires_check_in_out_when_not_custom_hours(self):
         mission = self._mission(custom_hours=False, start_time=0.0, end_time=0.0)
         with self.assertRaises(ValidationError):
             mission.action_submit()
-        mission.action_check_in()
+        mission.action_check_in(latitude=30.05, longitude=31.23)
         with self.assertRaises(ValidationError):
             mission.action_submit()
-        mission.action_check_out()
+        mission.action_check_out(latitude=30.06, longitude=31.24)
         mission.action_submit()
         self.assertEqual(mission.state, 'pending')
 
-    def test_submit_skips_check_in_out_requirement_for_custom_hours(self):
+    def test_custom_hours_still_require_gps_evidence(self):
         mission = self._mission()
+        with self.assertRaises(ValidationError):
+            mission.action_submit()
+        self._complete(mission)
         mission.action_submit()
         self.assertEqual(mission.state, 'pending')
 
@@ -97,6 +105,7 @@ class TestMission(IbsHrPermissionCommon):
 
     def test_approval_flow_needs_manager_then_hr(self):
         mission = self._mission()
+        self._complete(mission)
         mission.action_submit()
         self.assertEqual(mission.state, 'pending')
         mission.action_manager_approve()
@@ -110,6 +119,7 @@ class TestMission(IbsHrPermissionCommon):
 
     def test_cannot_hr_approve_before_manager(self):
         mission = self._mission()
+        self._complete(mission)
         mission.action_submit()
         with self.assertRaises(ValidationError):
             mission.action_approve()
@@ -120,6 +130,7 @@ class TestMission(IbsHrPermissionCommon):
 
     def test_rejection_requires_remark(self):
         mission = self._mission()
+        self._complete(mission)
         mission.action_submit()
         with self.assertRaises(ValidationError):
             mission.action_reject()

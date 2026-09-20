@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_time_off_root" name="Time Off" sequence="8"
+              web_icon="ibs_hr_time_off,static/description/icon.png"
+              groups="base.group_user"/>
+    <menuitem id="menu_time_off_configuration" name="Configuration"
+              parent="menu_time_off_root" sequence="90"
+              groups="ibs_hr_time_off.ibs_hr_time_off_admin"/>
+    <menuitem id="menu_custom_time_off" name="Time Off"
+              parent="menu_time_off_root"
+              action="time_off_request_action" sequence="10"/>
+    <menuitem id="menu_time_off_balances" name="Time Off Balances"
+              parent="menu_time_off_root"
+              action="time_off_ledger_action" sequence="11"/>
+    <menuitem id="menu_rest_credits" name="Rest Credits"
+              parent="menu_time_off_root"
+              action="rest_credit_action" sequence="12"/>
+    <menuitem id="menu_time_off_types" name="Time Off Types"
+              parent="menu_time_off_configuration"
+              action="time_off_type_action" sequence="27"
+              groups="ibs_hr_time_off.ibs_hr_time_off_admin"/>
+    <record id="ibs_hr_holiday.menu_public_holidays" model="ir.ui.menu">
+        <field name="parent_id" ref="menu_time_off_configuration"/>
+        <field name="groups_id" eval="[(6, 0, [ref('ibs_hr_time_off_admin')])]"/>
+    </record>
+</odoo>

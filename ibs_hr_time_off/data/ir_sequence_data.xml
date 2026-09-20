@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_time_off_request" model="ir.sequence">
+        <field name="name">Time Off Request</field>
+        <field name="code">ibs.hr.time.off.request</field>
+        <field name="prefix">TO-</field>
+        <field name="padding">6</field>
+    </record>
+</odoo>
+

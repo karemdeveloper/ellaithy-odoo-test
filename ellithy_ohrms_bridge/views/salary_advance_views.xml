@@ -9,6 +9,13 @@
         <field name="model">salary.advance</field>
         <field name="inherit_id" ref="ohrms_salary_advance.salary_advance_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//button[@name='approve_request']" position="attributes">
+                <attribute name="groups">ellithy_ohrms_bridge.advance_generalist</attribute>
+            </xpath>
+            <xpath expr="//button[@name='approve_request_acc_dept']" position="attributes">
+                <attribute name="groups">ellithy_ohrms_bridge.advance_finance</attribute>
+            </xpath>
+
             <!--
                 The exception belongs beside the ceiling it lifts, not two
                 columns away under the reason, so it is taken out of the
@@ -20,7 +27,7 @@
                 <field name="earned_to_date" readonly="1"/>
                 <field name="exceed_condition"
                        readonly="state in ('approve','cancel','reject')"
-                       groups="ellithy_hr_base.group_ellithy_hr_admin"/>
+                       groups="ellithy_ohrms_bridge.advance_admin"/>
             </field>
 
             <!--
@@ -54,12 +61,15 @@
     <record id="ohrms_salary_advance.salary_advance_menu_own" model="ir.ui.menu">
         <field name="name">Salary Advances</field>
         <field name="groups_id"
-               eval="[(6, 0, [ref('ellithy_hr_base.group_ellithy_hr_personnel')])]"/>
+               eval="[(6, 0, [ref('ellithy_ohrms_bridge.advance_generalist')])]"/>
     </record>
 
     <record id="ohrms_salary_advance.salary_advance_menu_my_approved"
             model="ir.ui.menu">
         <field name="groups_id"
-               eval="[(6, 0, [ref('ellithy_hr_base.group_ellithy_hr_personnel')])]"/>
+               eval="[(6, 0, [ref('ellithy_ohrms_bridge.advance_generalist')])]"/>
+    </record>
+    <record id="ohrms_salary_advance.salary_advance_menu_to_approve" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('advance_generalist'), ref('advance_finance')])]"/>
     </record>
 </odoo>

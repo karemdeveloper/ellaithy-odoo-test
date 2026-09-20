@@ -13,8 +13,8 @@
             <xpath expr="//form" position="inside">
                 <app data-string="Time Off" string="Time Off" name="hr_leave"
                      data-key="hr_leave_request_aliasing"
-                     groups="hr_holidays.group_hr_holidays_manager"
-                     logo="/hr_holidays/static/description/icon.png">
+                     groups="ellithy_hr_base.group_ellithy_hr_admin"
+                     logo="/ibs_hr_time_off/static/description/icon.png">
                     <block title="Leaves" id="hr_leaves">
                         <setting string="Leave Email Alias"
                                  help="You can setup a generic email alias to create incoming leave request easily. Write an email with the desired format to create leave request in one click. Format:- Start subject with 'LEAVE REQUEST'. After your mail content mention 'Date From:' and 'Date To:'. ">
@@ -51,7 +51,7 @@
     <!--    res_config_settings menu in hr_holidays-->
     <menuitem id="res_config_settings_menu_email_alias"
               name="Settings"
-              parent="hr_holidays.menu_hr_holidays_configuration"
+              parent="ibs_hr_time_off.menu_time_off_configuration"
               sequence="0"
               action="res_config_settings_action_email_alias"
               groups="base.group_system"/>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_shift_category" model="ir.module.category"><field name="name">Shifts and Attendance</field><field name="sequence">25</field></record>
+    <record id="ibs_hr_shift_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="ibs_hr_shift_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('ibs_hr_shift_user'))]"/></record>
+    <record id="ibs_hr_shift_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="ibs_hr_shift_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_shift.ibs_hr_shift_user')), (4, ref('hr.group_hr_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('ibs_hr_shift_generalist'))]"/></record>
+    <record id="ibs_hr_shift_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="ibs_hr_shift_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_shift.ibs_hr_shift_generalist'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('ibs_hr_shift_admin'))]"/></record>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ibs_hr_shift'"/>
+        <value eval="'ibs_hr_shift'"/>
+        <value eval="False"/>
+    </function>
+</odoo>

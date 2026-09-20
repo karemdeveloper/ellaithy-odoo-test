@@ -108,7 +108,7 @@ class TestPenaltyEscalation(IbsHrCommon):
         user = self.env['res.users'].with_context(no_reset_password=True).create({
             'name': 'Warning HR author', 'login': 'warning.hr.author',
             'groups_id': [(6, 0, [self.env.ref(
-                'ellithy_hr_base.group_ellithy_hr_personnel').id])]})
+                'ibs_hr.penalty_generalist').id])]})
         warning = self._warn(1, approve=False).with_user(user)
         warning.action_submit()
         self.assertFalse(user.has_group(

@@ -86,22 +86,24 @@ class HrEmployee(models.Model):
                     'worked_hours': format_duration(line['worked_hours'])
                 }
                 attendance_line.append(val)
-        leaves = self.env['hr.leave'].sudo().search_read(
+        leaves = self.env['ibs.hr.time.off.request'].search_read(
             [('employee_id', '=', employee[0]['id'])],
-            fields=['request_date_from', 'request_date_to', 'state',
-                    'holiday_status_id'])
+            fields=['date_from', 'date_to', 'state',
+                    'type_id'])
         for line in leaves:
-            line['type'] = line.pop('holiday_status_id')[1]
-            if line['state'] == 'confirm':
+            line['type'] = line.pop('type_id')[1]
+            line['request_date_from'] = line.pop('date_from')
+            line['request_date_to'] = line.pop('date_to')
+            if line['state'] == 'submitted':
                 line['state'] = 'To Approve'
                 line['color'] = 'orange'
-            elif line['state'] == 'validate1':
+            elif line['state'] == 'manager_approved':
                 line['state'] = 'Second Approval'
                 line['color'] = '#7CFC00'
-            elif line['state'] == 'validate':
+            elif line['state'] == 'approved':
                 line['state'] = 'Approved'
                 line['color'] = 'green'
-            elif line['state'] == 'cancel':
+            elif line['state'] == 'cancelled':
                 line['state'] = 'Cancelled'
                 line['color'] = 'red'
             else:
@@ -129,32 +131,19 @@ class HrEmployee(models.Model):
             else:
                 line['state'] = 'Refused'
                 line['color'] = 'red'
-        leaves_to_approve = self.env['hr.leave'].sudo().search_count(
-            [('state', 'in', ['confirm', 'validate1'])])
-        today = datetime.strftime(datetime.today(), '%Y-%m-%d')
-        query = """
-        select count(id)
-        from hr_leave
-        WHERE (hr_leave.date_from::DATE,hr_leave.date_to::DATE) 
-        OVERLAPS ('%s', '%s') and
-        state='validate'""" % (today, today)
-        cr = self._cr
-        cr.execute(query)
-        leaves_today = cr.fetchall()
-        first_day = date.today().replace(day=1)
-        last_day = (date.today() + relativedelta(months=1, day=1)) - timedelta(
-            1)
-        query = """
-                select count(id)
-                from hr_leave
-                WHERE (hr_leave.date_from::DATE,hr_leave.date_to::DATE) 
-                OVERLAPS ('%s', '%s')
-                and  state='validate'""" % (first_day, last_day)
-        cr = self._cr
-        cr.execute(query)
-        leaves_this_month = cr.fetchall()
-        leaves_alloc_req = self.env['hr.leave.allocation'].sudo().search_count(
-            [('state', 'in', ['confirm', 'validate1'])])
+        leaves_to_approve = self.env['ibs.hr.time.off.request'].search_count(
+            [('state', 'in', ['submitted', 'manager_approved'])])
+        today = fields.Date.context_today(self)
+        leave_model = self.env['ibs.hr.time.off.request']
+        leaves_today = [(leave_model.search_count([
+            ('state', '=', 'approved'), ('date_from', '<=', today),
+            ('date_to', '>=', today)]),)]
+        first_day = today.replace(day=1)
+        last_day = first_day + relativedelta(months=1, days=-1)
+        leaves_this_month = [(leave_model.search_count([
+            ('state', '=', 'approved'), ('date_from', '<=', last_day),
+            ('date_to', '>=', first_day)]),)]
+        leaves_alloc_req = 0
         # Timesheets are out of scope for this deployment. The model check
         # covers the search; the view lookup needs raise_if_not_found because
         # env.ref raises on a missing xmlid rather than returning empty.
@@ -314,7 +303,7 @@ class HrEmployee(models.Model):
              , to_char(y, 'Month YYYY') as month_year
              , GREATEST(y                    , h.date_from) AS date_from
              , LEAST   (y + interval '1 month', h.date_to)   AS date_to
-        FROM  (select * from hr_leave where state = 'validate') h
+        FROM  (select r.*, e.department_id from ibs_hr_time_off_request r join hr_employee e on e.id = r.employee_id where r.state = 'approved' and r.id = ANY(%s)) h
              , generate_series(date_trunc('month', date_from::timestamp)
                              , date_trunc('month', date_to::timestamp)
                              , interval '1 month') y
@@ -324,7 +313,8 @@ class HrEmployee(models.Model):
         date_trunc('month', now())
         and h.department_id is not null
         """
-        self.env.cr.execute(sql)
+        visible_ids = self.env['ibs.hr.time.off.request'].search([('state', '=', 'approved')]).ids
+        self.env.cr.execute(sql, (visible_ids,))
         results = self.env.cr.dictfetchall()
         leave_lines = []
         for line in results:
@@ -363,35 +353,20 @@ class HrEmployee(models.Model):
                                 compute_leaves=False, calendar=None,
                                 domain=None):
         """Calculate employee worked hours/day details"""
-        resource = self.resource_id
-        calendar = calendar or self.resource_calendar_id
-        if not from_datetime.tzinfo:
-            from_datetime = from_datetime.replace(tzinfo=utc)
-        if not to_datetime.tzinfo:
-            to_datetime = to_datetime.replace(tzinfo=utc)
-        from_full = from_datetime - timedelta(days=1)
-        to_full = to_datetime + timedelta(days=1)
-        intervals = calendar._attendance_intervals_batch(from_full, to_full,
-                                                         resource)
-        day_total = defaultdict(float)
-        for start, stop, meta in intervals[resource.id]:
-            day_total[start.date()] += (stop - start).total_seconds() / 3600
-        if compute_leaves:
-            intervals = calendar._work_intervals_batch(from_datetime,
-                                                       to_datetime, resource,
-                                                       domain)
-        else:
-            intervals = calendar._attendance_intervals_batch(from_datetime,
-                                                             to_datetime,
-                                                             resource)
-        day_hours = defaultdict(float)
-        for start, stop, meta in intervals[resource.id]:
-            day_hours[start.date()] += (stop - start).total_seconds() / 3600
-        days = sum(
-            float_utils.round(ROUNDING_FACTOR * day_hours[day] / day_total[
-                day]) / ROUNDING_FACTOR
-            for day in day_hours
-        )
+        self.ensure_one()
+        shift = self.shift_id
+        if not shift:
+            return 0
+        current = from_datetime.date()
+        end = to_datetime.date()
+        days = 0
+        while current <= end:
+            line = shift.line_ids.filtered(lambda item: item.day == str(current.weekday()))[:1]
+            if shift.from_date <= current <= shift.to_date and line and not line.is_off:
+                if not self.env['ibs.hr.public.holiday'].search_count([
+                        ('date', '=', current), ('company_id', '=', self.company_id.id)]):
+                    days += 1
+            current += timedelta(days=1)
         return days
 
     @api.model
@@ -419,7 +394,7 @@ class HrEmployee(models.Model):
                      , to_char(y, 'Month YYYY') as month_year
                      , GREATEST(y                    , h.date_from) AS date_from
                      , LEAST   (y + interval '1 month', h.date_to)   AS date_to
-                FROM  (select * from hr_leave where state = 'validate') h
+                FROM  (select r.*, e.department_id from ibs_hr_time_off_request r join hr_employee e on e.id = r.employee_id where r.state = 'approved' and r.id = ANY(%s)) h
                      , generate_series(date_trunc('month', date_from::timestamp)
                                      , date_trunc('month', date_to::timestamp)
                                      , interval '1 month') y
@@ -427,7 +402,8 @@ class HrEmployee(models.Model):
                 date_trunc('month', now()) - interval '6 month' and
                 date_trunc('month', GREATEST(y , h.date_from)) <= 
                 date_trunc('month', now()) and h.employee_id = %s """
-        self.env.cr.execute(sql, (employee[0]['id'],))
+        visible_ids = self.env['ibs.hr.time.off.request'].search([('state', '=', 'approved')]).ids
+        self.env.cr.execute(sql, (visible_ids, employee[0]['id']))
         results = self.env.cr.dictfetchall()
         for line in results:
             employee = self.browse(line['employee_id'])
@@ -578,5 +554,3 @@ class HrEmployee(models.Model):
             }
             dataset.append(vals)
         return dataset
-
-

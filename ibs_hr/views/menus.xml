@@ -45,9 +45,9 @@
     <!-- ============ Configuration &gt; Discipline ============ -->
     <menuitem id="menu_cfg_discipline"
               name="Discipline"
-              parent="hr.menu_human_resources_configuration"
+              parent="ellithy_hr_base.menu_time_attendance_configuration"
               sequence="40"
-              groups="ellithy_hr_base.group_ellithy_hr_admin"/>
+              groups="ibs_hr.penalty_admin"/>
 
     <menuitem id="menu_cfg_violations"
               name="Penalty Catalogue"

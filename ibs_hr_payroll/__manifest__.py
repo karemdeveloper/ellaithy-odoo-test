@@ -1,0 +1,25 @@
+{
+    'name': 'IBS HCM Payroll',
+    'version': '18.0.1.2.0',
+    'summary': 'HCM allowances, attendance, overtime and deductions on payroll',
+    'author': 'ibs',
+    'website': 'https://ibs-egy.com/',
+    'category': 'Human Resources/Payroll',
+    'license': 'LGPL-3',
+    'depends': [
+        'hr_payroll_community',
+        'ibs_hr_overtime',
+        'ibs_hr_permission',
+    ],
+    'data': [
+        'security/groups.xml',
+        'security/ibs_hr_payroll_security.xml',
+        'security/ir.model.access.csv',
+        'data/hr_salary_rule_data.xml',
+        'views/ibs_hr_mobile_deduction_views.xml',
+        'views/hr_payslip_views.xml',
+        'views/hr_payslip_views.xml',
+        'views/menus.xml',
+    ],
+    'installable': True,
+}

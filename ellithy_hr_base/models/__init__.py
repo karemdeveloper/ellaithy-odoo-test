@@ -11,3 +11,4 @@ from . import hr_employee_document
 from . import hr_employee_account
 from . import hr_contract
 from . import ellithy_hr_line
+from . import res_groups

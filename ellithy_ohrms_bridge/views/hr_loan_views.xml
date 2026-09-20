@@ -15,12 +15,12 @@
             <!-- CR 2.17: name the two signatures, and who gives each. -->
             <xpath expr="//button[@name='action_approve']" position="attributes">
                 <attribute name="string">HR Approve</attribute>
-                <attribute name="groups">ellithy_hr_base.group_ellithy_hr_personnel</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.loan_generalist</attribute>
             </xpath>
 
             <xpath expr="//button[@name='action_double_approve']" position="attributes">
                 <attribute name="string">Finance Approve</attribute>
-                <attribute name="groups">account.group_account_user</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.loan_finance</attribute>
             </xpath>
 
             <xpath expr="//button[@name='action_refuse']" position="after">
@@ -159,6 +159,6 @@
     <record id="ohrms_loan.hr_loan_menu" model="ir.ui.menu">
         <field name="name">All Loans</field>
         <field name="action" ref="action_hr_loan_all"/>
-        <field name="groups_id" eval="[(6, 0, [ref('hr.group_hr_user'), ref('account.group_account_user')])]"/>
+        <field name="groups_id" eval="[(6, 0, [ref('ellithy_ohrms_bridge.loan_generalist'), ref('ellithy_ohrms_bridge.loan_finance')])]"/>
     </record>
 </odoo>

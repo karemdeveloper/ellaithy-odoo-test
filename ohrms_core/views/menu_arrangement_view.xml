@@ -17,10 +17,6 @@
             <field name="web_icon">hr_attendance,static/description/icon.png</field>
         </record>
 
-        <menuitem name="Leaves"
-                  id="hr_holidays.menu_hr_holidays_root"
-                  web_icon="hr_holidays,static/description/icon.png"
-                  groups="base.group_user"/>
 
         <menuitem id="hr_payroll_community.menu_hr_payroll_community_root"
                   name="Payroll" sequence="11"

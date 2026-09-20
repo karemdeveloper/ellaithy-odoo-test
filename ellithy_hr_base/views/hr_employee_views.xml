@@ -16,7 +16,7 @@
             <xpath expr="//header" position="inside">
                 <button name="action_send_welcome_mail" type="object"
                         string="Send Onboarding Mail" class="oe_highlight"
-                        groups="ellithy_hr_base.group_ellithy_hr_personnel"
+                        groups="ellithy_hr_base.group_ellithy_hr_generalist"
                         invisible="not active or not id or welcome_email_sent or not work_email"/>
                 <field name="welcome_email_sent" invisible="1"/>
                 <field name="welcome_email_sent_on" invisible="1"/>
@@ -95,7 +95,7 @@
                     previous one was filed under.
                 -->
                 <page string="Social Insurance" name="ellithy_social_insurance"
-                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
                     <div class="alert alert-info" role="status"
                          invisible="not contract_id">
                         Social insurance is entered on the running contract.
@@ -148,7 +148,7 @@
                 </page>
 
                 <page string="Medical Insurance" name="ellithy_medical_insurance"
-                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
                     <div class="alert alert-info" role="status"
                          invisible="not contract_id">
                         The tier and its costs are entered on the running
@@ -206,7 +206,7 @@
                 </page>
 
                 <page string="Payout" name="ellithy_payout"
-                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
                     <field name="payout_account_ids">
                         <list editable="bottom">
                             <field name="method"/>
@@ -224,7 +224,7 @@
                 </page>
 
                 <page string="HR File" name="ellithy_documents"
-                      groups="ellithy_hr_base.group_ellithy_hr_personnel">
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
                     <group>
                         <field name="document_completeness" widget="progressbar"/>
                     </group>

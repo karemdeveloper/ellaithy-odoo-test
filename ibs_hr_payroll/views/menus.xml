@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_mobile_deductions" name="Mobile Invoice Deductions"
+              parent="hr_payroll_community.menu_hr_payroll_community_root"
+              action="mobile_deduction_action" sequence="50"
+              groups="ibs_hr_payroll.ibs_hr_payroll_generalist,ibs_hr_payroll.ibs_hr_payroll_finance"/>
+</odoo>

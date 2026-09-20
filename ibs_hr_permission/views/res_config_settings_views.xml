@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//app[@name='hr']" position="inside">
                 <block title="Permissions" name="ibs_hr_permission_settings_container"
-                       groups="ellithy_hr_base.group_ellithy_hr_admin">
+                       groups="ibs_hr_permission.permission_admin">
                     <setting string="Monthly Permission Cap"
                              help="Total permission minutes an employee may be granted per calendar month.">
                         <field name="ibs_hr_permission_monthly_cap_minutes"/> minutes

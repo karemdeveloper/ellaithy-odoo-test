@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="permission_category" model="ir.module.category"><field name="name">Permissions</field><field name="sequence">25</field></record>
+    <record id="permission_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="permission_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('permission_user'))]"/></record>
+    <record id="permission_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="permission_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_permission.permission_user')), (4, ref('hr.group_hr_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('permission_generalist'))]"/></record>
+    <record id="permission_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="permission_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_permission.permission_generalist'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('permission_admin'))]"/></record>
+
+    <record id="mission_category" model="ir.module.category"><field name="name">Missions</field><field name="sequence">25</field></record>
+    <record id="mission_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="mission_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('mission_user'))]"/></record>
+    <record id="mission_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="mission_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_permission.mission_user')), (4, ref('hr.group_hr_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('mission_generalist'))]"/></record>
+    <record id="mission_finance" model="res.groups">
+        <field name="name">Financial Approval</field>
+        <field name="category_id" ref="mission_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_permission.mission_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_financial_approval" model="res.groups"><field name="implied_ids" eval="[(4, ref('mission_finance'))]"/></record>
+    <record id="mission_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="mission_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_permission.mission_generalist')), (4, ref('ibs_hr_permission.mission_finance'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('mission_admin'))]"/></record>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ibs_hr_permission'"/>
+        <value eval="'permission'"/>
+        <value eval="False"/>
+    </function>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ibs_hr_permission'"/>
+        <value eval="'mission'"/>
+        <value eval="True"/>
+    </function>
+</odoo>

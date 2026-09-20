@@ -21,6 +21,7 @@
               name="Salary Advances"
               parent="hr_payroll_community.menu_hr_payroll_community_root"
               action="ohrms_salary_advance.salary_advance_to_approve_action"
+              groups="ellithy_ohrms_bridge.advance_generalist,ellithy_ohrms_bridge.advance_finance"
               sequence="50"/>
 
 </odoo>

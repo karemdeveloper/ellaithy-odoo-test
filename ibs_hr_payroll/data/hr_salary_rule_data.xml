@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_transport" model="hr.salary.rule">
+        <field name="name">Transportation Allowance</field><field name="code">TRANSPORT</field>
+        <field name="sequence">20</field><field name="category_id" ref="hr_payroll_community.ALW"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.TRANSPORT.amount if inputs.TRANSPORT else 0.0</field>
+    </record>
+    <record id="rule_employment" model="hr.salary.rule">
+        <field name="name">Employment Allowance</field><field name="code">EMPLOYMENT</field>
+        <field name="sequence">21</field><field name="category_id" ref="hr_payroll_community.ALW"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.EMPLOYMENT.amount if inputs.EMPLOYMENT else 0.0</field>
+    </record>
+    <record id="rule_commitment" model="hr.salary.rule">
+        <field name="name">Commitment Allowance</field><field name="code">COMMITMENT</field>
+        <field name="sequence">22</field><field name="category_id" ref="hr_payroll_community.ALW"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.COMMITMENT.amount if inputs.COMMITMENT else 0.0</field>
+    </record>
+    <record id="rule_other_allow" model="hr.salary.rule">
+        <field name="name">Other Allowance</field><field name="code">OTHER_ALLOW</field>
+        <field name="sequence">23</field><field name="category_id" ref="hr_payroll_community.ALW"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.OTHER_ALLOW.amount if inputs.OTHER_ALLOW else 0.0</field>
+    </record>
+    <record id="rule_overtime" model="hr.salary.rule">
+        <field name="name">Approved Overtime</field><field name="code">OVERTIME</field>
+        <field name="sequence">30</field><field name="category_id" ref="hr_payroll_community.ALW"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.OVERTIME.amount if inputs.OVERTIME else 0.0</field>
+    </record>
+    <record id="rule_social_insurance" model="hr.salary.rule">
+        <field name="name">Social Insurance</field><field name="code">SOC_INS</field>
+        <field name="sequence">130</field><field name="category_id" ref="hr_payroll_community.DED"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -(inputs.SOC_INS.amount) if inputs.SOC_INS else 0.0</field>
+    </record>
+    <record id="rule_mobile" model="hr.salary.rule">
+        <field name="name">Mobile Invoice Deduction</field><field name="code">MOBILE</field>
+        <field name="sequence">140</field><field name="category_id" ref="hr_payroll_community.DED"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -(inputs.MOBILE.amount) if inputs.MOBILE else 0.0</field>
+    </record>
+    <record id="rule_unpaid_time" model="hr.salary.rule">
+        <field name="name">Unpaid Attendance Time</field><field name="code">UNPAID_TIME</field>
+        <field name="sequence">150</field><field name="category_id" ref="hr_payroll_community.DED"/>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -(inputs.UNPAID_TIME.amount) if inputs.UNPAID_TIME else 0.0</field>
+    </record>
+
+    <record id="input_transport" model="hr.rule.input"><field name="name">Transportation Allowance</field><field name="code">TRANSPORT</field><field name="input_id" ref="rule_transport"/></record>
+    <record id="input_employment" model="hr.rule.input"><field name="name">Employment Allowance</field><field name="code">EMPLOYMENT</field><field name="input_id" ref="rule_employment"/></record>
+    <record id="input_commitment" model="hr.rule.input"><field name="name">Commitment Allowance</field><field name="code">COMMITMENT</field><field name="input_id" ref="rule_commitment"/></record>
+    <record id="input_other_allow" model="hr.rule.input"><field name="name">Other Allowance</field><field name="code">OTHER_ALLOW</field><field name="input_id" ref="rule_other_allow"/></record>
+    <record id="input_overtime" model="hr.rule.input"><field name="name">Approved Overtime</field><field name="code">OVERTIME</field><field name="input_id" ref="rule_overtime"/></record>
+    <record id="input_social_insurance" model="hr.rule.input"><field name="name">Social Insurance</field><field name="code">SOC_INS</field><field name="input_id" ref="rule_social_insurance"/></record>
+    <record id="input_mobile" model="hr.rule.input"><field name="name">Mobile Invoice Deduction</field><field name="code">MOBILE</field><field name="input_id" ref="rule_mobile"/></record>
+    <record id="input_unpaid_time" model="hr.rule.input"><field name="name">Unpaid Attendance Time</field><field name="code">UNPAID_TIME</field><field name="input_id" ref="rule_unpaid_time"/></record>
+
+    <record id="hr_payroll_community.structure_base" model="hr.payroll.structure">
+        <field name="rule_ids" eval="[(4, ref('rule_transport')), (4, ref('rule_employment')), (4, ref('rule_commitment')), (4, ref('rule_other_allow')), (4, ref('rule_overtime')), (4, ref('rule_social_insurance')), (4, ref('rule_mobile')), (4, ref('rule_unpaid_time'))]"/>
+    </record>
+</odoo>
+

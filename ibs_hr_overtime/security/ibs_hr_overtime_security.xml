@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_overtime_own" model="ir.rule">
+        <field name="name">Overtime: own records</field>
+        <field name="model_id" ref="model_ibs_hr_overtime"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_overtime_manager" model="ir.rule">
+        <field name="name">Overtime: manager branch</field>
+        <field name="model_id" ref="model_ibs_hr_overtime"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_overtime.ibs_hr_overtime_generalist'), ref('ibs_hr_overtime.ibs_hr_overtime_finance')])]"/>
+    </record>
+    <record id="rule_overtime_hr" model="ir.rule">
+        <field name="name">Overtime: HR companies</field>
+        <field name="model_id" ref="model_ibs_hr_overtime"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_overtime.ibs_hr_overtime_generalist'), ref('ibs_hr_overtime.ibs_hr_overtime_finance')])]"/>
+    </record>
+    <record id="rule_overtime_global_company" model="ir.rule">
+        <field name="name">overtime: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_overtime"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

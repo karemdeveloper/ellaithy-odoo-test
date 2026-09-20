@@ -1,78 +1,46 @@
-# -*- coding: utf-8 -*-
-#############################################################################
-#    A part of Open HRMS Project <https://www.openhrms.com>
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
-#
-#    You can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
-#
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-#############################################################################
 import re
 from datetime import datetime
-from odoo import api, models
+
+from odoo import _, api, models
+from odoo.exceptions import ValidationError
 from odoo.tools import email_split
 
 
-class HrLeave(models.Model):
-    """Inherited hr leave to inherit the message_new function"""
-    _inherit = 'hr.leave'
+class TimeOffMailRequest(models.Model):
+    _inherit = 'ibs.hr.time.off.request'
 
     @api.model
     def message_new(self, msg_dict, custom_values=None):
-        """This function extracts required fields of hr. holidays from incoming
-         mail then creating records"""
-        if custom_values is None:
-            custom_values = {}
-        msg_subject = msg_dict.get('subject', '')
-        mail_from = msg_dict.get('email_from', '')
-        subject = re.search(self.env['ir.config_parameter'].sudo(
-        ).get_param('hr_holidays.alias_prefix'), msg_subject)
-        from_mail = re.search(self.env['ir.config_parameter'].sudo(
-        ).get_param('hr_holidays.alias_domain'), mail_from)
-        if subject and from_mail:
-            email_address = email_split(msg_dict.get('email_from', False))[
-                0]
-            employee = self.env['hr.employee'].sudo().search(
-                ['|', ('work_email', 'ilike', email_address),
-                 ('user_id.email', 'ilike', email_address)], limit=1)
-            msg_body = msg_dict.get('body', '')
-            cleaner = re.compile('<.*?>')
-            clean_msg_body = re.sub(cleaner, '', msg_body)
-            date_list = re.findall(r'\d{2}/\d{2}/\d{4}', clean_msg_body)
-            if len(date_list) > 0:
-                start_date = datetime.strptime(
-                    date_list[0], '%d/%m/%Y')
-                if len(date_list) == 1:
-                    date_to = start_date
-                else:
-                    date_to = datetime.strptime(
-                        date_list[1], '%d/%m/%Y')
-                no_of_days_temp = (
-                        datetime.strptime(str(date_to),
-                                          "%Y-%m-%d %H:%M:%S") -
-                        datetime.strptime(str(start_date),
-                                          '%Y-%m-%d %H:%M:%S')).days
-                custom_values.update({
-                    'name': msg_subject.strip(),
-                    'employee_id': employee.id,
-                    'holiday_status_id': self.env[
-                        'hr.leave.type'].search([('requires_allocation',
-                                                  '=', 'no')])[0].id,
-                    'request_date_from': start_date,
-                    'request_date_to': date_to,
-                    'duration_display': no_of_days_temp + 1
-                })
-        return super().message_new(msg_dict, custom_values)
+        values = dict(custom_values or {})
+        addresses = email_split(msg_dict.get('email_from', ''))
+        if not addresses:
+            raise ValidationError(_('The sender has no email address.'))
+        sender = addresses[0].lower()
+        get = self.env['ir.config_parameter'].sudo().get_param
+        prefix = get('hr_holidays.alias_prefix', 'LEAVE REQUEST') or 'LEAVE REQUEST'
+        domain = get('hr_holidays.alias_domain', '') or ''
+        if not msg_dict.get('subject', '').startswith(prefix):
+            raise ValidationError(_('The email subject must start with %s.', prefix))
+        if domain and sender.rsplit('@', 1)[-1] != domain.lstrip('@').lower():
+            raise ValidationError(_('This sender domain is not allowed.'))
+        employees = self.env['hr.employee'].sudo().search([
+            '|', ('work_email', '=ilike', sender), ('user_id.email', '=ilike', sender)], limit=2)
+        if len(employees) != 1:
+            raise ValidationError(_('The sender must match exactly one employee.'))
+        employee = employees[0]
+        dates = re.findall(r'\d{2}/\d{2}/\d{4}', msg_dict.get('body', ''))
+        if not dates:
+            raise ValidationError(_('Include dates in DD/MM/YYYY format.'))
+        try:
+            start = datetime.strptime(dates[0], '%d/%m/%Y').date()
+            end = datetime.strptime(dates[1] if len(dates) > 1 else dates[0], '%d/%m/%Y').date()
+        except ValueError as error:
+            raise ValidationError(_('The email contains an invalid date.')) from error
+        kind = self.env['ibs.hr.time.off.type'].sudo().search([
+            ('code', '=', 'annual'), ('company_id', '=', employee.company_id.id)], limit=1)
+        if not kind:
+            raise ValidationError(_('Configure an annual time off type for this company.'))
+        values.update(employee_id=employee.id, type_id=kind.id,
+                      date_from=start, date_to=end, reason=msg_dict.get('subject', ''))
+        # Email creates a draft; submission validates balances and eligibility.
+        return super().message_new(msg_dict, values)

@@ -34,7 +34,7 @@ class TestCommissionApproval(IbsHrCommon):
     def test_hr_without_approver_group_cannot_approve_or_write_status(self):
         user = self.env['res.users'].with_context(no_reset_password=True).create({
             'name': 'Commission HR author', 'login': 'commission.hr.author',
-            'groups_id': [(6, 0, [self.env.ref('ellithy_hr_base.group_ellithy_hr_personnel').id])]})
+            'groups_id': [(6, 0, [self.env.ref('ibs_hr.penalty_generalist').id])]})
         record = self._record().with_user(user)
         self.assertFalse(user.has_group('ibs_hr.group_ibs_admin_penalty_approver'))
         with self.assertRaises(ValidationError):

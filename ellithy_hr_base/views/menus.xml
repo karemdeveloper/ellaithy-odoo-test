@@ -23,14 +23,16 @@
               parent="hr.menu_hr_employee_payroll"
               action="hr_employee_inactive_action"
               sequence="20"
-              groups="ellithy_hr_base.group_ellithy_hr_personnel"/>
+              groups="ellithy_hr_base.group_ellithy_hr_generalist"/>
 
     <!-- ============ 10. Time &amp; Attendance ============ -->
     <menuitem id="menu_time_attendance"
               name="Time &amp; Attendance"
               parent="hr.menu_hr_root"
               sequence="10"
-              groups="ellithy_hr_base.group_ellithy_hr_assistant"/>
+              groups="base.group_user"/>
+    <menuitem id="menu_time_attendance_configuration" name="Configuration"
+              parent="menu_time_attendance" sequence="90"/>
 
     <!-- ============ 15. Penalties ============ -->
     <!-- The xmlid stays ``menu_conduct``: renaming it would orphan the live
@@ -39,7 +41,7 @@
               name="Penalties"
               parent="hr.menu_hr_root"
               sequence="15"
-              groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>
+              groups="base.group_user"/>
 
     <!-- ============ 100. Configuration ============ -->
     <menuitem id="menu_cfg_organisation"

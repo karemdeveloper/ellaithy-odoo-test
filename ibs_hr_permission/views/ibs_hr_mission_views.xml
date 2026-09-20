@@ -21,10 +21,10 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'"/>
-                    <button name="action_manager_approve" type="object" string="Manager Approve" class="btn-primary" invisible="state != 'pending'" groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>
-                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'manager_approved'" groups="ellithy_hr_base.group_ellithy_hr_personnel"/>
-                    <button name="action_reject" type="object" string="Reject" invisible="state not in ('pending', 'manager_approved')" groups="ellithy_hr_base.group_ellithy_hr_branch_manager"/>
+                    <button name="action_submit" type="object" string="End" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_manager_approve" type="object" string="HR Approve" class="btn-primary" invisible="state != 'pending'" groups="ibs_hr_permission.mission_generalist"/>
+                    <button name="action_approve" type="object" string="HR Admin Approve" class="btn-primary" invisible="state != 'manager_approved'" groups="ibs_hr_permission.mission_admin"/>
+                    <button name="action_reject" type="object" string="Reject" invisible="state not in ('pending', 'manager_approved')" groups="ibs_hr_permission.mission_generalist"/>
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ('cancelled','draft')"/>
                     <button name="action_reset" type="object" string="Reset" invisible="state == 'draft'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,pending,manager_approved,approved"/>
@@ -46,7 +46,7 @@
                             <field name="duration_hours" widget="float_time"/>
                         </group>
                     </group>
-                    <group string="Check-in / Check-out" invisible="custom_hours">
+                    <group string="Check-in / Check-out">
                         <group>
                             <widget name="ibs_mission_geo_button" method="action_check_in" label="Check In" invisible="checkin_time or state not in ('draft', 'pending')"/>
                             <field name="checkin_time" readonly="1"/>

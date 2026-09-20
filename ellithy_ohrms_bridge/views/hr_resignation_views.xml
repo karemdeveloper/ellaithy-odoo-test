@@ -52,14 +52,14 @@
                         name="action_endorse_resignation"
                         class="oe_highlight"
                         invisible="state != 'confirm'"
-                        groups="hr.group_hr_user"/>
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
             </xpath>
 
             <xpath expr="//button[@name='action_approve_resignation']"
                    position="attributes">
                 <attribute name="invisible">state != 'endorsed'</attribute>
                 <attribute name="class">oe_highlight</attribute>
-                <attribute name="groups">hr.group_hr_manager</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.resignation_admin</attribute>
             </xpath>
 
             <xpath expr="//button[@name='action_reject_resignation']"
@@ -92,20 +92,20 @@
                         name="action_open_clearance_wizard"
                         class="oe_highlight"
                         invisible="request_type != 'exit' or state != 'approved' or clearance_state != 'none' or expected_revealing_date != context_today().strftime('%Y-%m-%d')"
-                        groups="hr.group_hr_user"/>
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
                 <button string="Add Departments" type="object"
                         name="action_open_clearance_wizard"
                         invisible="request_type != 'exit' or clearance_state != 'progress'"
-                        groups="hr.group_hr_user"/>
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
                 <button string="Confirm Clearance" type="object"
                         name="action_confirm_clearance"
                         class="oe_highlight"
                         invisible="request_type != 'exit' or clearance_state != 'progress' or not clearance_complete"
-                        groups="hr.group_hr_user"/>
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
                 <button string="Reopen Clearance" type="object"
                         name="action_reopen_clearance"
                         invisible="request_type != 'exit' or clearance_state != 'done'"
-                        groups="hr.group_hr_user"/>
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
                 <field name="clearance_state" invisible="1"/>
                 <field name="clearance_complete" invisible="1"/>
             </xpath>
@@ -140,7 +140,7 @@
                  dropped from the form outright and replaced by the real
                  relation, rather than merely hidden from the employee. -->
             <xpath expr="//field[@name='employee_contract']" position="replace">
-                <field name="employee_contract_id" groups="hr.group_hr_user"/>
+                <field name="employee_contract_id" groups="ellithy_ohrms_bridge.resignation_generalist"/>
             </xpath>
 
             <!-- Migrated, not requested: the leaver states when they want
@@ -157,7 +157,7 @@
 
             <xpath expr="//field[@name='notice_period']" position="attributes">
                 <attribute name="invisible">request_type != 'exit'</attribute>
-                <attribute name="groups">hr.group_hr_user</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.resignation_generalist</attribute>
             </xpath>
 
             <!-- The stated reason is locked the moment the request is
@@ -190,7 +190,7 @@
                      entirely, not just visually hidden. -->
                 <group string="Suspension"
                        invisible="request_type != 'suspension'"
-                       groups="hr.group_hr_user">
+                       groups="ellithy_ohrms_bridge.resignation_generalist">
                     <field name="suspension_start"
                            required="request_type == 'suspension'"
                            readonly="state == 'approved'"/>
@@ -208,7 +208,7 @@
                      though (a suspension disables the login too, while it
                      lasts: see ``_apply_employee_exit``), so it stays in
                      its own group rather than being hidden along with it. -->
-                <group string="Blacklist" groups="hr.group_hr_user"
+                <group string="Blacklist" groups="ellithy_ohrms_bridge.resignation_generalist"
                        invisible="request_type != 'exit'">
                     <field name="blacklist" readonly="state == 'approved'"/>
                     <field name="blacklist_reason"
@@ -216,7 +216,7 @@
                            required="blacklist"
                            readonly="state == 'approved'"/>
                 </group>
-                <group string="Login" groups="hr.group_hr_user">
+                <group string="Login" groups="ellithy_ohrms_bridge.resignation_generalist">
                     <field name="disable_login" readonly="state == 'approved'"/>
                 </group>
             </xpath>
@@ -253,7 +253,7 @@
 
                         <div class="alert alert-info" role="status"
                              invisible="clearance_state != 'none'"
-                             groups="hr.group_hr_user">
+                             groups="ellithy_ohrms_bridge.resignation_generalist">
                             Clearance has not been started. Once the exit is
                             approved, use <b>Start Clearance</b> on the
                             employee's last working day to choose which
@@ -266,7 +266,7 @@
                                context="{'default_resignation_id': id}"/>
                     </page>
                     <page name="approvals" string="Approvals"
-                          groups="hr.group_hr_user">
+                          groups="ellithy_ohrms_bridge.resignation_generalist">
                         <group>
                             <group string="Endorsement">
                                 <field name="endorsed_by"/>
@@ -295,7 +295,7 @@
                 <field name="clearance_progress"/>
             </field>
             <field name="employee_contract" position="replace">
-                <field name="employee_contract_id" groups="hr.group_hr_user"/>
+                <field name="employee_contract_id" groups="ellithy_ohrms_bridge.resignation_generalist"/>
             </field>
         </field>
     </record>
@@ -365,6 +365,6 @@
     <menuitem id="hr_resignation_menu_suspension"
               parent="hr_resignation.hr_resignation_menu_root"
               name="Suspension" action="hr_resignation_suspension_action"
-              groups="hr.group_hr_user" sequence="5"/>
+              groups="ellithy_ohrms_bridge.resignation_generalist" sequence="5"/>
 
 </odoo>

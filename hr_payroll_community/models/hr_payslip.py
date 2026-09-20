@@ -230,84 +230,17 @@ class HrPayslip(models.Model):
         applied for the given contract between date_from and date_to
         """
         res = []
-        # fill only if the contract as a working schedule linked
-        for contract in contracts.filtered(
-                lambda contract: contract.resource_calendar_id):
-            day_from = datetime.combine(fields.Date.from_string(date_from),
-                                        time.min)
-            day_to = datetime.combine(fields.Date.from_string(date_to),
-                                      time.max)
-            # compute leave days
-            leaves = {}
-            calendar = contract.resource_calendar_id
-            tz = timezone(calendar.tz)
-            day_leave_intervals = contract.employee_id.list_leaves(
-                day_from, day_to, calendar=contract.resource_calendar_id)
-            multi_leaves = []
-            for day, hours, leave in day_leave_intervals:
-                work_hours = calendar.get_work_hours_count(
-                    tz.localize(datetime.combine(day, time.min)),
-                    tz.localize(datetime.combine(day, time.max)),
-                    compute_leaves=False,
-                )
-                if len(leave) > 1:
-                    for each in leave:
-                        if each.holiday_id:
-                            multi_leaves.append(each.holiday_id)
-                else:
-                    holiday = leave.holiday_id
-                    current_leave_struct = leaves.setdefault(
-                        holiday.holiday_status_id, {
-                            'name': holiday.holiday_status_id.name or _(
-                                'Global Leaves'),
-                            'sequence': 5,
-                            'code': holiday.holiday_status_id.code or 'GLOBAL',
-                            'number_of_days': 0.0,
-                            'number_of_hours': 0.0,
-                            'contract_id': contract.id,
-                        })
-                    current_leave_struct['number_of_hours'] += hours
-                    if work_hours:
-                        current_leave_struct[
-                            'number_of_days'] += hours / work_hours
-            # compute worked days
-            work_data = contract.employee_id.get_work_days_data(
-                day_from, day_to, calendar=contract.resource_calendar_id)
-            attendances = {
+        for contract in contracts.filtered(lambda item: item.resource_calendar_id):
+            start = datetime.combine(fields.Date.to_date(date_from), time.min)
+            end = datetime.combine(fields.Date.to_date(date_to), time.max)
+            work = contract.employee_id.get_work_days_data(
+                start, end, calendar=contract.resource_calendar_id)
+            res.append({
                 'name': _("Normal Working Days paid at 100%"),
-                'sequence': 1,
-                'code': 'WORK100',
-                'number_of_days': work_data['days'],
-                'number_of_hours': work_data['hours'],
+                'sequence': 1, 'code': 'WORK100',
+                'number_of_days': work['days'], 'number_of_hours': work['hours'],
                 'contract_id': contract.id,
-            }
-            res.append(attendances)
-            uniq_leaves = [*set(multi_leaves)]
-            c_leaves = {}
-            for rec in uniq_leaves:
-                duration = rec.duration_display.replace("days", "").strip()
-                duration_in_hours = float(duration) * 24
-                c_leaves.setdefault(rec.holiday_status_id,
-                                    {'hours': duration_in_hours})
-            for item in c_leaves:
-                if not leaves or item not in leaves:
-                    data = {
-                        'name': item.name,
-                        'sequence': 20,
-                        'code': item.code or 'LEAVES',
-                        'number_of_hours': c_leaves[item]['hours'],
-                        'number_of_days': c_leaves[item][
-                                              'hours'] / work_hours,
-                        'contract_id': contract.id,
-                    }
-                    res.append(data)
-                for time_off in leaves:
-                    if item == time_off:
-                        leaves[item]['number_of_hours'] += c_leaves[item][
-                            'hours']
-                        leaves[item]['number_of_days'] \
-                            += c_leaves[item]['hours'] / work_hours
-            res.extend(leaves.values())
+            })
         return res
 
     @api.model
@@ -365,6 +298,11 @@ class HrPayslip(models.Model):
         class InputLine(BrowsableObject):
             """a class that will be used into the python code, mainly for
             usability purposes"""
+
+            def __getattr__(self, attr):
+                # An optional input has zero amount and is false in a rule
+                # condition when no input line was entered for the employee.
+                return self.dict.get(attr, self.env['hr.payslip.input'])
 
             def sum(self, code, from_date, to_date=None):
                 """Function for getting sum of Payslip with respect to

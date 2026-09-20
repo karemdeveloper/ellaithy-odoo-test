@@ -44,7 +44,8 @@ class HrResignation(models.Model):
       the employee's actual last working day.
     """
 
-    _inherit = 'hr.resignation'
+    _name = 'hr.resignation'
+    _inherit = ['hr.resignation', 'ellithy.hr.action.notification']
 
     # ------------------------------------------------------------------
     # What kind of status change this is
@@ -132,7 +133,7 @@ class HrResignation(models.Model):
     # how it is legally classified, blacklist themselves, or switch off
     # their own login -- those are HR's calls, made while confirming or
     # endorsing the request. The form hides these fields from anyone
-    # outside HR (``groups="hr.group_hr_user"``), but hiding a field from
+    # outside HR (``groups="ellithy_ohrms_bridge.resignation_generalist"``), but hiding a field from
     # the form does not stop an RPC/import call from setting it, so the
     # same list is enforced here too.
     _HR_ONLY_FIELDS = {
@@ -141,11 +142,19 @@ class HrResignation(models.Model):
         'suspension_reason_id', 'suspension_comment',
     }
 
+    def unlink(self):
+        if not self.env.su and any(record.state not in ('draft',) for record in self):
+            raise ValidationError(_('Only draft documents can be deleted.'))
+        return super().unlink()
+
     def _is_hr_reviewer(self):
-        return self.env.su or self.env.user.has_group('hr.group_hr_user')
+        return self.env.su or self.env.user.has_group('ellithy_ohrms_bridge.resignation_generalist')
 
     @api.model_create_multi
     def create(self, vals_list):
+        for vals in vals_list:
+            self._check_request_employee(vals.get('employee_id', self.env.user.employee_id.id),
+                                         'ellithy_ohrms_bridge.resignation_generalist')
         if not self._is_hr_reviewer():
             for vals in vals_list:
                 blocked = self._HR_ONLY_FIELDS & vals.keys()
@@ -186,13 +195,38 @@ class HrResignation(models.Model):
                         fields.Date.context_today(resignation)))
 
     def write(self, vals):
+        if 'employee_id' in vals:
+            self._check_request_employee(vals['employee_id'],
+                                         'ellithy_ohrms_bridge.resignation_generalist')
+        target = vals.get('state')
+        if not self.env.su and target in ('endorsed', 'approved'):
+            role = 'resignation_admin' if target == 'approved' else 'resignation_generalist'
+            if not self.env.user.has_group('ellithy_ohrms_bridge.' + role):
+                raise AccessError(_('You are not authorized for this resignation approval.'))
+            expected = 'endorsed' if target == 'approved' else 'confirm'
+            if any(record.state != expected for record in self):
+                raise ValidationError(_('Follow the resignation approval order.'))
+            if any(record.employee_id.user_id == self.env.user for record in self):
+                raise ValidationError(_('You cannot approve your own resignation.'))
         if not self._is_hr_reviewer():
             blocked = self._HR_ONLY_FIELDS & vals.keys()
             if blocked:
                 raise AccessError(_(
                     'Only HR can change %(fields)s.',
                     fields=', '.join(sorted(blocked))))
-        return super().write(vals)
+        result = super().write(vals)
+        if target == 'confirm':
+            self._notify_approval_group('ellithy_ohrms_bridge.resignation_generalist', _('Resignation awaiting HR endorsement'))
+        elif target == 'endorsed':
+            self._notify_approval_group('ellithy_ohrms_bridge.resignation_admin', _('Resignation awaiting HR Admin approval'))
+        elif target in ('approved', 'cancel', 'rejected'):
+            self._notify_employee(_('Resignation updated'))
+        if vals.get('clearance_state') == 'progress':
+            self._notify_approval_group('ellithy_ohrms_bridge.resignation_generalist',
+                                       _('Clearance awaiting department reviews'))
+        elif vals.get('clearance_state') == 'done':
+            self._notify_employee(_('Clearance completed'))
+        return result
 
     @api.depends('request_type', 'suspension_start')
     def _compute_expected_revealing_date(self):
@@ -651,7 +685,7 @@ class HrResignation(models.Model):
         started once this method has run (see
         ``action_open_clearance_wizard``).
         """
-        if not (self.env.su or self.env.user.has_group('hr.group_hr_manager')):
+        if not (self.env.su or self.env.user.has_group('ellithy_ohrms_bridge.resignation_admin')):
             raise AccessError(_('Only HR management can approve a resignation.'))
         for resignation in self:
             if resignation.state != 'endorsed':
@@ -821,7 +855,7 @@ class HrResignationClearance(models.Model):
         if self.env.su:
             return
         user = self.env.user
-        if user.has_group('hr.group_hr_manager'):
+        if user.has_group('ellithy_ohrms_bridge.resignation_admin'):
             return
         for line in self:
             if line.department_id.manager_id.user_id == user:

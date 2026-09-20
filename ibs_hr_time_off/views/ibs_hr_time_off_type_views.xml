@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="time_off_type_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.type.list</field>
+        <field name="model">ibs.hr.time.off.type</field>
+        <field name="arch" type="xml">
+            <list><field name="name"/><field name="approval_route"/>
+                <field name="has_attachment"/><field name="one_day_per_year"/>
+                <field name="limit_days"/><field name="required_period_months"/>
+                <field name="paid"/>
+            </list>
+        </field>
+    </record>
+    <record id="time_off_type_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.type.form</field>
+        <field name="model">ibs.hr.time.off.type</field>
+        <field name="arch" type="xml">
+            <form><sheet><group>
+                <field name="name"/><field name="approval_route"/>
+                <field name="has_attachment"/><field name="one_day_per_year"/>
+                <field name="limit_days"/><field name="required_period_months"/>
+                <field name="paid"/><field name="code"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" invisible="1"/>
+            </group></sheet></form>
+        </field>
+    </record>
+    <record id="time_off_type_action" model="ir.actions.act_window">
+        <field name="name">Time Off Types</field>
+        <field name="res_model">ibs.hr.time.off.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
+

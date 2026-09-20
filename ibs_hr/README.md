@@ -95,7 +95,7 @@ Coverage: escalation across occurrences, the fifth-offence case, approval
 gating, the five-day monthly ceiling and its carry-over, execution-date
 selection, oldest-penalty-first ordering, release on payslip reset,
 cross-midnight shifts, single-punch detection and shortfall flooring, and
-CR 2.6's annual leave tiers -- 15 days in the first year, 21 after it, 30 on
+CR 2.6's annual leave tiers -- 8 annual days plus 7 separate casual days in the first year, 21 after it, 30 on
 ten years of insured service, with the boundaries and the allocation
 prefill. The loan, advance and resignation rules are tested in
 `ellithy_ohrms_bridge`.

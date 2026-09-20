@@ -17,8 +17,13 @@
                 <field name="subscription_wage"/>
                 <field name="total_wage"/>
                 <field name="transportation_allowance"/>
+                <field name="transportation_allowance_daily"/>
+                <field name="employment_allowance"/>
+                <field name="commitment_allowance"/>
                 <field name="other_allowance"/>
                 <field name="bonus"/>
+                <separator string="Deductions"/>
+                <field name="mobile_invoice_deduction"/>
             </xpath>
 
             <!--
@@ -48,6 +53,8 @@
                         <group string="Contribution Basis"
                                invisible="not has_social_insurance">
                             <field name="subscription_wage" readonly="1"/>
+                            <field name="social_insurance_percentage"/>
+                            <field name="social_insurance_amount" readonly="1"/>
                             <div colspan="2" class="text-muted">
                                 Contributions are calculated on the
                                 subscription salary. Change it under Salary

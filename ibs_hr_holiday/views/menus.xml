@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_public_holidays" name="Public Holidays"
+              parent="hr.menu_human_resources_configuration"
+              action="ibs_hr_public_holiday_action" sequence="26"
+              groups="ellithy_hr_base.group_ellithy_hr_admin"/>
+</odoo>
+

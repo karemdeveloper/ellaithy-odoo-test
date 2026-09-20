@@ -1,0 +1,26 @@
+{
+    'name': 'IBS HR Shifts',
+    'version': '18.0.1.4.0',
+    'summary': 'Dated employee shifts and shift-aware daily attendance',
+    'author': 'ibs',
+    'website': 'https://ibs-egy.com/',
+    'category': 'Human Resources',
+    'license': 'LGPL-3',
+    'depends': [
+        'ibs_hr',
+        'hr_attendance',
+        'ibs_hr_holiday',
+    ],
+    'data': [
+        'security/groups.xml',
+        'security/ibs_hr_shift_security.xml',
+        'security/ir.model.access.csv',
+        'data/ir_cron_data.xml',
+        'views/ibs_hr_shift_views.xml',
+        'views/hr_employee_views.xml',
+        'views/ibs_hr_attendance_day_views.xml',
+        'views/menus.xml',
+    ],
+    'installable': True,
+    'application': False,
+}

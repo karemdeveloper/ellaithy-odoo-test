@@ -16,6 +16,11 @@ class IbsHrPermissionType(models.Model):
     name = fields.Char(required=True, translate=True)
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
+    code = fields.Selection([
+        ('lateness', 'Lateness'),
+        ('early_leave', 'Early Leave'),
+        ('other', 'Other'),
+    ], required=True, default='other')
 
     _sql_constraints = [
         ('name_uniq', 'unique(name)',

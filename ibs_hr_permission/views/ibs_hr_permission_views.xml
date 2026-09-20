@@ -22,8 +22,8 @@
             <form>
                 <header>
                     <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'"/>
-                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'pending'"/>
-                    <button name="action_reject" type="object" string="Reject" invisible="state != 'pending'"/>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'pending'" groups="ibs_hr_permission.permission_generalist"/>
+                    <button name="action_reject" type="object" string="Reject" invisible="state != 'pending'" groups="ibs_hr_permission.permission_generalist"/>
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ('cancelled','draft')"/>
                     <button name="action_reset" type="object" string="Reset" invisible="state == 'draft'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,pending,approved"/>

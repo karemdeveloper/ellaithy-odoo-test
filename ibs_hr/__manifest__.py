@@ -44,11 +44,11 @@ Known legacy defects, deliberately not reproduced -- see README.
     'license': 'LGPL-3',
     'depends': [
         'ellithy_hr_base',
-        'hr_holidays',
         'hr_payroll_community',
     ],
     'data': [
         'security/ibs_hr_security.xml',
+        'security/groups.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
         'data/mail_template_data.xml',
@@ -58,7 +58,6 @@ Known legacy defects, deliberately not reproduced -- see README.
         'views/ibs_hr_admin_penalty_record_views.xml',
         'views/ibs_hr_commission_penalty_views.xml',
         'views/ibs_hr_investigation_views.xml',
-        'views/hr_leave_views.xml',
         'views/hr_employee_views.xml',
         'views/ibs_hr_warning_views.xml',
         'views/hr_payslip_views.xml',
