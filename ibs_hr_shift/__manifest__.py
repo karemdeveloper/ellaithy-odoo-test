@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Shifts',
-    'version': '18.0.1.4.0',
+    'version': '18.0.1.10.0',
     'summary': 'Dated employee shifts and shift-aware daily attendance',
     'author': 'ibs',
     'website': 'https://ibs-egy.com/',

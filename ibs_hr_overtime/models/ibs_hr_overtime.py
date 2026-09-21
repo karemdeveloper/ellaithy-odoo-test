@@ -140,13 +140,17 @@ class IbsHrOvertime(models.Model):
                 raise ValidationError(_('Overtime values cannot be negative.'))
 
     @api.model
-    def generate_from_attendance(self, date_from=None, date_to=None):
+    def generate_from_attendance(self, date_from=None, date_to=None,
+                                 employee=None):
         date_from = fields.Date.to_date(
             date_from or fields.Date.context_today(self))
         date_to = fields.Date.to_date(date_to or date_from)
-        days = self.env['ibs.hr.attendance.day'].search([
+        domain = [
             ('date', '>=', date_from), ('date', '<=', date_to),
-        ])
+        ]
+        if employee:
+            domain.append(('employee_id', 'in', employee.ids))
+        days = self.env['ibs.hr.attendance.day'].search(domain)
         for day in days:
             hours = (day.worked_hours if day.state in ('weekend', 'holiday')
                      else day.overtime_hours)

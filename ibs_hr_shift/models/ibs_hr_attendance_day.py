@@ -9,6 +9,10 @@ from odoo.exceptions import ValidationError
 class IbsHrAttendanceDay(models.Model):
     _inherit = 'ibs.hr.attendance.day'
 
+    state = fields.Selection(
+        selection_add=[('no_shift', 'No Shift')],
+        ondelete={'no_shift': 'set default'})
+
     shift_id = fields.Many2one(
         'ibs.hr.shift', string='Shift', readonly=True, ondelete='restrict')
     shift_from = fields.Datetime(string='Shift From', readonly=True)
@@ -30,11 +34,9 @@ class IbsHrAttendanceDay(models.Model):
 
     @api.model
     def _day_attendance_domain(self, employee, work_date):
-        shift, line, shift_from, shift_to = self._shift_values(employee, work_date)
-        if line and not line.is_off:
-            return [
-                ('employee_id', '=', employee.id), ('check_in', '<', shift_to),
-                '|', ('check_out', '=', False), ('check_out', '>', shift_from)]
+        # The check-in date owns the complete attendance, even when checkout
+        # is on a later date. This keeps one raw attendance in one treatment
+        # and prevents it from also appearing on every shift it overlaps.
         return [
             ('employee_id', '=', employee.id),
             ('check_in', '>=', self._utc_datetime(work_date, 0.0)),
@@ -182,10 +184,12 @@ class IbsHrAttendanceDay(models.Model):
     def _attendance_values(self, employee, work_date):
         shift, line, shift_from, shift_to = self._shift_values(
             employee, work_date)
+        active_shift = bool(
+            shift and shift.from_date <= work_date <= shift.to_date)
         values = {
             'employee_id': employee.id,
             'date': work_date,
-            'shift_id': shift.id if shift else False,
+            'shift_id': shift.id if active_shift else False,
             'shift_from': shift_from,
             'shift_to': shift_to,
             'crossed_midnight': bool(
@@ -223,6 +227,8 @@ class IbsHrAttendanceDay(models.Model):
         ], limit=1)
         if not leave and holiday:
             values['state'] = 'holiday'
+        elif not leave and not active_shift:
+            values['state'] = 'no_shift'
         elif not leave and (not line or line.is_off):
             values['state'] = 'weekend'
         elif not leave:
@@ -329,22 +335,85 @@ class IbsHrAttendanceDay(models.Model):
         return values
 
     @api.model
-    def generate_days(self, date_from, date_to, employees=None):
+    def _running_contracts(self, date_from, date_to, employees=None):
+        domain = [
+            ('state', '=', 'open'),
+            ('employee_id.active', '=', True),
+            ('date_start', '<=', date_to),
+            '|', ('date_end', '=', False), ('date_end', '>=', date_from),
+        ]
+        if employees:
+            domain.append(('employee_id', 'in', employees.ids))
+        return self.env['hr.contract'].sudo().search(domain)
+
+    @api.model
+    def _apply_automatic_weekends(self, date_from, date_to, employees):
+        """Give a shift with no configured rest day one Friday/Saturday off."""
+        first_week = date_from - timedelta(days=date_from.weekday())
+        last_week = date_to - timedelta(days=date_to.weekday())
+        week_starts = []
+        current_week = first_week
+        while current_week <= last_week:
+            week_starts.append(current_week)
+            current_week += timedelta(days=7)
+
+        for employee in employees:
+            shift = employee.shift_id
+            working_days = set(shift.line_ids.mapped('day')) if shift else set()
+            if (not shift or len(working_days) < 7
+                    or any(shift.line_ids.mapped('is_off'))):
+                continue
+            weekend_dates = [
+                week_start + timedelta(days=weekday)
+                for week_start in week_starts for weekday in (4, 5)
+            ]
+            records = self.search([
+                ('employee_id', '=', employee.id),
+                ('date', 'in', weekend_dates),
+            ])
+            records_by_date = {record.date: record for record in records}
+            for week_start in week_starts:
+                candidates = []
+                for weekday in (4, 5):
+                    work_date = week_start + timedelta(days=weekday)
+                    day = records_by_date.get(work_date)
+                    if not day or not (
+                            shift.from_date <= work_date <= shift.to_date):
+                        continue
+                    base_values = self._attendance_values(employee, work_date)
+                    day.write(base_values)
+                    if base_values['state'] == 'absent':
+                        candidates.append(day)
+                if candidates:
+                    candidates[0].write({
+                        'state': 'weekend',
+                        'shift_from': False,
+                        'shift_to': False,
+                        'scheduled_hours': 0.0,
+                        'late_minutes': 0,
+                        'early_leave_minutes': 0,
+                        'overtime_hours': 0.0,
+                    })
+
+    @api.model
+    def generate_days(self, date_from, date_to, employees=None, contracts=None):
         date_from = fields.Date.to_date(date_from)
         date_to = fields.Date.to_date(date_to)
         if date_to < date_from:
             raise ValidationError(_('To Date must be on or after From Date.'))
         if employees is None:
-            employees = self.env['hr.employee'].search([
-                ('active', '=', True),
-                ('shift_id', '!=', False),
-            ])
+            contracts = self._running_contracts(date_from, date_to)
+            employees = contracts.employee_id
+        contract_periods = {}
+        for contract in contracts or self.env['hr.contract']:
+            contract_periods.setdefault(contract.employee_id.id, []).append((
+                contract.date_start, contract.date_end))
         current = date_from
         while current <= date_to:
             for employee in employees:
-                shift = employee.shift_id
-                if (not shift or current < shift.from_date
-                        or current > shift.to_date):
+                if contract_periods and not any(
+                        start <= current and (not end or end >= current)
+                        for start, end in contract_periods.get(employee.id, [])):
                     continue
                 values = self._attendance_values(employee, current)
                 existing = self.search([
@@ -356,13 +425,23 @@ class IbsHrAttendanceDay(models.Model):
                 else:
                     self.create(values)
             current += timedelta(days=1)
+        self._apply_automatic_weekends(date_from, date_to, employees)
+        return True
+
+    @api.model
+    def _generate_current_month(self, today=None, employees=None):
+        today = fields.Date.to_date(
+            today or fields.Date.context_today(self))
+        month_start = today.replace(day=1)
+        contracts = self._running_contracts(month_start, today, employees)
+        employees = contracts.employee_id
+        self.generate_days(
+            month_start, today, employees=employees, contracts=contracts)
+        if 'ibs.hr.overtime' in self.env:
+            self.env['ibs.hr.overtime'].generate_from_attendance(
+                month_start, today, employees)
         return True
 
     @api.model
     def _cron_generate_attendance_days(self):
-        yesterday = fields.Date.context_today(self) - timedelta(days=1)
-        result = self.generate_days(yesterday, yesterday)
-        if 'ibs.hr.overtime' in self.env:
-            self.env['ibs.hr.overtime'].generate_from_attendance(
-                yesterday, yesterday)
-        return result
+        return self._generate_current_month()

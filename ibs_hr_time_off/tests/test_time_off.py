@@ -45,6 +45,27 @@ class TestCustomTimeOff(TransactionCase):
         self.assertEqual(request.state, 'approved')
         self.assertAlmostEqual(request._balance_on(request.date_from), 6.0)
 
+    def test_multiple_named_custom_types_can_coexist(self):
+        types = self.env['ibs.hr.time.off.type'].create([{
+            'name': 'Sick Leave', 'code': 'other', 'paid': True,
+        }, {
+            'name': 'Unpaid Leave', 'code': 'other', 'paid': False,
+        }])
+        self.assertEqual(len(types), 2)
+
+    def test_code_is_free_text_with_engine_aliases(self):
+        typed = self.env['ibs.hr.time.off.type'].create({
+            'name': 'Typed Casual Code', 'code': 'CAS',
+            'required_period_months': 3, 'limit_days': 7,
+        })
+        birthday = self.env['ibs.hr.time.off.type'].create({
+            'name': 'Typed Birthday Code', 'code': 'bd',
+        })
+        self.assertEqual(typed.code, 'CAS')
+        self.assertEqual(typed._canonical_code(), 'casual')
+        self.assertEqual(birthday._canonical_code(), 'birthday')
+        self.assertEqual(self._request(typed).type_code, 'casual')
+
     def test_january_joiner_accrues_on_monthly_anniversaries(self):
         request = self._request(self.annual, '2026-12-31')
         request._ensure_entitlements(date(2026, 12, 31))

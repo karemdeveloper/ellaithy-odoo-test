@@ -3,3 +3,4 @@ from . import ibs_hr_payroll_source
 from . import hr_payslip
 from . import hr_payslip_detail
 from . import res_groups
+from . import hr_contract

@@ -4,7 +4,7 @@
         <field name="name">ibs.hr.time.off.type.list</field>
         <field name="model">ibs.hr.time.off.type</field>
         <field name="arch" type="xml">
-            <list><field name="name"/><field name="approval_route"/>
+            <list><field name="name"/><field name="code"/><field name="approval_route"/>
                 <field name="has_attachment"/><field name="one_day_per_year"/>
                 <field name="limit_days"/><field name="required_period_months"/>
                 <field name="paid"/>
@@ -31,4 +31,3 @@
         <field name="view_mode">list,form</field>
     </record>
 </odoo>
-

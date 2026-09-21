@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_contract_view_form_ibs_payroll" model="ir.ui.view">
+        <field name="name">hr.contract.form.ibs.payroll</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!--
+                HRA, DA, travel, meal and medical are not used. The group
+                also repeats Other Allowance, which the salary group already
+                shows, so the whole group goes rather than field by field.
+            -->
+            <xpath expr="//group[@name='allowances']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <field name="total_wage" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="transportation_allowance" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <!-- Computed from the wage and the shift; see hr_contract.py. -->
+            <field name="over_day" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </field>
+            <field name="over_hour" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </field>
+        </field>
+    </record>
+</odoo>

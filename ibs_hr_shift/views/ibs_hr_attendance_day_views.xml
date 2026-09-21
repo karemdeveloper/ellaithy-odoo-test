@@ -11,7 +11,7 @@
                 <attribute name="decoration-danger">state == 'absent'</attribute>
                 <attribute name="decoration-info">state == 'leave'</attribute>
                 <attribute name="decoration-warning">state == 'holiday'</attribute>
-                <attribute name="decoration-muted">state == 'weekend'</attribute>
+                <attribute name="decoration-muted">state in ('weekend', 'no_shift')</attribute>
             </field>
             <field name="state" position="after">
                 <field name="shift_id"/>
@@ -62,7 +62,7 @@
                 <attribute name="decoration-danger">state == 'absent'</attribute>
                 <attribute name="decoration-info">state == 'leave'</attribute>
                 <attribute name="decoration-warning">state == 'holiday'</attribute>
-                <attribute name="decoration-muted">state == 'weekend'</attribute>
+                <attribute name="decoration-muted">state in ('weekend', 'no_shift')</attribute>
             </field>
             <field name="state" position="after">
                 <field name="shift_id"/>

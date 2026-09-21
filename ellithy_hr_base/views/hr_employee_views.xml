@@ -136,8 +136,6 @@
                            groups="base.group_no_one"
                            invisible="not contract_id">
                         <group>
-                            <field name="insurance_number" readonly="1"/>
-                            <field name="insurance_office" readonly="1"/>
                             <field name="insurance_entered_date" readonly="1"/>
                         </group>
                         <group>

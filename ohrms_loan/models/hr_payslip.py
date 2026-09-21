@@ -48,7 +48,7 @@ class HrPayslip(models.Model):
                 if (date_from <= loan_line.date <= date_to and
                         not loan_line.paid):
                     for result in res:
-                        if result.get('code') == 'LO':
+                        if result.get('code') in ('LO', 'Loan'):
                             result['amount'] = loan_line.amount
                             result['loan_line_id'] = loan_line.id
         return res

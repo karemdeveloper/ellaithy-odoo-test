@@ -35,8 +35,10 @@ class TestTimeOffAccess(TransactionCase):
         request = self._request()
         self.assertFalse(self.env['ibs.hr.time.off.request'].with_user(self.other).search([
             ('id', '=', request.id)]))
-        self.assertFalse(self.env['ibs.hr.time.off.request'].with_user(self.finance).search([
-            ('id', '=', request.id)]))
+        self.assertEqual(self.env['ibs.hr.time.off.request'].with_user(self.finance).search([
+            ('id', '=', request.id)]), request)
+        with self.assertRaises(AccessError):
+            request.with_user(self.finance).write({'reason': 'Payroll review only'})
         request.action_submit()
         with self.assertRaises(ValidationError):
             request.action_hr_approve()

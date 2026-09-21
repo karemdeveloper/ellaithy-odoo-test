@@ -65,8 +65,6 @@
                     <group string="Superseded Insurance Columns"
                            groups="base.group_no_one">
                         <group>
-                            <field name="insurance_number"/>
-                            <field name="insurance_office"/>
                             <field name="insurance_entered_date"/>
                         </group>
                         <group>

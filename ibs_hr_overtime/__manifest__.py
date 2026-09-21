@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Overtime',
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.4.0',
     'summary': 'Shift-derived overtime approval and compensatory rest',
     'author': 'ibs',
     'website': 'https://ibs-egy.com/',

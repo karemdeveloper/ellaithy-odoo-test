@@ -30,7 +30,7 @@ class IbsHrTimeOffRequest(models.Model):
         related='employee_id.branch_id', store=True, index=True)
     type_id = fields.Many2one(
         'ibs.hr.time.off.type', required=True, ondelete='restrict', tracking=True)
-    type_code = fields.Selection(related='type_id.code', readonly=True)
+    type_code = fields.Char(compute='_compute_type_code')
     approval_route = fields.Selection(
         related='type_id.approval_route', readonly=True)
     date_from = fields.Date(required=True, tracking=True)
@@ -57,6 +57,12 @@ class IbsHrTimeOffRequest(models.Model):
     balance = fields.Float(compute='_compute_balance', digits=(8, 4))
     manager_approved_by = fields.Many2one('res.users', readonly=True)
     hr_approved_by = fields.Many2one('res.users', readonly=True)
+
+    @api.depends('type_id', 'type_id.code')
+    def _compute_type_code(self):
+        for request in self:
+            request.type_code = (
+                request.type_id._canonical_code() if request.type_id else False)
 
     def unlink(self):
         if not self.env.su and any(record.state not in ('draft',) for record in self):
@@ -110,8 +116,8 @@ class IbsHrTimeOffRequest(models.Model):
             if not request.employee_id or not request.date_from or not request.date_to:
                 request.number_of_days = 0.0
                 continue
-            if request.type_id.code in ('birthday', 'public_holiday',
-                                        'compensatory_rest'):
+            if request.type_id._canonical_code() in (
+                    'birthday', 'public_holiday', 'compensatory_rest'):
                 request.number_of_days = 1.0
                 continue
             shift = request.employee_id.shift_id
@@ -209,7 +215,7 @@ class IbsHrTimeOffRequest(models.Model):
 
     def _ensure_entitlements(self, on_date):
         self.ensure_one()
-        kind = self.type_id.code
+        kind = self.type_id._canonical_code()
         if kind not in ('casual', 'annual'):
             return
         joined = self.employee_id.joining_date
@@ -265,7 +271,7 @@ class IbsHrTimeOffRequest(models.Model):
         domain = [
             ('employee_id', '=', self.employee_id.id),
             ('type_id', '=', self.type_id.id), ('date', '<=', on_date)]
-        if self.type_id.code in ('annual', 'casual'):
+        if self.type_id._canonical_code() in ('annual', 'casual'):
             # Expiry records close the prior year's audit balance. Spendable
             # credit comes only from this year's grants, accruals and usage.
             domain += [('date', '>=', on_date.replace(month=1, day=1)),
@@ -307,13 +313,14 @@ class IbsHrTimeOffRequest(models.Model):
     def _validate_submission(self):
         self.ensure_one()
         self._lock_employee()
+        kind = self.type_id._canonical_code()
         if self.type_id.company_id != self.employee_id.company_id:
             raise ValidationError(_(
                 'The Time Off Type and employee must belong to the same company.'))
         if self.number_of_days <= 0:
             raise ValidationError(_('The selected dates contain no working day.'))
-        if self.type_id.code in ('birthday', 'public_holiday',
-                                 'compensatory_rest') and self.date_from != self.date_to:
+        if kind in ('birthday', 'public_holiday',
+                    'compensatory_rest') and self.date_from != self.date_to:
             raise ValidationError(_('This time off type must be exactly one day.'))
         joined = self.employee_id.joining_date
         if self.type_id.required_period_months:
@@ -326,7 +333,7 @@ class IbsHrTimeOffRequest(models.Model):
                     'This time off is available from %(date)s.', date=eligible))
         if self.type_id.has_attachment and not self.attachment_ids:
             raise ValidationError(_('An attachment is required for this type.'))
-        if self.type_id.code == 'birthday':
+        if kind == 'birthday':
             birthday = self.employee_id.birthday
             if not birthday or (self.date_from.month, self.date_from.day) != (
                     birthday.month, birthday.day):
@@ -354,7 +361,7 @@ class IbsHrTimeOffRequest(models.Model):
         if self.type_id.one_day_per_year and (
                 self.number_of_days > 1 or same_year):
             raise ValidationError(_('This type can be used only once per year.'))
-        if self.type_id.code == 'public_holiday':
+        if kind == 'public_holiday':
             if not self.holiday_id:
                 raise ValidationError(_('Select the Public Holiday.'))
             duplicate = self.search_count([
@@ -366,7 +373,7 @@ class IbsHrTimeOffRequest(models.Model):
             if duplicate:
                 raise ValidationError(
                     _('This public holiday has already been used.'))
-        if self.type_id.code == 'compensatory_rest':
+        if kind == 'compensatory_rest':
             if not self.rest_credit_id or self.rest_credit_id.state != 'available':
                 raise ValidationError(_('Select an available Rest Credit.'))
             duplicate_credit = self.search_count([
@@ -377,7 +384,7 @@ class IbsHrTimeOffRequest(models.Model):
             if duplicate_credit:
                 raise ValidationError(
                     _('This Rest Credit is already reserved by another request.'))
-        if self.type_id.code in ('casual', 'annual'):
+        if kind in ('casual', 'annual'):
             for bucket in self._leave_days_by_year().values():
                 date = bucket['date']
                 available = self._balance_on(date) - self._reserved_days(date)
@@ -386,12 +393,12 @@ class IbsHrTimeOffRequest(models.Model):
                         'Only %(days).4f days are available in %(year)s.',
                         days=available, year=date.year))
                 limit = (self.employee_id._annual_leave_days(date)
-                         if self.type_id.code == 'annual' else self.type_id.limit_days)
+                         if kind == 'annual' else self.type_id.limit_days)
                 if limit and bucket['days'] > limit:
                     raise ValidationError(_('The request exceeds the type day limit.'))
         elif self.type_id.limit_days and self.number_of_days > self.type_id.limit_days:
             raise ValidationError(_('The request exceeds the type day limit.'))
-        if (self.type_id.code == 'other' and self.type_id.limit_days
+        if (kind == 'other' and self.type_id.limit_days
                 and self.number_of_days + sum(
                     same_year.mapped('number_of_days')) > self.type_id.limit_days):
             raise ValidationError(_(
@@ -409,7 +416,8 @@ class IbsHrTimeOffRequest(models.Model):
 
     def _post_usage(self):
         self.ensure_one()
-        buckets = (self._leave_days_by_year() if self.type_id.code in ('annual', 'casual')
+        buckets = (self._leave_days_by_year()
+                   if self.type_id._canonical_code() in ('annual', 'casual')
                    else {self.date_from.year: {
                        'date': self.date_from, 'days': self.number_of_days}})
         for year, bucket in buckets.items():
@@ -527,8 +535,8 @@ class IbsHrTimeOffRequest(models.Model):
             ('active', '=', True), ('joining_date', '!=', False),
         ])
         types = self.env['ibs.hr.time.off.type'].search([
-            ('active', '=', True), ('code', 'in', ('casual', 'annual')),
-        ])
+            ('active', '=', True),
+        ]).filtered(lambda item: item._canonical_code() in ('casual', 'annual'))
         for employee in employees:
             for time_off_type in types.filtered(
                     lambda item: item.company_id == employee.company_id):

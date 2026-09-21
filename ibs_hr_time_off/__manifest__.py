@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Time Off',
-    'version': '18.0.1.4.0',
+    'version': '18.0.1.6.0',
     'summary': 'Custom time off requests, approvals, balances and accruals',
     'author': 'ibs',
     'website': 'https://ibs-egy.com/',

@@ -96,4 +96,94 @@
         <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
         <field name="groups" eval="[(4, ref('ibs_hr_payroll_generalist')), (4, ref('ibs_hr_payroll_finance'))]"/>
     </record>
+    <record id="rule_payroll_finance_attendance" model="ir.rule">
+        <field name="name">Payroll Finance: attendance companies</field>
+        <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_attendance_day" model="ir.rule">
+        <field name="name">Payroll Finance: attendance day companies</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_attendance_day"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_holiday" model="ir.rule">
+        <field name="name">Payroll Finance: holiday companies</field>
+        <field name="model_id" ref="ibs_hr_holiday.model_ibs_hr_public_holiday"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_time_off" model="ir.rule">
+        <field name="name">Payroll Finance: time off companies</field>
+        <field name="model_id" ref="ibs_hr_time_off.model_ibs_hr_time_off_request"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_permission" model="ir.rule">
+        <field name="name">Payroll Finance: permission companies</field>
+        <field name="model_id" ref="ibs_hr_permission.model_ibs_hr_permission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_mission" model="ir.rule">
+        <field name="name">Payroll Finance: mission companies</field>
+        <field name="model_id" ref="ibs_hr_permission.model_ibs_hr_mission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_warning" model="ir.rule">
+        <field name="name">Payroll Finance: penalty companies</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_warning"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_overtime" model="ir.rule">
+        <field name="name">Payroll Finance: overtime companies</field>
+        <field name="model_id" ref="ibs_hr_overtime.model_ibs_hr_overtime"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_loan" model="ir.rule">
+        <field name="name">Payroll Finance: loan companies</field>
+        <field name="model_id" ref="ohrms_loan.model_hr_loan"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_advance" model="ir.rule">
+        <field name="name">Payroll Finance: salary advance companies</field>
+        <field name="model_id" ref="ohrms_salary_advance.model_salary_advance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
 </odoo>
