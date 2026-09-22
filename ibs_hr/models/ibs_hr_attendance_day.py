@@ -113,10 +113,12 @@ class IbsHrAttendanceDay(models.Model):
             else:
                 record.worked_hours = 0.0
 
-    @api.depends('scheduled_hours', 'worked_hours', 'state')
+    @api.depends('scheduled_hours', 'worked_hours', 'state', 'single_punch')
     def _compute_shortfall(self):
         for record in self:
-            if record.state != 'present':
+            # A single fingerprint is penalised separately (Finger), so no
+            # unachieved hours on top of it.
+            if record.state != 'present' or record.single_punch:
                 record.shortfall_hours = 0.0
                 continue
             record.shortfall_hours = max(

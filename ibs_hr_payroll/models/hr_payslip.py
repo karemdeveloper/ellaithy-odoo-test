@@ -10,6 +10,8 @@ HCM_CODES = (
     'ABS', 'Late', 'Finger', 'UNPaid',
 )
 MANUAL_CODES = ('BONUS', 'HIring', 'Res')
+# Each late minute is deducted at four times the normal per-minute rate.
+LATE_MINUTE_MULTIPLIER = 4
 
 
 _HCM_WORKFLOW = object()
@@ -332,8 +334,13 @@ class HrPayslip(models.Model):
         result['UNPaid'] = sum(days.filtered(
             lambda day: day.state == 'leave' and not day.is_paid_leave
         ).mapped('absence_days')) * daily_rate
+        # Flexible shifts have no fixed start, so their lateness is the
+        # unachieved hours; fixed shifts use late / early-leave minutes.
         result['Late'] = sum(
-            ((day.late_minutes + day.early_leave_minutes) / 60.0)
+            ((day.shortfall_hours * LATE_MINUTE_MULTIPLIER
+              if day.is_flexible_day
+              else (day.late_minutes * LATE_MINUTE_MULTIPLIER
+                    + day.early_leave_minutes) / 60.0))
             * daily_rate / (day.scheduled_hours or 8.0)
             for day in days.filtered(lambda item: item.state == 'present'))
         result['Finger'] = len(days.filtered(
@@ -360,8 +367,11 @@ class HrPayslip(models.Model):
         # which makes its get_inputs override order-dependent. Resolve the due
         # installment here so the configured `Loan` rule is deterministic.
         if 'hr.loan.line' in self.env.registry:
+            # Match on the loan's employee: an installment line keeps the
+            # employee it was generated for, which goes stale when the loan
+            # is reassigned afterwards.
             loan_lines = self.env['hr.loan.line'].sudo().search([
-                ('employee_id', '=', self.employee_id.id),
+                ('loan_id.employee_id', '=', self.employee_id.id),
                 ('date', '>=', date_from), ('date', '<=', date_to),
                 ('paid', '=', False), ('loan_id.state', '=', 'approve'),
             ])

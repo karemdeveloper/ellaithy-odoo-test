@@ -18,7 +18,7 @@
                 <field name="shift_from"/>
                 <field name="shift_to"/>
                 <field name="permission_minutes"/>
-                <field name="mission_hours"/>
+                <field name="mission_hours" widget="float_time"/>
             </field>
         </field>
     </record>
@@ -69,7 +69,7 @@
                 <field name="shift_from"/>
                 <field name="shift_to"/>
                 <field name="permission_minutes"/>
-                <field name="mission_hours"/>
+                <field name="mission_hours" widget="float_time"/>
             </field>
         </field>
     </record>

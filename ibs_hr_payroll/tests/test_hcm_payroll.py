@@ -138,7 +138,7 @@ class TestHcmPayroll(TransactionCase):
         amounts = self.payslip._hcm_amounts()
         self.assertEqual(amounts['ABS'], 300.0)
         self.assertEqual(amounts['UNPaid'], 300.0)
-        self.assertEqual(amounts['Late'], 75.0)
+        self.assertEqual(amounts['Late'], 187.5)
         self.assertEqual(amounts['Finger'], 300.0)
 
     def test_payslip_period_tab_uses_daily_treatment(self):

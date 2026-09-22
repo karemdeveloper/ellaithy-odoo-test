@@ -17,6 +17,10 @@ class IbsHrAttendanceDay(models.Model):
         'ibs.hr.shift', string='Shift', readonly=True, ondelete='restrict')
     shift_from = fields.Datetime(string='Shift From', readonly=True)
     shift_to = fields.Datetime(string='Shift To', readonly=True)
+    is_flexible_day = fields.Boolean(
+        string='Flexible Shift Day', compute='_compute_is_flexible_day',
+        help='The shift has no fixed start, so lateness is not measured and '
+             'the unachieved hours are what gets deducted.')
     permission_minutes = fields.Integer(
         string='Approved Permission', readonly=True)
     mission_hours = fields.Float(
@@ -106,11 +110,20 @@ class IbsHrAttendanceDay(models.Model):
                         (attendance.check_in, attendance.check_out)
                         for attendance in attendances.filtered('check_out')])
 
+    @api.depends('shift_id', 'date')
+    def _compute_is_flexible_day(self):
+        for day in self:
+            line = day.shift_id.line_ids.filtered(
+                lambda item: day.date and item.day == str(day.date.weekday()))[:1]
+            day.is_flexible_day = bool(line and line.is_flexible)
+
     @api.depends('scheduled_hours', 'worked_hours', 'state',
-                 'permission_minutes', 'mission_hours')
+                 'permission_minutes', 'mission_hours', 'single_punch')
     def _compute_shortfall(self):
         for record in self:
-            if record.state != 'present':
+            # A single fingerprint is penalised separately (Finger), so no
+            # unachieved hours on top of it.
+            if record.state != 'present' or record.single_punch:
                 record.shortfall_hours = 0.0
                 continue
             covered = (record.worked_hours + record.mission_hours

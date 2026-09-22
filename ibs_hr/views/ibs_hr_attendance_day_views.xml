@@ -4,7 +4,7 @@
         <field name="name">ibs.hr.attendance.day.list</field>
         <field name="model">ibs.hr.attendance.day</field>
         <field name="arch" type="xml">
-            <list><field name="date"/><field name="employee_id"/><field name="branch_id"/><field name="state"/><field name="check_in"/><field name="check_out"/><field name="worked_hours"/><field name="scheduled_hours"/><field name="shortfall_hours"/><field name="late_minutes"/><field name="early_leave_minutes"/><field name="overtime_hours"/><field name="single_punch"/><field name="absence_days"/></list></field>
+            <list><field name="date"/><field name="employee_id"/><field name="branch_id"/><field name="state"/><field name="check_in"/><field name="check_out"/><field name="worked_hours" widget="float_time"/><field name="scheduled_hours" widget="float_time"/><field name="shortfall_hours" widget="float_time"/><field name="late_minutes"/><field name="early_leave_minutes"/><field name="overtime_hours" widget="float_time"/><field name="single_punch"/><field name="absence_days"/></list></field>
     </record>
     <record id="ibs_hr_attendance_day_view_form" model="ir.ui.view">
         <field name="name">ibs.hr.attendance.day.form</field>
@@ -17,8 +17,8 @@
                     </group>
                     <group>
                         <field name="check_in"/><field name="check_out"/>
-                        <field name="scheduled_hours"/><field name="worked_hours"/>
-                        <field name="shortfall_hours"/><field name="overtime_hours"/>
+                        <field name="scheduled_hours" widget="float_time"/><field name="worked_hours" widget="float_time"/>
+                        <field name="shortfall_hours" widget="float_time"/><field name="overtime_hours" widget="float_time"/>
                         <field name="late_minutes"/><field name="early_leave_minutes"/>
                         <field name="single_punch"/><field name="absence_days"/>
                     </group>
