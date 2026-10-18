@@ -27,7 +27,7 @@
                         <group><field name="timezone"/><field name="code_field"/><field name="sheet_number"/><field name="duplicate_policy"/><field name="missing_policy"/><field name="approve_manual"/></group>
                     </group>
                     <group col="6"><field name="total"/><field name="imported"/><field name="skipped"/><field name="duplicates"/><field name="failed"/></group>
-                    <div class="alert alert-info">Times below use your Odoo user's display timezone. The source timezone is shown above. Overnight shifts are informational. Validation again resets row selections.</div>
+                    <div class="alert alert-info" role="status">Times below use your Odoo user's display timezone. The source timezone is shown above. Overnight shifts are informational. Validation again resets row selections.</div>
                     <field name="line_ids" readonly="state != 'preview'">
                         <list editable="bottom" create="0" delete="0" decoration-danger="status == 'error'" decoration-muted="status in ('skipped', 'duplicate')">
                             <field name="approved" readonly="status != 'ready'"/>

@@ -1,9 +1,13 @@
 import base64
 from datetime import datetime
+from io import BytesIO
+
+from openpyxl import Workbook, load_workbook
 
 from odoo import Command
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import TransactionCase, tagged
+from odoo.tools import mute_logger
 from odoo.tools.convert import convert_file
 from odoo import sql_db
 from psycopg2.errors import LockNotAvailable
@@ -155,6 +159,29 @@ class TestAttendanceImport(TransactionCase):
         self.assertEqual(batch.imported, 0)
         self.assertEqual(batch.failed, 1)
 
+    def test_error_report_preserves_selected_sheet_headers(self):
+        source = Workbook()
+        source.active.append(['Unselected worksheet'])
+        sheet = source.create_sheet('Attendance')
+        headers = ['كود الموظف', 'التاريخ', 'الحضور', 'الانصراف',
+                   ' ملاحظة ', 'ملاحظة', None, '=Heading']
+        sheet.append(headers)
+        sheet.append(['UNKNOWN', '2026-09-02', '08:00', '16:00', 'A', 'B', 'C', 'D'])
+        output = BytesIO()
+        source.save(output)
+        source.close()
+        batch = self.preview(file_data=base64.b64encode(output.getvalue()), sheet_number=2)
+        batch.action_error_report()
+        report = load_workbook(BytesIO(base64.b64decode(batch.report_data)), read_only=True)
+        try:
+            rows = list(report.active.iter_rows())
+            self.assertEqual([cell.value for cell in rows[0]][4:], headers)
+            self.assertEqual(rows[0][-1].data_type, 's')
+            self.assertEqual([cell.value for cell in rows[1]][4:],
+                             ['UNKNOWN', '2026-09-02', '08:00', '16:00', 'A', 'B', 'C', 'D'])
+        finally:
+            report.close()
+
     def test_guard_xml_replay_preserves_identity_and_revision(self):
         guard = self.env.ref('hr_attendance_excel_import.serialization_guard')
         self.assertEqual(guard._name, 'hr.attendance.excel.import.lock')
@@ -179,6 +206,8 @@ class TestAttendanceImport(TransactionCase):
         # A context supplied over RPC is not the private in-process token.
         with self.assertRaises(AccessError):
             guard.with_context(_attendance_internal=True).write({'revision': 0})
+        with self.assertRaises(AccessError):
+            guard._load_records_write({'revision': 0})
 
     def test_guard_blocks_another_database_transaction(self):
         batch = self.preview()
@@ -190,7 +219,7 @@ class TestAttendanceImport(TransactionCase):
         # Use a real independent connection, not registry.cursor(), which can
         # share the test transaction through Odoo's TestCursor machinery.
         with sql_db.db_connect(self.env.cr.dbname).cursor() as other_cr:
-            with self.assertRaises(LockNotAvailable):
+            with mute_logger('odoo.sql_db'), self.assertRaises(LockNotAvailable):
                 other_cr.execute(
                     'SELECT id FROM hr_attendance_excel_import_lock WHERE id = %s FOR UPDATE NOWAIT',
                     [guard.id],

@@ -6,6 +6,7 @@ from io import BytesIO
 import json
 
 from openpyxl import Workbook
+from openpyxl.cell import WriteOnlyCell
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, UserError, ValidationError
 
@@ -322,12 +323,35 @@ class AttendanceImport(models.Model):
     def action_error_report(self):
         self.ensure_one()
         self._authorize()
+        # Read the selected sheet from the retained upload, also for older
+        # imports whose audit rows only store numbered original columns.
+        try:
+            source = open_excel(
+                base64.b64decode(self.with_context(bin_size=False).file_data, validate=True), self.max_mb)
+            try:
+                if not 1 <= self.sheet_number <= len(source.worksheets):
+                    raise ValueError('Select a valid worksheet number.')
+                headers = list(next(source.worksheets[self.sheet_number - 1].iter_rows(
+                    min_row=1, max_row=1, values_only=True), ()))
+            finally:
+                source.close()
+        except ValueError as exc:
+            raise UserError(str(exc)) from exc
         workbook = Workbook(write_only=True)
         sheet = workbook.create_sheet('Errors')
         lines = self.line_ids.filtered(lambda r: r.status != 'imported')
         originals = {line.id: json.loads(line.original) for line in lines}
-        columns = max((len(row) for row in originals.values()), default=0)
-        sheet.append(['Row', 'Employee code', 'Status', 'Reason'] + ['Original column %s' % i for i in range(1, columns + 1)])
+        columns = max(len(headers), max((len(row) for row in originals.values()), default=0))
+        headers.extend([None] * (columns - len(headers)))
+        # Preserve spelling, whitespace, duplicate/blank headings and order.
+        # Explicit string cells prevent a heading beginning '=' becoming a formula.
+        header_cells = []
+        for value in headers:
+            cell = WriteOnlyCell(sheet, value=value)
+            if isinstance(value, str):
+                cell.data_type = 's'
+            header_cells.append(cell)
+        sheet.append(['Row', 'Employee code', 'Status', 'Reason'] + header_cells)
         def safe(value):
             text = str(value or '')
             return "'" + text if text.startswith(('=', '+', '-', '@')) else text
