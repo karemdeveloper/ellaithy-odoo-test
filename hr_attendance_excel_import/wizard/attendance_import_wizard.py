@@ -12,10 +12,23 @@ class AttendanceImportWizard(models.TransientModel):
     _name = 'hr.attendance.excel.import.wizard'
     _description = 'Upload Excel Attendances'
 
+    @api.model
+    def _default_code_field_id(self):
+        employee = self.env['hr.employee']
+        field = employee._fields.get('employee_code')
+        if (not field or not field.store or field.company_dependent
+                or employee.fields_get(['employee_code']).get('employee_code', {}).get('type') != 'char'):
+            return False
+        return self.env['ir.model.fields'].search([
+            ('model', '=', 'hr.employee'), ('name', '=', 'employee_code'),
+            ('ttype', '=', 'char'), ('store', '=', True),
+        ], limit=1).id
+
     file_data = fields.Binary(required=True, attachment=False)
     filename = fields.Char(required=True)
     company_id = fields.Many2one('res.company', required=True, default=lambda self: self.env.company)
     code_field_id = fields.Many2one('ir.model.fields', string='Employee Code Field', required=True,
+                                  default=_default_code_field_id,
                                   domain="[('model', '=', 'hr.employee'), ('ttype', '=', 'char'), ('store', '=', True)]")
     timezone = fields.Selection(selection=lambda self: [(tz, tz) for tz in sorted(available_timezones())],
                                 required=True, default=lambda self: self.env.company.resource_calendar_id.tz or self.env.user.tz)
