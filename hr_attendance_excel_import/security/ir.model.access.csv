@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_attendance_excel_import,Attendance import managers,model_hr_attendance_excel_import,hr_attendance.group_hr_attendance_manager,1,1,1,0
+access_attendance_excel_import_line,Attendance import rows managers,model_hr_attendance_excel_import_line,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_attendance_excel_import_wizard,Attendance upload managers,model_hr_attendance_excel_import_wizard,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_attendance_excel_import_lock,Attendance import guard,model_hr_attendance_excel_import_lock,hr_attendance.group_hr_attendance_manager,1,1,0,0

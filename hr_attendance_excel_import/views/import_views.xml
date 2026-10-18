@@ -1,0 +1,50 @@
+<odoo>
+    <record id="import_list" model="ir.ui.view">
+        <field name="name">hr.attendance.excel.import.list</field>
+        <field name="model">hr.attendance.excel.import</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0">
+                <field name="filename"/><field name="company_id"/><field name="user_id"/>
+                <field name="import_date"/><field name="state"/><field name="total"/>
+                <field name="imported"/><field name="skipped"/><field name="duplicates"/><field name="failed"/>
+            </list>
+        </field>
+    </record>
+    <record id="import_form" model="ir.ui.view">
+        <field name="name">hr.attendance.excel.import.form</field>
+        <field name="model">hr.attendance.excel.import</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+                <header>
+                    <button name="action_validate" type="object" string="Validate Again" invisible="state != 'preview'"/>
+                    <button name="action_import" type="object" string="Confirm Import" class="oe_highlight" invisible="state != 'preview'" confirm="Import the approved, valid rows? Existing records may be updated only under the selected policy."/>
+                    <button name="action_error_report" type="object" string="Download Error Report"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group><field name="filename"/><field name="company_id"/><field name="user_id"/><field name="import_date"/></group>
+                        <group><field name="timezone"/><field name="code_field"/><field name="sheet_number"/><field name="duplicate_policy"/><field name="missing_policy"/><field name="approve_manual"/></group>
+                    </group>
+                    <group col="6"><field name="total"/><field name="imported"/><field name="skipped"/><field name="duplicates"/><field name="failed"/></group>
+                    <div class="alert alert-info">Times below use your Odoo user's display timezone. The source timezone is shown above. Overnight shifts are informational. Validation again resets row selections.</div>
+                    <field name="line_ids" readonly="state != 'preview'">
+                        <list editable="bottom" create="0" delete="0" decoration-danger="status == 'error'" decoration-muted="status in ('skipped', 'duplicate')">
+                            <field name="approved" readonly="status != 'ready'"/>
+                            <field name="row_number" readonly="1"/><field name="code" readonly="1"/>
+                            <field name="employee_name" readonly="1"/><field name="employee_id" readonly="1" optional="hide"/><field name="date" readonly="1"/>
+                            <field name="shift" readonly="1"/><field name="check_in" readonly="1"/><field name="check_out" readonly="1"/>
+                            <field name="duration" readonly="1"/><field name="status" readonly="1"/>
+                            <field name="message" readonly="1"/><field name="attendance_id" readonly="1" optional="hide"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="import_history_action" model="ir.actions.act_window">
+        <field name="name">Attendance Import History</field><field name="res_model">hr.attendance.excel.import</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="import_history_menu" name="Import History" parent="hr_attendance.menu_hr_attendance_settings" action="import_history_action" sequence="31" groups="hr_attendance.group_hr_attendance_manager"/>
+</odoo>

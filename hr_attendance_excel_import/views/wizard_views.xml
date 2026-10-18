@@ -1,0 +1,28 @@
+<odoo>
+    <record id="upload_form" model="ir.ui.view">
+        <field name="name">hr.attendance.excel.import.wizard.form</field>
+        <field name="model">hr.attendance.excel.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Attendances">
+                <group>
+                    <field name="filename" invisible="1"/>
+                    <field name="file_data" filename="filename" options="{'accepted_file_extensions': '.xlsx'}"/>
+                    <field name="company_id"/><field name="code_field_id" options="{'no_create': True}"/>
+                    <field name="timezone"/><field name="worksheet_names"/><field name="sheet_number"/>
+                    <field name="duplicate_policy"/><field name="missing_policy"/>
+                    <field name="approve_manual" invisible="duplicate_policy != 'update'"/>
+                    <field name="max_hours"/><field name="max_rows"/><field name="max_mb"/>
+                </group>
+                <footer>
+                    <button name="action_preview" type="object" string="Validate and Preview" class="oe_highlight"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="upload_action" model="ir.actions.act_window">
+        <field name="name">Import Attendances</field><field name="res_model">hr.attendance.excel.import.wizard</field>
+        <field name="view_mode">form</field><field name="target">new</field>
+    </record>
+    <menuitem id="upload_menu" name="Import Attendances" parent="hr_attendance.menu_hr_attendance_settings" action="upload_action" sequence="30" groups="hr_attendance.group_hr_attendance_manager"/>
+</odoo>
