@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Branch poster: the job, its QR code and link. -->
+    <record id="action_report_job_qr_poster" model="ir.actions.report">
+        <field name="name">QR Poster</field>
+        <field name="model">hr.job</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ellithy_recruitment.report_job_qr_poster</field>
+        <field name="report_file">ellithy_recruitment.report_job_qr_poster</field>
+        <field name="print_report_name">'QR - %s' % object.name</field>
+        <field name="binding_model_id" ref="hr.model_hr_job"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_job_qr_poster">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="text-align:center;">
+                        <h1 style="margin-top:40px;">We are hiring</h1>
+                        <h2 style="direction:rtl;">مطلوب للتعيين</h2>
+                        <h2 style="margin-top:24px;" t-out="o.name"/>
+                        <p t-out="o.department_id.name or ''"/>
+                        <img t-if="o.apply_qr" t-att-src="image_data_uri(o.apply_qr)" style="width:280px;height:280px;margin:24px auto;"/>
+                        <p style="font-size:18px;">Scan to apply / امسح الكود للتقديم</p>
+                        <p style="font-size:12px;color:#666;" t-out="o.apply_url or ''"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- The application as the candidate filled it, for the interviewer. -->
+    <record id="action_report_application_form" model="ir.actions.report">
+        <field name="name">Application Form</field>
+        <field name="model">hr.applicant</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ellithy_recruitment.report_application_form</field>
+        <field name="report_file">ellithy_recruitment.report_application_form</field>
+        <field name="print_report_name">'Application - %s' % object.partner_name</field>
+        <field name="binding_model_id" ref="hr_recruitment.model_hr_applicant"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_application_form">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Application Form / استمارة التقديم</h2>
+                        <p><strong t-out="o.partner_name"/> · <span t-out="o.job_id.name or ''"/> · APP-<span t-out="o.id"/></p>
+                        <table class="table table-sm">
+                            <tr><th>Mobile</th><td t-out="o.partner_phone or ''"/><th>Email</th><td t-out="o.email_from or ''"/></tr>
+                            <tr><th>National ID</th><td t-out="o.national_id or ''"/><th>Birthdate</th><td t-out="o.birthdate or ''"/></tr>
+                            <tr><th>Marital status</th><td t-field="o.marital_status"/><th>Military status</th><td t-field="o.military_status"/></tr>
+                            <tr><th>Qualification</th><td t-out="o.type_id.name or ''"/><th>Languages</th><td t-out="', '.join(o.language_ids.mapped('name'))"/></tr>
+                            <tr><th>Previous job title</th><td t-out="o.previous_job_title or ''"/><th>Experience (years)</th><td t-out="o.previous_experience_years"/></tr>
+                            <tr><th>Notice period (days)</th><td t-out="o.notice_period_days"/><th>Source</th><td t-out="o.source_id.name or ''"/></tr>
+                            <tr><th>Stage</th><td t-out="o.stage_id.name"/><th>Interviewers</th><td t-out="', '.join(o.interviewer_employee_ids.mapped('name'))"/></tr>
+                        </table>
+                        <p t-if="o.previous_experience"><strong>Previous experience</strong><br/><span t-out="o.previous_experience"/></p>
+                        <h4 t-if="o.evaluation_ids">Interview evaluations</h4>
+                        <table t-if="o.evaluation_ids" class="table table-sm">
+                            <tr><th>Round</th><th>Interviewer</th><th>Date</th><th>Score</th><th>Recommendation</th></tr>
+                            <tr t-foreach="o.evaluation_ids" t-as="e">
+                                <td t-field="e.interview_round"/><td t-out="e.interviewer_id.name"/><td t-out="e.date"/>
+                                <td><t t-out="round(e.score, 1)"/>%</td><td t-field="e.recommendation"/>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

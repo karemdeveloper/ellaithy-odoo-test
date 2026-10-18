@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_applicant_view_form_ellithy" model="ir.ui.view">
+        <field name="name">hr.applicant.form.ellithy</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_schedule_interview" type="object"
+                        string="Schedule Interview" class="btn-secondary"
+                        invisible="not active"/>
+                <button name="action_new_evaluation" type="object"
+                        string="Evaluate" class="btn-secondary"
+                        invisible="not active"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_evaluations" type="object"
+                        class="oe_stat_button" icon="fa-star-half-o">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value"><field name="evaluation_score" widget="float" digits="[3,0]"/>%</span>
+                        <span class="o_stat_text">
+                            <field name="evaluation_count"/> Evaluations
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+            <!-- Interviewers are picked from the employee directory. The
+                 stock user field stays, as the record of who can open the
+                 application in Odoo. -->
+            <field name="interviewer_ids" position="before">
+                <field name="interviewer_employee_ids" widget="many2many_tags"
+                       string="Interviewers" options="{'no_create': True}"
+                       placeholder="Choose the interviewing employees"/>
+            </field>
+            <field name="interviewer_ids" position="attributes">
+                <attribute name="string">Interviewer Logins</attribute>
+                <attribute name="groups">base.group_no_one</attribute>
+            </field>
+            <field name="type_id" position="attributes">
+                <attribute name="string">Educational Qualification</attribute>
+            </field>
+            <xpath expr="//page[@name='application_details']/group[1]" position="after">
+                <group>
+                    <group string="Personal" name="ellithy_personal">
+                        <field name="national_id"/>
+                        <field name="birthdate"/>
+                        <field name="marital_status"/>
+                        <field name="military_status"/>
+                        <field name="language_ids" widget="many2many_tags"/>
+                    </group>
+                    <group string="Experience" name="ellithy_experience">
+                        <field name="previous_job_title"/>
+                        <field name="previous_experience_years"/>
+                        <field name="notice_period_days"/>
+                        <field name="previous_experience"/>
+                    </group>
+                </group>
+            </xpath>
+            <xpath expr="//page[@name='application_details']" position="after">
+                <page string="Interview Evaluations" name="ellithy_evaluations">
+                    <field name="evaluation_ids" readonly="1">
+                        <list>
+                            <field name="interview_round"/>
+                            <field name="interviewer_id"/>
+                            <field name="date"/>
+                            <field name="score"/>
+                            <field name="recommendation"/>
+                            <field name="state" widget="badge" decoration-success="state == 'done'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_applicant_view_search_ellithy" model="ir.ui.view">
+        <field name="name">hr.applicant.search.ellithy</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_search_bis"/>
+        <field name="arch" type="xml">
+            <field name="job_id" position="after">
+                <field name="national_id"/>
+                <field name="interviewer_employee_ids"/>
+            </field>
+        </field>
+    </record>
+</odoo>

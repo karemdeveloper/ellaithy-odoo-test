@@ -67,10 +67,23 @@ class IbsHrWarning(models.Model):
     custom_penalty_days = fields.Float(
         string='Override (days)', digits=(6, 2),
         help='Legacy custom_penalty_value. Set to depart from the ladder.')
+    # Admin may state the penalty as money instead of days. The days still
+    # drive the five-day monthly cap; the amount is spread evenly over them,
+    # so a penalty split across two payslips takes the right share of the
+    # stated amount each month.
+    custom_amount = fields.Monetary(
+        string='Override Amount', currency_field='currency_id',
+        tracking=True, copy=False,
+        help='HR Admin only. Replaces "days x daily rate" with this amount. '
+             'It is deducted over the penalty days, so the monthly cap '
+             'still applies.')
+    can_override_amount = fields.Boolean(
+        compute='_compute_can_override_amount')
     deducted_amount = fields.Monetary(
         string='Deducted Amount', compute='_compute_deducted_amount',
         store=True, currency_field='currency_id',
-        help='penalty days x daily rate, where daily rate is basic salary / 30.')
+        help='The override amount when HR Admin set one, otherwise penalty '
+             'days x daily rate, where daily rate is basic salary / 30.')
     currency_id = fields.Many2one(
         related='employee_id.company_id.currency_id', store=True)
 
@@ -165,10 +178,54 @@ class IbsHrWarning(models.Model):
             else:
                 record.penalty_days = record.penalty_id.penalty_days or 0.0
 
-    @api.depends('penalty_days', 'employee_id', 'date')
+    @api.depends('penalty_days', 'employee_id', 'date', 'custom_amount')
     def _compute_deducted_amount(self):
         for record in self:
-            record.deducted_amount = record.penalty_days * record._daily_rate()
+            record.deducted_amount = (
+                record.custom_amount
+                or record.penalty_days * record._daily_rate())
+
+    @api.depends_context('uid')
+    def _compute_can_override_amount(self):
+        allowed = self._may_override_amount()
+        for record in self:
+            record.can_override_amount = allowed
+
+    def _may_override_amount(self):
+        return self.env.su or self.env.user.has_group(
+            'ellithy_hr_base.group_ellithy_hr_admin')
+
+    def _ibs_day_value(self, daily_rate):
+        """What one penalty day is worth on a payslip."""
+        self.ensure_one()
+        if self.custom_amount and self.penalty_days:
+            return self.custom_amount / self.penalty_days
+        return daily_rate
+
+    @api.constrains('custom_amount', 'penalty_days')
+    def _check_custom_amount(self):
+        for record in self:
+            if record.custom_amount < 0:
+                raise ValidationError(_('The override amount cannot be negative.'))
+            if record.custom_amount and record.penalty_days <= 0:
+                raise ValidationError(_(
+                    'Set the penalty days before an override amount: the '
+                    'amount is deducted over those days, within the monthly '
+                    'cap.'))
+
+    def _check_custom_amount_rights(self, vals):
+        if 'custom_amount' not in vals or self._may_override_amount():
+            return
+        raise ValidationError(_(
+            'Only HR Admin can change the amount of a penalty.'))
+
+    def write(self, vals):
+        self._check_custom_amount_rights(vals)
+        if 'custom_amount' in vals and any(r.deduction_ids for r in self):
+            raise ValidationError(_(
+                'This penalty has already been deducted on a payslip, so its '
+                'amount can no longer change. Reset the payslip first.'))
+        return super().write(vals)
 
     @api.depends('date')
     def _compute_execution_date(self):
@@ -207,6 +264,7 @@ class IbsHrWarning(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            self._check_custom_amount_rights(vals)
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code(
                     'ibs.hr.warning') or _('New')

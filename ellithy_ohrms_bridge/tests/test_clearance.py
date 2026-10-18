@@ -26,6 +26,7 @@ class TestClearanceRound(EllithyBridgeCommon):
             'expected_revealing_date': fields.Date.today(),
             'reason': 'Relocating.',
             'resignation_type': 'resigned',
+            'departure_reason_id': self.env.ref('hr.departure_resigned').id,
         }
         values.update(kwargs)
         resignation = self.env['hr.resignation'].create(values)
@@ -124,6 +125,7 @@ class TestClearanceRound(EllithyBridgeCommon):
             'expected_revealing_date': fields.Date.today(),
             'reason': 'Relocating.',
             'resignation_type': 'resigned',
+            'departure_reason_id': self.env.ref('hr.departure_resigned').id,
         })
         resignation.action_confirm_resignation()
         with self.assertRaises(ValidationError):

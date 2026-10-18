@@ -129,7 +129,7 @@ class HrPayslip(models.Model):
                 continue
             take = min(outstanding, budget) if budget > 0 else 0.0
             if take > 0:
-                lines.append((warning, take, take * rate))
+                lines.append((warning, take, take * warning._ibs_day_value(rate)))
                 budget -= take
                 taken += take
             deferred += outstanding - take
@@ -170,11 +170,13 @@ class HrPayslip(models.Model):
                 taken = sum(payslip.penalty_deduction_ids.mapped('days'))
                 deferred = sum(payslip._ibs_outstanding_penalties().mapped(
                     'days_remaining'))
+                amount = sum(payslip.penalty_deduction_ids.mapped('amount'))
             else:
-                _lines, taken, deferred = payslip._ibs_penalty_plan()
+                lines, taken, deferred = payslip._ibs_penalty_plan()
+                amount = sum(line[2] for line in lines)
             payslip.penalty_days_taken = taken
             payslip.penalty_days_deferred = deferred
-            payslip.penalty_amount = taken * payslip._ibs_daily_rate()
+            payslip.penalty_amount = amount
 
     # ------------------------------------------------------------------
     # Payroll hooks
@@ -182,8 +184,10 @@ class HrPayslip(models.Model):
     def get_inputs(self, contracts, date_from, date_to):
         """Feed the capped penalty amount into the PENALTY salary rule."""
         result = super().get_inputs(contracts, date_from, date_to)
-        _lines, taken, _deferred = self._ibs_penalty_plan()
-        amount = taken * self._ibs_daily_rate()
+        # Summed per penalty rather than days x rate, so an amount HR Admin
+        # set on a penalty reaches the PENALTY rule as stated.
+        lines, _taken, _deferred = self._ibs_penalty_plan()
+        amount = sum(line[2] for line in lines)
         for line in result:
             if line.get('code') == PENALTY_INPUT_CODE:
                 line['amount'] = amount

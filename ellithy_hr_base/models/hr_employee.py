@@ -1,9 +1,12 @@
 import hashlib
+import re
+from datetime import timedelta
 
 from markupsafe import Markup
 
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import SQL
 
 VACATION_ROLE = [
     ('15', '15 Days'),
@@ -87,6 +90,13 @@ class HrEmployee(models.Model):
     employee_code = fields.Char(
         string='Employee Code', copy=False, index=True, readonly=True,
         default=lambda self: _('New'))
+    # Codes come in two shapes -- migrated "EMP-1441" and, since CR 2.1
+    # dropped the prefix, plain "2388" -- so sorting the text puts "2388"
+    # before "EMP-1" and "EMP-10" before "EMP-2". The number inside the code
+    # is what HR means by "code order", so it is stored and sorted on.
+    employee_code_number = fields.Integer(
+        string='Code Number', compute='_compute_employee_code_number',
+        store=True, index=True, readonly=True)
     card_issue_date = fields.Date(string='ID Card Issue Date')
     religion = fields.Selection(RELIGION, string='Religion')
     office_number = fields.Char(string='Office Number')
@@ -131,9 +141,47 @@ class HrEmployee(models.Model):
         OVERTIME_REPORT, string='Overtime Source',
         help='Whether overtime is derived from attendance or submitted '
              'manually.')
-    evaluation_date = fields.Date(string='Evaluation Date')
+    evaluation_date = fields.Date(
+        string='Evaluation Due Date',
+        help='When the probation evaluation is due: joining date plus the '
+             'probation evaluation delay (60 days by default).')
     evaluation_mail_sent_at = fields.Datetime(
         string='Evaluation Mail Sent', readonly=True)
+
+    # ------------------------------------------------------------------
+    # Probation evaluation
+    # ------------------------------------------------------------------
+    # The direct manager answers a survey through a token link, because most
+    # managers have no Odoo login. The answer stays on the survey; the
+    # employee keeps a pointer to it plus the outcome, stored so HR can filter
+    # and report on it without survey rights.
+    probation_input_id = fields.Many2one(
+        'survey.user_input', string='Probation Evaluation', readonly=True,
+        copy=False, ondelete='set null')
+    probation_evaluator_id = fields.Many2one(
+        'hr.employee', string='Evaluated By', readonly=True, copy=False,
+        help='The direct manager the evaluation was sent to.')
+    probation_state = fields.Selection(
+        [('not_sent', 'Not Sent'), ('pending', 'Pending'), ('done', 'Completed')],
+        string='Probation Evaluation Status', compute='_compute_probation',
+        store=True, tracking=True)
+    probation_score = fields.Float(
+        string='Probation Score (%)', compute='_compute_probation', store=True,
+        digits=(5, 1))
+    probation_recommendation = fields.Char(
+        string='Manager Recommendation', compute='_compute_probation',
+        store=True)
+    probation_completed_on = fields.Datetime(
+        string='Evaluation Completed On', compute='_compute_probation',
+        store=True)
+
+    # ------------------------------------------------------------------
+    # Contract dates, for the directory list
+    # ------------------------------------------------------------------
+    contract_date_start = fields.Date(
+        related='contract_id.date_start', string='Contract Start Date')
+    contract_date_end = fields.Date(
+        related='contract_id.date_end', string='Contract End Date')
 
     # ------------------------------------------------------------------
     # Insurance -- entered on the contract, shown here
@@ -427,6 +475,165 @@ class HrEmployee(models.Model):
                 lambda line: line.received and line.type_id.required))
             record.document_completeness = 100.0 * received / required_types
 
+    @api.depends('employee_code')
+    def _compute_employee_code_number(self):
+        for record in self:
+            digits = re.findall(r'\d+', record.employee_code or '')
+            # The last run of digits is the number ("PAY-DEMO-01" -> 1);
+            # capped so a stray long code cannot overflow the int column.
+            record.employee_code_number = (
+                min(int(digits[-1]), 2 ** 31 - 1) if digits else 0)
+
+    def _order_field_to_sql(self, alias, field_name, direction, nulls, query):
+        """Sort the code column by the number inside the code.
+
+        Clicking "Employee Code" in a list orders by the field itself, which
+        is text. Ordering by the stored number first, then the text as a
+        tie-break, gives 1, 2, ... 10 whichever shape the code has.
+        """
+        if field_name in ('employee_code', 'employee_code_number'):
+            # Employees without a code (number 0) go last, not first.
+            number = SQL('NULLIF(%s, 0)', self._field_to_sql(
+                alias, 'employee_code_number', query))
+            text = super()._order_field_to_sql(
+                alias, 'employee_code', direction, nulls, query)
+            return SQL('%s %s %s, %s', number, direction,
+                       nulls or SQL('NULLS LAST'), text)
+        return super()._order_field_to_sql(
+            alias, field_name, direction, nulls, query)
+
+    @api.depends('probation_input_id.state',
+                 'probation_input_id.scoring_percentage',
+                 'probation_input_id.user_input_line_ids.suggested_answer_id')
+    def _compute_probation(self):
+        recommendation = self.env.ref(
+            'ellithy_hr_base.probation_question_recommendation',
+            raise_if_not_found=False)
+        for employee in self:
+            answer = employee.probation_input_id.sudo()
+            done = answer.state == 'done'
+            employee.probation_state = (
+                'not_sent' if not answer else 'done' if done else 'pending')
+            employee.probation_score = answer.scoring_percentage if done else 0.0
+            employee.probation_completed_on = answer.end_datetime if done else False
+            line = answer.user_input_line_ids.filtered(
+                lambda l: l.question_id == recommendation)[:1] if (
+                    done and recommendation) else False
+            employee.probation_recommendation = (
+                line.suggested_answer_id.value if line else False)
+
+    # ------------------------------------------------------------------
+    # Probation evaluation -- sending
+    # ------------------------------------------------------------------
+    def _probation_delay_days(self):
+        return int(self.env['ir.config_parameter'].sudo().get_param(
+            'ellithy_hr.probation_evaluation_days', 60))
+
+    def _probation_problem(self, survey):
+        """Why this employee's evaluation cannot be sent, or None."""
+        self.ensure_one()
+        if not survey:
+            return _('The probation evaluation form is missing. '
+                     'Upgrade Ellaithy HR Base to restore it.')
+        if self.probation_state == 'done':
+            return _('%(name)s has already been evaluated.', name=self.name)
+        if not self.parent_id:
+            return _('Set a manager on %(name)s first: the evaluation goes '
+                     'to the direct manager.', name=self.name)
+        if not self.parent_id.work_email:
+            return _('%(manager)s, the manager of %(name)s, has no work email '
+                     'to send the evaluation to.',
+                     manager=self.parent_id.name, name=self.name)
+        return None
+
+    def _send_probation_evaluation(self, raise_on_error=False):
+        """Create the manager's answer token and mail the link.
+
+        Re-sending reuses the open answer, so a manager who lost the first
+        mail gets the same link and the same half-filled form back.
+        """
+        survey = self.env.ref(
+            'ellithy_hr_base.survey_probation_evaluation',
+            raise_if_not_found=False)
+        template = self.env.ref(
+            'ellithy_hr_base.mail_template_probation_evaluation',
+            raise_if_not_found=False)
+        sent = self.browse()
+        for employee in self:
+            problem = employee._probation_problem(survey)
+            if problem:
+                if raise_on_error:
+                    raise UserError(problem)
+                continue
+            manager = employee.parent_id
+            answer = employee.probation_input_id.sudo()
+            if not answer or answer.survey_id != survey:
+                partner = manager.work_contact_id
+                answer = survey.sudo()._create_answer(
+                    partner=partner if partner.email else False,
+                    email=manager.work_email, check_attempts=False,
+                    probation_employee_id=employee.id)
+            due = employee.evaluation_date or (
+                employee.joining_date and employee.joining_date
+                + timedelta(days=employee._probation_delay_days()))
+            employee.sudo().write({
+                'probation_input_id': answer.id,
+                'probation_evaluator_id': manager.id,
+                'evaluation_mail_sent_at': fields.Datetime.now(),
+                'evaluation_date': due or False,
+            })
+            if template:
+                template.sudo().send_mail(employee.id, force_send=False)
+            employee.message_post(body=_(
+                'Probation evaluation sent to %(manager)s (%(email)s).',
+                manager=manager.name, email=manager.work_email))
+            sent |= employee
+        return sent
+
+    def action_send_probation_evaluation(self):
+        self.check_access('write')
+        sent = self._send_probation_evaluation(raise_on_error=True)
+        return {
+            'type': 'ir.actions.client', 'tag': 'display_notification',
+            'params': {
+                'type': 'success',
+                'message': _('Probation evaluation sent to %(managers)s.',
+                             managers=', '.join(sent.parent_id.mapped('name'))),
+                'next': {'type': 'ir.actions.act_window_close'},
+            },
+        }
+
+    def action_view_probation_evaluation(self):
+        """Open the manager's answers as the printable survey page."""
+        self.ensure_one()
+        answer = self.probation_input_id.sudo()
+        if not answer:
+            raise UserError(_('No probation evaluation has been sent yet.'))
+        return {'type': 'ir.actions.act_url', 'target': 'new',
+                'url': answer.get_print_url()}
+
+    @api.model
+    def _cron_send_probation_evaluations(self):
+        """Send each joiner's evaluation once the delay has passed.
+
+        Only joiners still inside their probation window are picked up --
+        joining date between ``delay`` and ``delay + window`` days ago -- so
+        switching this on does not mail a manager about someone hired years
+        ago. Anyone outside the window can still be sent by hand.
+        """
+        params = self.env['ir.config_parameter'].sudo()
+        delay = int(params.get_param('ellithy_hr.probation_evaluation_days', 60))
+        window = int(params.get_param('ellithy_hr.probation_window_days', 30))
+        today = fields.Date.context_today(self)
+        due = self.search([
+            ('joining_date', '<=', today - timedelta(days=delay)),
+            ('joining_date', '>=', today - timedelta(days=delay + window)),
+            ('probation_input_id', '=', False),
+            ('parent_id', '!=', False),
+        ])
+        due._send_probation_evaluation()
+        return True
+
     # ------------------------------------------------------------------
     # Constraints
     # ------------------------------------------------------------------
@@ -490,12 +697,16 @@ class HrEmployee(models.Model):
                         'ellithy.hr.employee.code') or _('New'))
         for vals in vals_list:
             self._normalise_employee_code(vals)
+            if not migrating:
+                self._set_evaluation_due_date(vals)
         employees = super().create(vals_list)
         employees._sync_document_lines()
         return employees
 
     def write(self, vals):
         self._normalise_employee_code(vals)
+        if not self.env.context.get('ellithy_migration'):
+            self._set_evaluation_due_date(vals)
         # CR 2.3 -- capture the before image of anything Odoo will not track
         # for us, so the log notes carry the full history.
         audited = (
@@ -508,6 +719,13 @@ class HrEmployee(models.Model):
         if before:
             self._ibs_post_audit(before)
         return result
+
+    def _set_evaluation_due_date(self, vals):
+        """Probation evaluation falls due a fixed delay after joining."""
+        if 'joining_date' in vals and 'evaluation_date' not in vals:
+            joined = fields.Date.to_date(vals['joining_date'])
+            vals['evaluation_date'] = joined and (
+                joined + timedelta(days=self._probation_delay_days()))
 
     @staticmethod
     def _normalise_employee_code(vals):

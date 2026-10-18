@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_ellithy" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.ellithy.hr</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='hr']" position="inside">
+                <block title="Onboarding Email" name="ellithy_onboarding_setting_container">
+                    <setting id="ellithy_onboarding_image" string="Onboarding Email Image"
+                             help="Shown at the top of the welcome email sent from the employee file. Use a wide image, about 1200 px.">
+                        <field name="hr_onboarding_banner" widget="image"
+                               class="w-100" options="{'size': [0, 180]}"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

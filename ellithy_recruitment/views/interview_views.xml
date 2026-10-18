@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Interview questions per job grade ============ -->
+    <record id="interview_question_view_list" model="ir.ui.view">
+        <field name="name">ellithy.interview.question.list</field>
+        <field name="model">ellithy.interview.question</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="grade_id"/>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="interview_question_view_search" model="ir.ui.view">
+        <field name="name">ellithy.interview.question.search</field>
+        <field name="model">ellithy.interview.question</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="grade_id"/>
+                <group expand="1" string="Group By">
+                    <filter name="group_grade" string="Grade" context="{'group_by': 'grade_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_interview_question" model="ir.actions.act_window">
+        <field name="name">Interview Questions</field>
+        <field name="res_model">ellithy.interview.question</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_grade': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add the questions asked for each job grade</p>
+            <p>An applicant's evaluation is pre-filled with the questions of the job's grade.</p>
+        </field>
+    </record>
+
+    <!-- ============ Interview evaluations ============ -->
+    <record id="applicant_evaluation_view_form" model="ir.ui.view">
+        <field name="name">ellithy.applicant.evaluation.form</field>
+        <field name="model">ellithy.applicant.evaluation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" type="object" string="Submit Evaluation"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_reset" type="object" string="Edit Again"
+                            invisible="state != 'done'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="applicant_id" readonly="1"/>
+                            <field name="job_id"/>
+                            <field name="interview_round"/>
+                        </group>
+                        <group>
+                            <field name="interviewer_id"/>
+                            <field name="date"/>
+                            <field name="score" widget="progressbar"/>
+                            <field name="recommendation"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state == 'done'">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="question"/>
+                            <field name="rating"/>
+                            <field name="comment"/>
+                        </list>
+                    </field>
+                    <field name="notes" placeholder="Interview notes: strengths, concerns, salary expectations..."
+                           readonly="state == 'done'"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="applicant_evaluation_view_list" model="ir.ui.view">
+        <field name="name">ellithy.applicant.evaluation.list</field>
+        <field name="model">ellithy.applicant.evaluation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="applicant_id"/>
+                <field name="job_id"/>
+                <field name="interview_round"/>
+                <field name="interviewer_id"/>
+                <field name="date"/>
+                <field name="score"/>
+                <field name="recommendation"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_applicant_evaluation" model="ir.actions.act_window">
+        <field name="name">Interview Evaluations</field>
+        <field name="res_model">ellithy.applicant.evaluation</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+
+    <!-- Stage: which interview round it is -->
+    <record id="hr_recruitment_stage_view_form" model="ir.ui.view">
+        <field name="name">hr.recruitment.stage.form.ellithy</field>
+        <field name="model">hr.recruitment.stage</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_recruitment_stage_form"/>
+        <field name="arch" type="xml">
+            <field name="hired_stage" position="after">
+                <field name="interview_round"/>
+            </field>
+        </field>
+    </record>
+</odoo>

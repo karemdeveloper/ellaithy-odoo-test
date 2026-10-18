@@ -160,6 +160,7 @@ class TestSuspensionAndBlacklist(EllithyBridgeCommon):
             'expected_revealing_date': fields.Date.today() - timedelta(days=1),
             'blacklist': True,
             'blacklist_reason': 'Theft.',
+            'departure_reason_id': self.env.ref('hr.departure_fired').id,
         })
         resignation.action_confirm_resignation()
         resignation.action_endorse_resignation()

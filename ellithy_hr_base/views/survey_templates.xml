@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- A manager finishing a probation evaluation is thanked, not graded:
+         no score, no pass/fail line and no retake button. -->
+    <template id="survey_fill_form_done_hr_evaluation" inherit_id="survey.survey_fill_form_done">
+        <xpath expr="//h1/t[@t-if]" position="attributes">
+            <attribute name="t-if">survey.scoring_type != 'no_scoring' and not survey.is_hr_evaluation</attribute>
+        </xpath>
+        <xpath expr="//t[@t-if=&quot;survey.scoring_type != 'no_scoring' and survey.scoring_success_min&quot;]" position="attributes">
+            <attribute name="t-if">survey.scoring_type != 'no_scoring' and survey.scoring_success_min and not survey.is_hr_evaluation</attribute>
+        </xpath>
+        <xpath expr="//t[@t-call='survey.survey_button_retake']" position="attributes">
+            <attribute name="t-if">not survey.is_hr_evaluation</attribute>
+        </xpath>
+    </template>
+</odoo>

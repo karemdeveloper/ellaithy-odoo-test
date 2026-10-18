@@ -5,3 +5,4 @@ from . import test_resignation_flow
 from . import test_suspension
 from . import test_clearance
 from . import test_loan_approval_integrity
+from . import test_exit_requirements

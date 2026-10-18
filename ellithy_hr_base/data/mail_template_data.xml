@@ -33,10 +33,18 @@
                                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
                                     <tr>
                                         <td align="left" valign="middle">
-                                            <img t-att-src="'%s/logo.png?company=%s' % (base_url, object.company_id.id or '')"
+                                            <!-- Without an uploaded logo /logo.png serves
+                                                 Odoo's "Your logo" placeholder, so the
+                                                 company name stands in instead. -->
+                                            <img t-if="object.company_id.logo"
+                                                 t-att-src="'%s/logo.png?company=%s' % (base_url, object.company_id.id or '')"
                                                  t-att-alt="object.company_id.name"
                                                  height="40"
                                                  style="height:40px;max-height:40px;width:auto;border:0;outline:none;display:block;background:#FFFFFF;padding:6px 10px;border-radius:4px;"/>
+                                            <span t-else=""
+                                                  style="color:#FFFFFF;font-size:20px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">
+                                                <t t-out="object.company_id.name or ''">Company</t>
+                                            </span>
                                         </td>
                                         <td align="right" valign="middle"
                                             style="color:#FFFFFF;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">
@@ -44,6 +52,18 @@
                                         </td>
                                     </tr>
                                 </table>
+                            </td>
+                        </tr>
+
+                        <!-- Onboarding image chosen by HR in Settings > Employees.
+                             Served from a public route because mail clients
+                             fetch images without a session. -->
+                        <tr t-if="object.company_id.hr_onboarding_banner">
+                            <td style="padding:0;">
+                                <img t-att-src="'%s/ellithy_hr/onboarding_image/%s' % (base_url, object.company_id.id)"
+                                     t-att-alt="'Welcome to %s' % (object.company_id.name or '')"
+                                     width="600"
+                                     style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:none;"/>
                             </td>
                         </tr>
 
@@ -123,6 +143,65 @@
                                 <t t-out="object.work_email or ''">you</t>
                                 because an employee record was created for you at
                                 <t t-out="object.company_id.name or ''">the company</t>.
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!--
+            Probation evaluation request, sent to the direct manager. The
+            link carries the answer token, so the manager can fill it in
+            without an Odoo login.
+        -->
+        <record id="mail_template_probation_evaluation" model="mail.template">
+            <field name="name">Employee: Probation Evaluation Request</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="subject">Probation evaluation: {{ object.name }} / تقييم فترة الاختبار</field>
+            <field name="email_from">{{ (object.company_id.email or user.email_formatted) }}</field>
+            <field name="email_to">{{ object.probation_evaluator_id.work_email }}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+                <div style="margin:0;padding:24px 0;background:#F4F5F7;">
+                    <t t-set="base_url" t-value="object.get_base_url()"/>
+                    <t t-set="answer" t-value="object.probation_input_id.sudo()"/>
+                    <table align="center" cellpadding="0" cellspacing="0" border="0" width="600"
+                           style="width:600px;max-width:600px;border-collapse:collapse;background:#FFFFFF;border-radius:6px;font-family:Arial,Helvetica,sans-serif;">
+                        <tr>
+                            <td style="background:#E4610F;padding:18px 28px;color:#FFFFFF;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;">
+                                Probation Period Evaluation
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:26px 28px 6px 28px;font-size:15px;line-height:1.6;color:#333333;">
+                                <p style="margin:0 0 12px 0;">Dear <t t-out="object.probation_evaluator_id.name or ''">Manager</t>,</p>
+                                <p style="margin:0 0 12px 0;">
+                                    <strong><t t-out="object.name or ''">Employee</t></strong>
+                                    (<t t-out="object.employee_code or ''">code</t>,
+                                    <t t-out="object.job_title or object.job_id.name or ''">job</t>)
+                                    joined on <t t-out="object.joining_date or ''">date</t>.
+                                    Please complete the probation evaluation by
+                                    <t t-out="object.evaluation_date or ''">date</t>.
+                                </p>
+                                <p dir="rtl" style="margin:0 0 18px 0;text-align:right;">
+                                    برجاء استكمال تقييم فترة الاختبار للموظف
+                                    <strong><t t-out="object.name or ''">Employee</t></strong>
+                                    من خلال الرابط التالي.
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0 28px 26px 28px;">
+                                <a t-att-href="base_url + answer.get_start_url()"
+                                   style="display:inline-block;background:#E4610F;color:#FFFFFF;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:4px;">
+                                    Start the evaluation / ابدأ التقييم
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:14px 28px;background:#FDF6F1;font-size:11px;color:#8A6A55;">
+                                This link is personal to you. The result is saved in the employee's file.
                             </td>
                         </tr>
                     </table>

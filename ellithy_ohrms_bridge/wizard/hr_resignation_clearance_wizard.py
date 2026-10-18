@@ -34,11 +34,25 @@ class HrResignationClearanceWizard(models.TransientModel):
              'point at which the date stops being a proposal. It is written '
              'back to the resignation.')
     department_ids = fields.Many2many(
-        'hr.department', string='Departments to Clear', required=True,
+        'hr.department', string='Departments to Clear',
+        default=lambda self: self._default_department_ids(),
         help='Each department chosen gets its own line to sign. They may '
              'sign in any order; all of them must sign before clearance can '
-             'be confirmed.')
+             'be confirmed. Departments flagged "Required for Clearance" are '
+             'pre-filled.')
+    include_direct_manager = fields.Boolean(
+        string="Include the Direct Manager", default=True,
+        help="Adds a line signed by the leaver's own manager, beside the "
+             "departments.")
+    direct_manager_id = fields.Many2one(
+        related='resignation_id.employee_id.parent_id',
+        string='Direct Manager')
     note = fields.Text(string='Instructions')
+
+    @api.model
+    def _default_department_ids(self):
+        return self.env['hr.department'].search(
+            [('clearance_default', '=', True)])
 
     @api.depends('resignation_id')
     def _compute_last_working_day(self):
@@ -78,19 +92,37 @@ class HrResignationClearanceWizard(models.TransientModel):
             'clearance_state': 'progress',
         })
 
-        # Only departments not already on the form: restarting clearance to
-        # add one more must not wipe the signatures already collected.
-        existing = resignation.clearance_line_ids.department_id
+        if not self.department_ids and not self.include_direct_manager:
+            raise ValidationError(_(
+                'Choose at least one department, or include the direct '
+                'manager.'))
+
+        # Only parties not already on the form: restarting clearance to add
+        # one more must not wipe the signatures already collected.
+        lines = resignation.clearance_line_ids
         Clearance = self.env['hr.resignation.clearance']
-        for index, department in enumerate(self.department_ids - existing):
-            Clearance.create({
+        vals_list = []
+        if (self.include_direct_manager and self.direct_manager_id
+                and not lines.filtered(lambda l: l.line_type == 'manager')):
+            vals_list.append({
+                'resignation_id': resignation.id,
+                'line_type': 'manager',
+                'sequence': 1,
+                'note': self.note,
+            })
+        for index, department in enumerate(
+                self.department_ids - lines.department_id):
+            vals_list.append({
                 'resignation_id': resignation.id,
                 'department_id': department.id,
                 'sequence': (index + 1) * 10,
                 'note': self.note,
             })
+        new_lines = Clearance.create(vals_list)
+        new_lines._notify_responsible()
         resignation.message_post(body=_(
-            'Clearance started for %(count)s department(s). Last working '
+            'Clearance sent to %(parties)s at the same time. Last working '
             'day confirmed as %(day)s.',
-            count=len(self.department_ids), day=self.last_working_day))
+            parties=', '.join(new_lines.mapped('display_name')) or '-',
+            day=self.last_working_day))
         return resignation.action_view_clearance()

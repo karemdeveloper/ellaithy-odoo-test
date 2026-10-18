@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="interview_schedule_wizard_view_form" model="ir.ui.view">
+        <field name="name">ellithy.interview.schedule.wizard.form</field>
+        <field name="model">ellithy.interview.schedule.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Schedule Interview">
+                <div class="alert alert-info" role="status">
+                    The application moves to the round's stage, the interviewer is
+                    emailed the details and gets an evaluation form with the job
+                    grade's questions.
+                </div>
+                <group>
+                    <group>
+                        <field name="applicant_id" readonly="1"/>
+                        <field name="interview_round"/>
+                        <field name="interviewer_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="start"/>
+                        <field name="duration" widget="float_time"/>
+                        <field name="location"/>
+                    </group>
+                </group>
+                <field name="note" placeholder="Anything the interviewer should know"/>
+                <footer>
+                    <button name="action_schedule" type="object" string="Schedule &amp; Notify"
+                            class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

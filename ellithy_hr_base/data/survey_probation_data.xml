@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Probation evaluation form, answered by the direct manager through a
+        token link (most managers have no login). noupdate, so HR can reword
+        or add questions in Surveys without an upgrade undoing it.
+        Scored 1-5 per criterion; the score shown on the employee is the
+        survey's own percentage. The recommendation is not scored.
+    -->
+    <data noupdate="1">
+        <record id="survey_probation_evaluation" model="survey.survey">
+            <field name="title">Probation Period Evaluation / تقييم فترة الاختبار</field>
+            <field name="survey_type">custom</field>
+            <field name="access_mode">token</field>
+            <field name="users_login_required" eval="False"/>
+            <field name="users_can_go_back" eval="True"/>
+            <field name="questions_layout">one_page</field>
+            <field name="scoring_type">scoring_without_answers</field>
+            <field name="scoring_success_min">60</field>
+            <field name="is_hr_evaluation" eval="True"/>
+            <field name="is_attempts_limited" eval="True"/>
+            <field name="attempts_limit">1</field>
+            <field name="description_done" type="html">
+<p>Thank you. Your evaluation has been saved in the employee's file.</p>
+<p dir="rtl">شكرًا لك، تم حفظ التقييم في ملف الموظف.</p></field>
+            <field name="description" type="html">
+<p>Please rate the employee for each criterion from 1 (poor) to 5 (outstanding), then give your recommendation.</p>
+<p dir="rtl">برجاء تقييم الموظف في كل بند من 1 (ضعيف) إلى 5 (ممتاز)، ثم تحديد التوصية.</p></field>
+        </record>
+
+        <record id="probation_question_knowledge" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">1</field>
+            <field name="title">Job knowledge and skills / المعرفة والمهارات الوظيفية</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_knowledge_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_knowledge"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_knowledge_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_knowledge"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_knowledge_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_knowledge"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_knowledge_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_knowledge"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_knowledge_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_knowledge"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_quality" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">2</field>
+            <field name="title">Quality of work / جودة العمل</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_quality_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_quality"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_quality_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_quality"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_quality_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_quality"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_quality_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_quality"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_quality_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_quality"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_productivity" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">3</field>
+            <field name="title">Productivity and meeting deadlines / الإنتاجية والالتزام بالمواعيد</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_productivity_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_productivity"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_productivity_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_productivity"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_productivity_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_productivity"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_productivity_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_productivity"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_productivity_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_productivity"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_attendance" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">4</field>
+            <field name="title">Attendance and punctuality / الالتزام بالحضور والمواعيد</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_attendance_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_attendance"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_attendance_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_attendance"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_attendance_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_attendance"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_attendance_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_attendance"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_attendance_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_attendance"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_teamwork" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">5</field>
+            <field name="title">Teamwork and cooperation / العمل الجماعي والتعاون</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_teamwork_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_teamwork"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_teamwork_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_teamwork"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_teamwork_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_teamwork"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_teamwork_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_teamwork"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_teamwork_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_teamwork"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_communication" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">6</field>
+            <field name="title">Communication / مهارات التواصل</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_communication_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_communication"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_communication_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_communication"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_communication_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_communication"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_communication_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_communication"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_communication_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_communication"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_initiative" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">7</field>
+            <field name="title">Initiative and willingness to learn / المبادرة والرغبة في التعلم</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_initiative_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_initiative"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_initiative_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_initiative"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_initiative_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_initiative"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_initiative_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_initiative"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_initiative_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_initiative"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_policies" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">8</field>
+            <field name="title">Commitment to company policies / الالتزام بسياسات الشركة</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_question_policies_1" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_policies"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="probation_question_policies_2" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_policies"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Below expectations / أقل من المتوقع</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="probation_question_policies_3" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_policies"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Meets expectations / يلبي المتوقع</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="probation_question_policies_4" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_policies"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Exceeds expectations / يفوق المتوقع</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="probation_question_policies_5" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_policies"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+
+        <record id="probation_question_recommendation" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">9</field>
+            <field name="title">Recommendation / التوصية</field>
+            <field name="question_type">simple_choice</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="probation_recommendation_confirm" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_recommendation"/>
+            <field name="sequence">1</field>
+            <field name="value">Confirm employment / تثبيت الموظف</field>
+        </record>
+        <record id="probation_recommendation_extend" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_recommendation"/>
+            <field name="sequence">2</field>
+            <field name="value">Extend probation / مد فترة الاختبار</field>
+        </record>
+        <record id="probation_recommendation_end" model="survey.question.answer">
+            <field name="question_id" ref="probation_question_recommendation"/>
+            <field name="sequence">3</field>
+            <field name="value">End employment / إنهاء التعاقد</field>
+        </record>
+
+        <record id="probation_question_comments" model="survey.question">
+            <field name="survey_id" ref="survey_probation_evaluation"/>
+            <field name="sequence">10</field>
+            <field name="title">Comments / ملاحظات</field>
+            <field name="question_type">text_box</field>
+        </record>
+    </data>
+</odoo>

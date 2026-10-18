@@ -5,3 +5,4 @@ from . import test_welcome_mail
 from . import test_child_audit
 from . import test_dependants
 from . import test_form_layout
+from . import test_directory_and_probation

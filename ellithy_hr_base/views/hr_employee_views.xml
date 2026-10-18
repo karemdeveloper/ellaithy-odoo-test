@@ -74,9 +74,37 @@
                             <field name="overtime_role"/>
                             <field name="overtime_report"/>
                         </group>
-                        <group string="Evaluation">
+                        <group string="Probation Evaluation" name="probation_evaluation">
+                            <field name="probation_state" widget="badge"
+                                   decoration-muted="probation_state == 'not_sent'"
+                                   decoration-warning="probation_state == 'pending'"
+                                   decoration-success="probation_state == 'done'"/>
                             <field name="evaluation_date"/>
-                            <field name="evaluation_mail_sent_at"/>
+                            <field name="evaluation_mail_sent_at"
+                                   invisible="not evaluation_mail_sent_at"/>
+                            <field name="probation_evaluator_id"
+                                   invisible="not probation_evaluator_id"/>
+                            <field name="probation_score" widget="progressbar"
+                                   invisible="probation_state != 'done'"/>
+                            <field name="probation_recommendation"
+                                   invisible="probation_state != 'done'"/>
+                            <field name="probation_completed_on"
+                                   invisible="probation_state != 'done'"/>
+                            <div colspan="2" class="d-flex gap-2"
+                                 groups="ellithy_hr_base.group_ellithy_hr_generalist">
+                                <button name="action_send_probation_evaluation"
+                                        type="object" class="btn-secondary btn-sm"
+                                        string="Send Evaluation to Manager"
+                                        invisible="probation_state != 'not_sent' or not id"/>
+                                <button name="action_send_probation_evaluation"
+                                        type="object" class="btn-link btn-sm"
+                                        string="Resend Link"
+                                        invisible="probation_state != 'pending'"/>
+                                <button name="action_view_probation_evaluation"
+                                        type="object" class="btn-link btn-sm"
+                                        string="View Answers"
+                                        invisible="probation_state != 'done'"/>
+                            </div>
                         </group>
                         <group string="Identity">
                             <field name="card_issue_date"/>
@@ -292,6 +320,53 @@
         </field>
     </record>
 
+    <!--
+        The directory list HR asked for, in their column order. A primary
+        view with a lower priority than hr.view_employee_tree, so it is the
+        list every employee action opens, instead of a stack of xpaths on the
+        stock list that other modules keep adding columns to.
+        default_order uses the number inside the code: "EMP-2" before
+        "EMP-10", and the prefix-less codes in their numeric place.
+    -->
+    <record id="hr_employee_view_list_directory" model="ir.ui.view">
+        <field name="name">hr.employee.list.ellithy.directory</field>
+        <field name="model">hr.employee</field>
+        <field name="priority">5</field>
+        <field name="arch" type="xml">
+            <list string="Employees" expand="context.get('expand', False)"
+                  multi_edit="1" sample="1" js_class="hr_employee_list"
+                  default_order="employee_code_number, employee_code, name">
+                <header>
+                    <button name="%(hr.plan_wizard_action)d" string="Launch Plan"
+                            type="action" groups="hr.group_hr_user"/>
+                </header>
+                <field name="employee_code_number" column_invisible="1"/>
+                <field name="employee_code" string="Employee Code"/>
+                <field name="name" string="Employee Name" readonly="1"/>
+                <field name="private_phone" string="Personal Mobile" class="o_force_ltr"/>
+                <field name="department_id"/>
+                <field name="job_id" string="Job Position"
+                       context="{'default_no_of_recruitment': 0, 'default_is_favorite': False}"/>
+                <field name="branch_id"/>
+                <field name="grade_id"/>
+                <field name="work_email" string="Email"/>
+                <field name="joining_date"/>
+                <field name="contract_date_start"/>
+                <field name="contract_date_end"/>
+                <field name="section_id" optional="hide"/>
+                <field name="name_ar" optional="hide"/>
+                <field name="parent_id" widget="many2one_avatar_user" optional="hide"/>
+                <field name="work_phone" class="o_force_ltr" optional="hide"/>
+                <field name="mobile_phone" class="o_force_ltr" optional="hide"/>
+                <field name="probation_state" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="activity_ids" widget="list_activity" optional="hide"/>
+                <field name="active" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
     <record id="hr_employee_view_search_inherit" model="ir.ui.view">
         <field name="name">hr.employee.search.ellithy</field>
         <field name="model">hr.employee</field>
@@ -311,23 +386,98 @@
                         context="{'group_by': 'section_id'}"/>
                 <filter name="group_grade" string="Grade"
                         context="{'group_by': 'grade_id'}"/>
+                <filter name="group_departure_reason" string="Leaving Reason"
+                        context="{'group_by': 'departure_reason_id'}"/>
             </filter>
             <filter name="group_department" position="before">
                 <filter name="filter_blacklisted" string="Blacklisted"
                         domain="[('blacklist', '=', True)]"/>
                 <filter name="filter_incomplete_file" string="Incomplete HR File"
                         domain="[('document_completeness', '&lt;', 100)]"/>
+                <filter name="filter_probation_pending" string="Probation Evaluation Pending"
+                        domain="[('probation_state', '=', 'pending')]"/>
+                <filter name="filter_probation_done" string="Probation Evaluation Completed"
+                        domain="[('probation_state', '=', 'done')]"/>
                 <separator/>
             </filter>
+        </field>
+    </record>
+
+    <!-- Ex-employees: why and when they left, for the turnover report. -->
+    <record id="hr_employee_view_list_inactive" model="ir.ui.view">
+        <field name="name">hr.employee.list.ellithy.inactive</field>
+        <field name="model">hr.employee</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list string="Ex-Employees" js_class="hr_employee_list"
+                  default_order="departure_date desc, employee_code_number">
+                <field name="employee_code_number" column_invisible="1"/>
+                <field name="employee_code"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <field name="branch_id" optional="show"/>
+                <field name="joining_date" optional="show"/>
+                <field name="departure_date"/>
+                <field name="departure_reason_id"/>
+                <field name="inactive_type" optional="show"/>
+                <field name="departure_description" optional="hide"/>
+                <field name="blacklist" optional="hide"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_pivot_turnover" model="ir.ui.view">
+        <field name="name">hr.employee.pivot.ellithy.turnover</field>
+        <field name="model">hr.employee</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <pivot string="Turnover" sample="1">
+                <field name="departure_reason_id" type="row"/>
+                <field name="departure_date" interval="year" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_graph_turnover" model="ir.ui.view">
+        <field name="name">hr.employee.graph.ellithy.turnover</field>
+        <field name="model">hr.employee</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <graph string="Turnover" type="bar" sample="1">
+                <field name="departure_reason_id"/>
+            </graph>
         </field>
     </record>
 
     <record id="hr_employee_inactive_action" model="ir.actions.act_window">
         <field name="name">Inactive Employees</field>
         <field name="res_model">hr.employee</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,pivot,graph,form</field>
         <field name="domain">[('active', '=', False)]</field>
         <field name="context">{'active_test': False}</field>
+    </record>
+    <record id="hr_employee_inactive_action_view_list" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="hr_employee_view_list_inactive"/>
+        <field name="act_window_id" ref="hr_employee_inactive_action"/>
+    </record>
+    <record id="hr_employee_inactive_action_view_pivot" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="hr_employee_view_pivot_turnover"/>
+        <field name="act_window_id" ref="hr_employee_inactive_action"/>
+    </record>
+    <record id="hr_employee_inactive_action_view_graph" model="ir.actions.act_window.view">
+        <field name="sequence">3</field>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="hr_employee_view_graph_turnover"/>
+        <field name="act_window_id" ref="hr_employee_inactive_action"/>
     </record>
 
 </odoo>

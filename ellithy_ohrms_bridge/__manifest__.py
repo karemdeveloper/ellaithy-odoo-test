@@ -1,6 +1,6 @@
 {
     'name': 'Ellithy / OpenHRMS Bridge',
-    'version': '18.0.1.5.0',
+    'version': '18.0.1.6.0',
     'summary': 'Ellithy HR policy on the OpenHRMS loan, advance and '
                'resignation models, plus the joining-date conflict fix',
     'description': """
@@ -72,6 +72,7 @@ already carry, so a migration re-run matches rather than duplicates.
         'security/hcm_access.xml',
         'security/ir.model.access.csv',
         'security/hr_resignation_clearance_security.xml',
+        'data/hr_departure_reason_data.xml',
         'views/hr_loan_views.xml',
         'views/salary_advance_views.xml',
         'views/hr_resignation_views.xml',

@@ -26,7 +26,22 @@
         <field name="model">training.training</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_generate_sessions" type="object"
+                            string="Generate Sessions" class="btn-secondary"
+                            invisible="not id or not date_start or not date_end"/>
+                </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_sessions" type="object"
+                                class="oe_stat_button" icon="fa-calendar-check-o">
+                            <field name="session_count" widget="statinfo" string="Sessions"/>
+                        </button>
+                        <button name="action_view_assessments" type="object"
+                                class="oe_stat_button" icon="fa-pencil-square-o">
+                            <field name="assessment_count" widget="statinfo" string="Assessments"/>
+                        </button>
+                    </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
                             invisible="active"/>
                     <div class="oe_title">
@@ -62,6 +77,36 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Trainees" name="trainees">
+                            <field name="participant_ids" readonly="1">
+                                <list>
+                                    <field name="employee_id"/>
+                                    <field name="attended_count"/>
+                                    <field name="session_count"/>
+                                    <field name="attendance_rate" widget="progressbar"/>
+                                    <field name="assessment_score"/>
+                                    <field name="assessment_result" widget="badge"
+                                           decoration-success="assessment_result == 'pass'"
+                                           decoration-danger="assessment_result == 'fail'"
+                                           decoration-warning="assessment_result == 'pending'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Sessions &amp; Attendance" name="sessions">
+                            <field name="session_ids" context="{'default_training_id': id}">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="time_start" widget="float_time"/>
+                                    <field name="time_end" widget="float_time"/>
+                                    <field name="topic"/>
+                                    <field name="present_count"/>
+                                    <field name="trainee_count"/>
+                                    <button name="action_open_attendance" type="object"
+                                            string="Attendance" icon="fa-check-square-o"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="Description">
                             <field name="description"/>
                         </page>
@@ -118,5 +163,143 @@
 
     <menuitem id="menu_training_training" name="Trainings" parent="menu_training_root"
               action="action_training_training" sequence="10"/>
+
+    <!-- ============ Sessions & attendance ============ -->
+    <record id="view_training_session_form" model="ir.ui.view">
+        <field name="name">training.session.form</field>
+        <field name="model">training.session</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_mark_all_present" type="object" string="All Present"/>
+                    <button name="action_mark_all_absent" type="object" string="All Absent"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="training_id"/>
+                            <field name="name"/>
+                            <field name="topic"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="time_start" widget="float_time"/>
+                            <field name="time_end" widget="float_time"/>
+                            <field name="present_count"/>
+                        </group>
+                    </group>
+                    <field name="attendance_ids">
+                        <list editable="bottom" create="false"
+                              decoration-success="status == 'present'"
+                              decoration-danger="status == 'absent'">
+                            <field name="employee_id" readonly="1"/>
+                            <field name="status" widget="radio" options="{'horizontal': true}"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_training_session_list" model="ir.ui.view">
+        <field name="name">training.session.list</field>
+        <field name="model">training.session</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="training_id"/>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="topic"/>
+                <field name="present_count"/>
+                <field name="trainee_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_training_attendance_pivot" model="ir.ui.view">
+        <field name="name">training.attendance.pivot</field>
+        <field name="model">training.attendance</field>
+        <field name="arch" type="xml">
+            <pivot string="Attendance">
+                <field name="employee_id" type="row"/>
+                <field name="status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_training_attendance_list" model="ir.ui.view">
+        <field name="name">training.attendance.list</field>
+        <field name="model">training.attendance</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="false">
+                <field name="training_id" readonly="1"/>
+                <field name="session_id" readonly="1"/>
+                <field name="session_date" readonly="1"/>
+                <field name="employee_id" readonly="1"/>
+                <field name="status"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_training_attendance" model="ir.actions.act_window">
+        <field name="name">Attendance</field>
+        <field name="res_model">training.attendance</field>
+        <field name="view_mode">list,pivot</field>
+    </record>
+
+    <!-- ============ Training history (one line per trainee) ============ -->
+    <record id="view_training_participant_list" model="ir.ui.view">
+        <field name="name">training.participant.list</field>
+        <field name="model">training.participant</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="employee_id"/>
+                <field name="training_id"/>
+                <field name="training_type_id"/>
+                <field name="trainer_id" optional="show"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="attended_count"/>
+                <field name="session_count"/>
+                <field name="attendance_rate" widget="progressbar"/>
+                <field name="assessment_score"/>
+                <field name="assessment_result" widget="badge"
+                       decoration-success="assessment_result == 'pass'"
+                       decoration-danger="assessment_result == 'fail'"
+                       decoration-warning="assessment_result == 'pending'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_training_participant_search" model="ir.ui.view">
+        <field name="name">training.participant.search</field>
+        <field name="model">training.participant</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="training_id"/>
+                <filter name="passed" string="Passed" domain="[('assessment_result', '=', 'pass')]"/>
+                <filter name="failed" string="Failed" domain="[('assessment_result', '=', 'fail')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_training" string="Training" context="{'group_by': 'training_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_training_participant" model="ir.actions.act_window">
+        <field name="name">Training History</field>
+        <field name="res_model">training.participant</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <menuitem id="menu_training_history" name="Training History" parent="menu_training_root"
+              action="action_training_participant" sequence="30"/>
+    <menuitem id="menu_training_attendance" name="Attendance" parent="menu_training_root"
+              action="action_training_attendance" sequence="25"/>
 
 </odoo>

@@ -33,6 +33,7 @@ class TestResignationFlow(EllithyBridgeCommon):
             'expected_revealing_date': '2026-12-31',
             'reason': 'Relocating.',
             'resignation_type': 'resigned',
+            'departure_reason_id': self.env.ref('hr.departure_resigned').id,
         }
         values.update(kwargs)
         return self.env['hr.resignation'].create(values)

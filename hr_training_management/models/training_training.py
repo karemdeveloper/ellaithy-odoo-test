@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
+
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
@@ -57,6 +59,15 @@ class Training(models.Model):
     )
 
     active = fields.Boolean(default=True)  # [Claude addition]
+
+    session_ids = fields.One2many(
+        'training.session', 'training_id', string='Sessions')
+    session_count = fields.Integer(compute='_compute_counts')
+    participant_ids = fields.One2many(
+        'training.participant', 'training_id', string='Trainees Summary')
+    assessment_ids = fields.One2many(
+        'training.assessment', 'training_id', string='Assessments')
+    assessment_count = fields.Integer(compute='_compute_counts')
     company_id = fields.Many2one(
         'res.company', string='Company', default=lambda self: self.env.company
     )
@@ -66,7 +77,76 @@ class Training(models.Model):
         for vals in vals_list:
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('training.training') or _('New')
-        return super().create(vals_list)
+        trainings = super().create(vals_list)
+        trainings._sync_trainees()
+        return trainings
+
+    def write(self, vals):
+        result = super().write(vals)
+        if 'employee_ids' in vals:
+            self._sync_trainees()
+        return result
+
+    def _compute_counts(self):
+        for training in self:
+            training.session_count = len(training.session_ids)
+            training.assessment_count = len(training.assessment_ids)
+
+    def _sync_trainees(self):
+        """Keep one history line and one attendance line per trainee."""
+        Participant = self.env['training.participant']
+        for training in self:
+            participants = training.participant_ids
+            participants.filtered(
+                lambda p: p.employee_id not in training.employee_ids).unlink()
+            missing = training.employee_ids - participants.employee_id
+            if missing:
+                Participant.create([{
+                    'training_id': training.id, 'employee_id': employee.id,
+                } for employee in missing])
+            training.session_ids._sync_attendance()
+
+    def action_generate_sessions(self):
+        """One session per day of the programme, skipping days that
+        already have one. Fridays are skipped; delete any other day the
+        programme does not meet."""
+        Session = self.env['training.session']
+        for training in self:
+            if not (training.date_start and training.date_end):
+                continue
+            taken = set(training.session_ids.mapped('date'))
+            day, number = training.date_start, len(training.session_ids)
+            vals_list = []
+            while day <= training.date_end:
+                if day.weekday() != 4 and day not in taken:
+                    number += 1
+                    vals_list.append({
+                        'training_id': training.id,
+                        'name': _('Session %(n)s', n=number),
+                        'date': day,
+                        'time_start': training.time_start,
+                        'time_end': training.time_end,
+                    })
+                day += timedelta(days=1)
+            Session.create(vals_list)
+
+    def action_view_sessions(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window', 'name': _('Sessions'),
+            'res_model': 'training.session', 'view_mode': 'list,form',
+            'domain': [('training_id', '=', self.id)],
+            'context': {'default_training_id': self.id},
+        }
+
+    def action_view_assessments(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window', 'name': _('Assessments'),
+            'res_model': 'training.assessment', 'view_mode': 'list,form',
+            'domain': [('training_id', '=', self.id)],
+            'context': {'default_training_id': self.id},
+        }
 
     @api.constrains('date_start', 'date_end')
     def _check_dates(self):

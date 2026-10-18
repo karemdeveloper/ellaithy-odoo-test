@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Flow',
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.4.0',
     'summary': 'Attendance days, discipline and the penalty deduction ledger '
                'that feeds the standard payslip',
     'description': """

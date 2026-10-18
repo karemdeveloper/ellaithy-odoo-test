@@ -56,6 +56,30 @@ class HrEmployeeResignation(models.Model):
     resignation_count = fields.Integer(
         string='Resignation Count', compute='_compute_resignation_count')
 
+    # An exit approved ahead of the last day leaves the employee active
+    # until then (the daily job archives them on the day). Shown on the
+    # file so nobody mistakes that for a failed end of service.
+    scheduled_exit_date = fields.Date(
+        string='Scheduled Exit', compute='_compute_scheduled_exit')
+    scheduled_exit_id = fields.Many2one(
+        'hr.resignation', string='Scheduled Exit Request',
+        compute='_compute_scheduled_exit')
+
+    @api.depends('resignation_ids.state', 'resignation_ids.request_type',
+                 'resignation_ids.expected_revealing_date',
+                 'resignation_ids.approved_revealing_date')
+    def _compute_scheduled_exit(self):
+        today = fields.Date.context_today(self)
+        for employee in self:
+            upcoming = employee.resignation_ids.filtered(
+                lambda r: r.state == 'approved' and r.request_type == 'exit'
+                and (r.approved_revealing_date or r.expected_revealing_date
+                     or today) > today)[:1]
+            employee.scheduled_exit_id = upcoming
+            employee.scheduled_exit_date = (
+                upcoming.approved_revealing_date
+                or upcoming.expected_revealing_date) if upcoming else False
+
     @api.depends('loan_ids.balance_amount', 'loan_ids.state')
     def _compute_open_loan_balance(self):
         for employee in self:

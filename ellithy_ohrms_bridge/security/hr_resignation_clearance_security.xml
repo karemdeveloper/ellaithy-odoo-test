@@ -31,5 +31,15 @@
             <field name="groups" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
+        <!-- The signer of a line (department manager or the leaver's
+             direct manager) sees it while it is in progress. Rules of
+             the same group are OR-ed with the one above. -->
+        <record id="rule_hr_resignation_clearance_responsible" model="ir.rule">
+            <field name="name">Clearance: lines I sign</field>
+            <field name="model_id" ref="model_hr_resignation_clearance"/>
+            <field name="domain_force">[('manager_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
     </data>
 </odoo>

@@ -131,3 +131,58 @@ class TestPenaltyCap(IbsHrCommon):
         self.assertEqual(june.penalty_days_taken, 0.0)
         july = self._payslip(month=7)
         self.assertAlmostEqual(july.penalty_days_taken, 2.0, places=2)
+
+
+@tagged('post_install', '-at_install', 'ibs_payroll')
+class TestPenaltyAmountOverride(IbsHrCommon):
+    """HR letter item 22: HR Admin states a penalty in money."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.violation = cls.env['ibs.hr.violation'].create({
+            'name': 'Camera misconduct', 'code': 'V998',
+            'penalty_ids': [(0, 0, {'occurrence': 1, 'action': 'fine',
+                                    'penalty_days': 1.0})],
+        })
+
+    def _penalty(self, days, amount):
+        warning = self.env['ibs.hr.warning'].create({
+            'employee_id': self.employee.id,
+            'violation_id': self.violation.id,
+            'date': '2026-06-01',
+            'custom_penalty_days': days,
+            'custom_amount': amount,
+        })
+        warning.action_submit()
+        warning.action_approve()
+        return warning
+
+    def test_the_override_replaces_days_times_rate(self):
+        warning = self._penalty(2.0, 450.0)
+        self.assertEqual(warning.deducted_amount, 450.0)
+
+    def test_the_payslip_takes_the_stated_amount_within_the_cap(self):
+        # 7 days at 700 total: the cap takes 5 days (500) in June and the
+        # remaining 2 days (200) in July -- the amount, not 100/day x days.
+        warning = self._penalty(7.0, 700.0)
+        june = self._payslip()
+        june.action_payslip_done()
+        self.assertAlmostEqual(sum(june.penalty_deduction_ids.mapped('amount')), 500.0)
+        self.assertAlmostEqual(june.penalty_amount, 500.0)
+        july = self._payslip(month=7)
+        july.action_payslip_done()
+        self.assertAlmostEqual(sum(july.penalty_deduction_ids.mapped('amount')), 200.0)
+        self.assertTrue(warning.is_settled)
+
+    def test_only_hr_admin_may_set_the_amount(self):
+        from odoo.exceptions import ValidationError
+        officer = self.env['res.users'].create({
+            'name': 'Penalty Officer', 'login': 'penalty.officer',
+            'groups_id': [(6, 0, [self.env.ref('ellithy_hr_base.group_ellithy_hr_generalist').id])],
+        })
+        warning = self.env['ibs.hr.warning'].create({
+            'employee_id': self.employee.id, 'violation_id': self.violation.id,
+            'date': '2026-06-01', 'custom_penalty_days': 2.0})
+        with self.assertRaises(ValidationError):
+            warning.with_user(officer).write({'custom_amount': 999.0})

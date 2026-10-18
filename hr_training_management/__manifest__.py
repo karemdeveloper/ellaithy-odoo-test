@@ -1,6 +1,6 @@
 {
     'name': 'HR Training Management',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Human Resources',
     'summary': 'Manage employee training programs, sessions and enrollments',
     'author': 'Your Company',
@@ -13,6 +13,9 @@
         'views/training_type_views.xml',
         'views/training_trainer_views.xml',
         'views/training_training_views.xml',
+        'views/training_assessment_views.xml',
+        'views/assessment_templates.xml',
+        'data/mail_template_data.xml',
         'views/course_category_views.xml',
         'views/course_subcategory_views.xml',
         'views/course_course_views.xml',

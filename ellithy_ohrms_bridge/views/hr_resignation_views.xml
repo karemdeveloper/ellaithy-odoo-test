@@ -9,6 +9,7 @@
                   decoration-success="state == 'approved'"
                   decoration-danger="state == 'rejected'">
                 <field name="sequence" widget="handle"/>
+                <field name="line_type" readonly="1"/>
                 <field name="department_id" readonly="1"/>
                 <field name="manager_id" readonly="1" optional="show"/>
                 <field name="employee_id" column_invisible="1"/>
@@ -133,6 +134,15 @@
             <xpath expr="//field[@name='resignation_type']" position="attributes">
                 <attribute name="invisible">request_type != 'exit'</attribute>
                 <attribute name="required">request_type == 'exit' and state != 'draft'</attribute>
+            </xpath>
+            <!-- The classified leaving reason HR picks while reviewing; the
+                 leaver's own words stay in "Reason". -->
+            <xpath expr="//field[@name='resignation_type']" position="after">
+                <field name="departure_reason_id"
+                       invisible="request_type != 'exit'"
+                       required="request_type == 'exit' and state == 'endorsed'"
+                       options="{'no_create': True}"
+                       groups="ellithy_ohrms_bridge.resignation_generalist"/>
             </xpath>
 
             <!-- HR's own record of which contract is ending, not the

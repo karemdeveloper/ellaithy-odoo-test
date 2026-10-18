@@ -4,7 +4,7 @@
         <field name="name">ibs.hr.warning.list</field>
         <field name="model">ibs.hr.warning</field>
         <field name="arch" type="xml">
-            <list><field name="name"/><field name="employee_id"/><field name="branch_id"/><field name="violation_id"/><field name="date"/><field name="execution_date"/><field name="occurrence"/><field name="action"/><field name="penalty_days"/><field name="days_settled"/><field name="days_remaining"/><field name="deducted_amount"/><field name="status"/></list></field>
+            <list><field name="name"/><field name="employee_id"/><field name="branch_id"/><field name="violation_id"/><field name="date"/><field name="execution_date"/><field name="occurrence"/><field name="action"/><field name="penalty_days"/><field name="custom_amount" optional="hide"/><field name="days_settled"/><field name="days_remaining"/><field name="deducted_amount"/><field name="status"/></list></field>
     </record>
     <record id="ibs_hr_warning_view_form" model="ir.ui.view">
         <field name="name">ibs.hr.warning.form</field>
@@ -37,6 +37,11 @@
                             <field name="action"/>
                             <field name="penalty_days"/>
                             <field name="custom_penalty_days"/>
+                            <field name="can_override_amount" invisible="1"/>
+                            <!-- HR Admin may state the penalty in money;
+                                 the model refuses anyone else. -->
+                            <field name="custom_amount"
+                                   readonly="not can_override_amount or deduction_ids"/>
                             <field name="deducted_amount"/>
                             <field name="currency_id" invisible="1"/>
                             <!-- CR 2.12: a penalty above the monthly ceiling

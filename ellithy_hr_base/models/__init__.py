@@ -12,3 +12,5 @@ from . import hr_employee_account
 from . import hr_contract
 from . import ellithy_hr_line
 from . import res_groups
+from . import res_company
+from . import survey_user_input

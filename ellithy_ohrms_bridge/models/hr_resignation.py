@@ -1,3 +1,5 @@
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, ValidationError
 
@@ -139,8 +141,18 @@ class HrResignation(models.Model):
     _HR_ONLY_FIELDS = {
         'request_type', 'resignation_type', 'blacklist', 'blacklist_reason',
         'disable_login', 'suspension_start', 'suspension_end',
-        'suspension_reason_id', 'suspension_comment',
+        'suspension_reason_id', 'suspension_comment', 'departure_reason_id',
     }
+
+    # Why the employee left, from HR's managed list (Employees >
+    # Configuration > Departure Reasons). The leaver's own words stay in
+    # ``reason``; this is the classified cause the turnover report groups
+    # by, and it is written onto the employee on exit.
+    departure_reason_id = fields.Many2one(
+        'hr.departure.reason', string='Leaving Reason', tracking=True,
+        ondelete='restrict',
+        help='Required before HR approves an exit. Written onto the '
+             'employee with the leaving date, for the turnover report.')
 
     def unlink(self):
         if not self.env.su and any(record.state not in ('draft',) for record in self):
@@ -450,8 +462,7 @@ class HrResignation(models.Model):
             if blocked:
                 raise ValidationError(_(
                     'Clearance is blocked by %(departments)s.',
-                    departments=', '.join(
-                        blocked.mapped('department_id.display_name'))))
+                    departments=', '.join(blocked.mapped('display_name'))))
             if not resignation.clearance_complete:
                 raise ValidationError(_(
                     'Clearance is not complete (%(progress)s). Every '
@@ -551,8 +562,10 @@ class HrResignation(models.Model):
     }
 
     def _departure_reason(self):
-        """The stock departure reason matching the resignation type."""
+        """The leaving reason HR chose, else the one the type implies."""
         self.ensure_one()
+        if self.departure_reason_id:
+            return self.departure_reason_id
         xmlid = self.DEPARTURE_REASON_XMLID.get(self.resignation_type)
         reason = self.env.ref(xmlid, raise_if_not_found=False) if xmlid else None
         if reason:
@@ -688,6 +701,11 @@ class HrResignation(models.Model):
         if not (self.env.su or self.env.user.has_group('ellithy_ohrms_bridge.resignation_admin')):
             raise AccessError(_('Only HR management can approve a resignation.'))
         for resignation in self:
+            if (resignation.request_type == 'exit'
+                    and not resignation.departure_reason_id):
+                raise ValidationError(_(
+                    'Choose the leaving reason for %(name)s before approving '
+                    'the exit.', name=resignation.employee_id.name))
             if resignation.state != 'endorsed':
                 raise ValidationError(_(
                     'A resignation is approved after the line manager has '
@@ -802,17 +820,22 @@ class HrResignationClearance(models.Model):
     _name = 'hr.resignation.clearance'
     _description = 'Clearance Line'
     _order = 'sequence, id'
-    _rec_name = 'department_id'
 
     resignation_id = fields.Many2one(
         'hr.resignation', string='Resignation', required=True, index=True,
         ondelete='cascade')
+    # A department's line, or the leaver's own direct manager, who is a
+    # person rather than a department but signs off the same way.
+    line_type = fields.Selection(
+        [('department', 'Department'), ('manager', 'Direct Manager')],
+        string='Clearing Party', default='department', required=True)
     department_id = fields.Many2one(
-        'hr.department', string='Department', required=True,
-        ondelete='restrict')
+        'hr.department', string='Department', ondelete='restrict')
     manager_id = fields.Many2one(
-        related='department_id.manager_id', string='Department Manager',
-        store=True)
+        'hr.employee', string='Responsible', store=True,
+        compute='_compute_manager_id',
+        help='Who signs this line: the department manager, or the leaver\'s '
+             'direct manager.')
     sequence = fields.Integer(default=10)
     employee_id = fields.Many2one(
         related='resignation_id.employee_id', store=True, string='Employee')
@@ -846,6 +869,35 @@ class HrResignationClearance(models.Model):
          'This department is already on the clearance form.'),
     ]
 
+    @api.depends('line_type', 'department_id.manager_id',
+                 'resignation_id.employee_id.parent_id')
+    def _compute_manager_id(self):
+        for line in self:
+            if line.line_type == 'manager':
+                line.manager_id = line.resignation_id.employee_id.parent_id
+            else:
+                line.manager_id = line.department_id.manager_id
+
+    @api.depends('line_type', 'department_id', 'manager_id')
+    def _compute_display_name(self):
+        for line in self:
+            if line.line_type == 'manager':
+                line.display_name = _('Direct Manager (%(name)s)',
+                                      name=line.manager_id.name or '-')
+            else:
+                line.display_name = line.department_id.display_name or ''
+
+    @api.constrains('line_type', 'department_id', 'resignation_id')
+    def _check_line_shape(self):
+        for line in self:
+            if line.line_type == 'department' and not line.department_id:
+                raise ValidationError(_('A department line needs a department.'))
+            if line.line_type == 'manager' and len(
+                    line.resignation_id.clearance_line_ids.filtered(
+                        lambda l: l.line_type == 'manager')) > 1:
+                raise ValidationError(_(
+                    'The direct manager is already on the clearance form.'))
+
     def _check_approver(self):
         """Who may sign a department's line.
 
@@ -858,11 +910,11 @@ class HrResignationClearance(models.Model):
         if user.has_group('ellithy_ohrms_bridge.resignation_admin'):
             return
         for line in self:
-            if line.department_id.manager_id.user_id == user:
+            if line.manager_id.user_id == user:
                 continue
             raise ValidationError(_(
                 'Clearance for %(department)s is signed by its manager or by '
-                'HR.', department=line.department_id.display_name))
+                'HR.', department=line.display_name))
 
     # Only the signature itself is gated -- HR Personnel keep the plain ACL
     # write they already have for the amount/note columns; it is setting
@@ -879,6 +931,48 @@ class HrResignationClearance(models.Model):
             self._check_approver()
         return super().write(vals)
 
+    def _notify_responsible(self):
+        """Mail each signer their line, all at once.
+
+        Clearance is parallel: every party is asked the moment it starts,
+        rather than one after another. A party with no responsible person
+        or no work email is named in the chatter so HR can chase it.
+        """
+        missing = self.browse()
+        for line in self:
+            resignation = line.resignation_id.sudo()
+            employee = resignation.employee_id
+            email = line.manager_id.work_email
+            if not email:
+                missing |= line
+                continue
+            url = '%s/odoo/action-hr_resignation.hr_resignation_action/%s' % (
+                resignation.get_base_url(), resignation.id)
+            body = Markup(
+                '<p>%s</p><ul><li>%s: [%s] %s</li><li>%s: %s</li>'
+                '<li>%s: %s</li><li>%s: %s</li></ul><p><a href="%s">%s</a></p>'
+            ) % (
+                _('Please review and sign the clearance of the employee below.'),
+                _('Employee'), employee.employee_code or '', employee.name,
+                _('Department'), employee.department_id.name or '-',
+                _('Last working day'), resignation.expected_revealing_date or '-',
+                _('Your part'), line.display_name,
+                url, _('Open the clearance form'))
+            self.env['mail.mail'].sudo().create({
+                'subject': _('Clearance request: %(name)s', name=employee.name),
+                'email_to': email,
+                'email_from': employee.company_id.email or self.env.user.email_formatted,
+                'body_html': body,
+                'model': 'hr.resignation', 'res_id': resignation.id,
+                'auto_delete': False,
+            })
+        for resignation in missing.resignation_id:
+            resignation.message_post(body=_(
+                'No email address for %(parties)s; ask them to sign directly.',
+                parties=', '.join(missing.filtered(
+                    lambda l: l.resignation_id == resignation).mapped(
+                        'display_name'))))
+
     def action_approve(self):
         self._check_approver()
         for line in self:
@@ -892,7 +986,7 @@ class HrResignationClearance(models.Model):
             })
             line.resignation_id.message_post(body=_(
                 '%(department)s cleared by %(user)s.',
-                department=line.department_id.display_name,
+                department=line.display_name,
                 user=self.env.user.display_name))
 
     def action_reject(self):
@@ -902,7 +996,7 @@ class HrResignationClearance(models.Model):
             if not line.rejection_reason:
                 raise ValidationError(_(
                     'Blocking clearance for %(department)s requires a '
-                    'reason.', department=line.department_id.display_name))
+                    'reason.', department=line.display_name))
             line.write({
                 'state': 'rejected',
                 'approved_by': self.env.user.id,
@@ -910,7 +1004,7 @@ class HrResignationClearance(models.Model):
             })
             line.resignation_id.message_post(body=_(
                 '%(department)s blocked clearance: %(reason)s',
-                department=line.department_id.display_name,
+                department=line.display_name,
                 reason=line.rejection_reason))
 
     def action_reset(self):

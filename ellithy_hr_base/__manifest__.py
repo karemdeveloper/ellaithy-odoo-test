@@ -1,6 +1,6 @@
 {
     'name': 'Ellaithy HR Base',
-    'version': '18.0.1.8.0',
+    'version': '18.0.1.9.1',
     'summary': 'Employee directory, org structure and HR master data migrated from the legacy Laravel HR platform',
     'description': """
 Ellithy HR Base
@@ -27,6 +27,7 @@ reconcilable against the source MariaDB database.
         'hr',
         'hr_contract',
         'mail',
+        'survey',
     ],
     'data': [
         'security/ellithy_hr_security.xml',
@@ -38,6 +39,9 @@ reconcilable against the source MariaDB database.
         'data/ellithy_hr_document_type_data.xml',
         'data/ellithy_hr_suspension_reason_data.xml',
         'data/ellithy_hr_insurance_office_data.xml',
+        'data/ir_cron_data.xml',
+        'data/survey_probation_data.xml',
+        'data/ir_exports_data.xml',
         'views/ellithy_branch_views.xml',
         'views/ellithy_hr_grade_views.xml',
         'views/ellithy_hr_reference_views.xml',
@@ -46,6 +50,8 @@ reconcilable against the source MariaDB database.
         'views/hr_job_views.xml',
         'views/hr_contract_views.xml',
         'views/hr_employee_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/survey_templates.xml',
         'wizard/hr_welcome_mail_wizard_views.xml',
         'views/menus.xml',
     ],

@@ -7,9 +7,10 @@
             <form string="Start Clearance">
                 <div class="alert alert-info" role="status">
                     Confirming the last working day writes it back to the
-                    resignation. Every department chosen below gets a line to
-                    sign; they may sign in any order, and all of them must
-                    sign before clearance can be confirmed.
+                    resignation. The direct manager and every department below
+                    get their own line and an email at the same time; they may
+                    sign in any order, and all of them must sign before
+                    clearance can be confirmed.
                 </div>
                 <group>
                     <group>
@@ -21,8 +22,16 @@
                         <field name="last_working_day"/>
                     </group>
                 </group>
-                <group string="Departments to Clear">
-                    <field name="department_ids" nolabel="1"
+                <group string="Who Has to Sign">
+                    <field name="include_direct_manager"/>
+                    <field name="direct_manager_id" readonly="1"
+                           invisible="not include_direct_manager"/>
+                    <div colspan="2" class="text-warning"
+                         invisible="not include_direct_manager or direct_manager_id">
+                        This employee has no manager set, so no direct-manager
+                        line will be added.
+                    </div>
+                    <field name="department_ids"
                            widget="many2many_tags"
                            options="{'no_create': True}"
                            placeholder="IT, Finance, Stores, Fleet..."/>

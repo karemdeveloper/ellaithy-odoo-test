@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_job_view_form_ellithy_recruitment" model="ir.ui.view">
+        <field name="name">hr.job.form.ellithy.recruitment</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_form"/>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='recruitment']" position="inside">
+                <field name="grade_id" options="{'no_create': True}"/>
+                <field name="interview_question_count" string="Interview Questions"
+                       invisible="not grade_id"/>
+            </xpath>
+            <xpath expr="//page[@name='recruitment_page']" position="inside">
+                <group string="Online Application" name="online_application">
+                    <group>
+                        <field name="online_apply"/>
+                        <field name="apply_url" widget="CopyClipboardChar"
+                               invisible="not apply_url"/>
+                        <div colspan="2" class="text-muted" invisible="not apply_url">
+                            Share the link in job ads. The QR code opens the same form
+                            for walk-ins and branch posters; applications through it are
+                            tagged "QR code".
+                        </div>
+                    </group>
+                    <group invisible="not apply_qr">
+                        <field name="apply_qr" widget="image" nolabel="1" colspan="2"
+                               options="{'size': [160, 160]}" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="ellithy_hr_grade_view_form_questions" model="ir.ui.view">
+        <field name="name">ellithy.hr.grade.form.questions</field>
+        <field name="model">ellithy.hr.grade</field>
+        <field name="arch" type="xml">
+            <form string="Grade">
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="name_ar"/>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                    <separator string="Interview Questions"/>
+                    <field name="interview_question_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
