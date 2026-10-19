@@ -1,11 +1,11 @@
 {
     'name': 'HR Training Management',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.2.1',
     'category': 'Human Resources',
     'summary': 'Manage employee training programs, sessions and enrollments',
     'author': 'Your Company',
     'license': 'LGPL-3',
-    'depends': ['hr', 'mail', 'ellithy_hr_base'],
+    'depends': ['hr', 'mail', 'survey', 'ellithy_hr_base'],
     'data': [
         'security/training_security.xml',
         'security/ir.model.access.csv',
@@ -16,6 +16,8 @@
         'views/training_assessment_views.xml',
         'views/assessment_templates.xml',
         'data/mail_template_data.xml',
+        'data/survey_training_evaluation_data.xml',
+        'data/ir_cron_data.xml',
         'views/course_category_views.xml',
         'views/course_subcategory_views.xml',
         'views/course_course_views.xml',

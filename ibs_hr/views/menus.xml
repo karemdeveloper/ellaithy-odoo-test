@@ -60,4 +60,10 @@
               parent="menu_cfg_discipline"
               action="ibs_hr_admin_penalty_action"
               sequence="20"/>
+
+    <menuitem id="menu_cfg_commission_penalty_reasons"
+              name="Commission Penalty Reasons"
+              parent="menu_cfg_discipline"
+              action="ibs_hr_commission_penalty_reason_action"
+              sequence="30"/>
 </odoo>

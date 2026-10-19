@@ -2,6 +2,51 @@ from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
+class IbsHrCommissionPenaltyReason(models.Model):
+    """HR letter item 24: the reasons a commission can be cut, kept as a
+    list HR manages instead of free text, so penalties can be reported by
+    reason."""
+
+    _name = 'ibs.hr.commission.penalty.reason'
+    _description = 'Commission Penalty Reason'
+    _order = 'sequence, name'
+
+    name = fields.Char(required=True, translate=True)
+    code = fields.Char(help='Short key, also matched when penalties are imported.')
+    sequence = fields.Integer(default=10)
+    default_percentage = fields.Float(
+        string='Default Percentage', digits=(5, 2),
+        help='Proposed on a new penalty with this reason; can be changed.')
+    description = fields.Text()
+    active = fields.Boolean(default=True)
+    penalty_count = fields.Integer(compute='_compute_penalty_count')
+
+    _sql_constraints = [
+        ('code_uniq', 'unique(code)', 'Another reason already uses this code.'),
+    ]
+
+    def _compute_penalty_count(self):
+        data = self.env['ibs.hr.commission.penalty']._read_group(
+            [('reason_id', 'in', self.ids)], ['reason_id'], ['__count'])
+        counts = {reason.id: count for reason, count in data}
+        for reason in self:
+            reason.penalty_count = counts.get(reason.id, 0)
+
+    @api.model
+    def _from_text(self, text):
+        """The reason a free-text value (a code or a name) stands for,
+        created when it is new, so imports and the legacy sync keep working."""
+        text = (text or '').strip()
+        if not text:
+            return self.browse()
+        reason = self.with_context(active_test=False).search(
+            ['|', ('code', '=ilike', text), ('name', '=ilike', text)], limit=1)
+        if not reason:
+            label = text.replace('_', ' ').strip().title() if '_' in text else text
+            reason = self.sudo().create({'name': label, 'code': text if '_' in text else False})
+        return reason
+
+
 class IbsHrCommissionPenalty(models.Model):
     """A percentage cut applied to an employee's commission.
 
@@ -26,7 +71,11 @@ class IbsHrCommissionPenalty(models.Model):
     percentage = fields.Float(
         string='Percentage', digits=(5, 2), required=True, tracking=True,
         help='Share of commission withheld, as a percentage.')
-    reason = fields.Char(required=True)
+    reason_id = fields.Many2one(
+        'ibs.hr.commission.penalty.reason', string='Reason', index=True,
+        ondelete='restrict', tracking=True)
+    # Kept as the reason's name, for the legacy sync and older reports.
+    reason = fields.Char(string='Reason Text')
     note = fields.Text()
     date = fields.Date(default=fields.Date.context_today, required=True)
     execution_date = fields.Date(
@@ -68,8 +117,29 @@ class IbsHrCommissionPenalty(models.Model):
     def action_reset(self):
         return self.write({'approval_status': 'pending'})
 
+    @api.onchange('reason_id')
+    def _onchange_reason_id(self):
+        if self.reason_id.default_percentage and not self.percentage:
+            self.percentage = self.reason_id.default_percentage
+
+    @api.model
+    def _sync_reason_vals(self, vals):
+        if vals.get('reason_id'):
+            vals['reason'] = self.env['ibs.hr.commission.penalty.reason'].browse(
+                vals['reason_id']).name
+        elif vals.get('reason'):
+            vals['reason_id'] = self.env['ibs.hr.commission.penalty.reason']._from_text(
+                vals['reason']).id
+        return vals
+
+    @api.constrains('reason_id')
+    def _check_reason(self):
+        for record in self:
+            if not record.reason_id:
+                raise ValidationError(_('Choose the reason for the commission penalty.'))
+
     def write(self, vals):
-        vals = dict(vals)
+        vals = self._sync_reason_vals(dict(vals))
         if 'approval_status' in vals:
             self._check_approver()
             target = vals['approval_status']
@@ -104,6 +174,8 @@ class IbsHrCommissionPenalty(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            if not self._sync_reason_vals(vals).get('reason_id'):
+                raise ValidationError(_('Choose the reason for the commission penalty.'))
             if not self.env.su and (vals.get('approval_status', 'pending') != 'pending'
                                     or vals.get('reviewed_by') or vals.get('reviewed_at')):
                 raise ValidationError(_('Create the commission penalty as pending, then submit an approval.'))

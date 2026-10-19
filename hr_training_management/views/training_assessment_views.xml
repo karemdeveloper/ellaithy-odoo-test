@@ -225,6 +225,29 @@
                     <field name="training_count" widget="statinfo" string="Trainings"/>
                 </button>
             </div>
+            <!-- HR letter item 7: the training record on the employee file -->
+            <notebook position="inside">
+                <page string="Training" name="training_history" groups="hr.group_hr_user">
+                    <field name="training_participant_ids" readonly="1" nolabel="1">
+                        <list default_order="date_start desc">
+                            <field name="training_id"/>
+                            <field name="training_type_id"/>
+                            <field name="trainer_id" optional="show"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="attended_count" string="Attended"/>
+                            <field name="session_count" string="Sessions"/>
+                            <field name="attendance_rate" widget="progressbar"/>
+                            <field name="assessment_score"/>
+                            <field name="assessment_result" widget="badge"
+                                   decoration-success="assessment_result == 'pass'"
+                                   decoration-danger="assessment_result == 'fail'"
+                                   decoration-warning="assessment_result == 'pending'"/>
+                            <field name="evaluation_score" optional="show"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
         </field>
     </record>
 </odoo>

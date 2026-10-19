@@ -5,6 +5,14 @@ DEPT_TYPE = [
     ('section', 'Section'),
 ]
 
+# The business sector a department belongs to, for reports that split the
+# workforce into sales, services and back office.
+SECTOR = [
+    ('sales', 'Sales'),
+    ('services', 'Services'),
+    ('support', 'Support / Back Office'),
+]
+
 
 class HrDepartment(models.Model):
     """Department and section.
@@ -29,6 +37,10 @@ class HrDepartment(models.Model):
         index=True)
     branch_id = fields.Many2one(
         'ellithy.branch', string='Branch', index=True, ondelete='restrict')
+    sector = fields.Selection(
+        SECTOR, string='Sector', index=True,
+        help='Set on the directorate; its sections and their employees '
+             'inherit it.')
     address = fields.Char()
     phone = fields.Char()
     section_ids = fields.One2many(

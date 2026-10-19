@@ -10,9 +10,10 @@ class HrAttendance(models.Model):
     _inherit = 'hr.attendance'
 
     def _custom_shift_records(self):
-        return self.filtered(lambda attendance: attendance.employee_id.shift_id)
+        return self.filtered(lambda attendance: attendance.employee_id.effective_shift_id)
 
-    @api.depends('employee_id', 'employee_id.shift_id', 'check_in', 'check_out')
+    @api.depends('employee_id', 'employee_id.shift_id',
+                 'employee_id.company_id.ibs_default_shift_id', 'check_in', 'check_out')
     def _compute_worked_hours(self):
         custom = self._custom_shift_records()
         regular = self - custom
@@ -30,7 +31,8 @@ class HrAttendance(models.Model):
 
     def _custom_shift_overtime_hours(self):
         self.ensure_one()
-        if not (self.check_in and self.check_out and self.employee_id.shift_id):
+        if not (self.check_in and self.check_out
+                and self.employee_id.effective_shift_id):
             return 0.0
         day_model = self.env['ibs.hr.attendance.day']
         timezone = day_model._shift_timezone()
@@ -55,7 +57,8 @@ class HrAttendance(models.Model):
         minutes = math.floor(max(hours, 0.0) * 60.0 + 1e-9)
         return minutes / 60.0 if minutes >= 31 else 0.0
 
-    @api.depends('employee_id', 'employee_id.shift_id', 'check_in', 'check_out',
+    @api.depends('employee_id', 'employee_id.shift_id',
+                 'employee_id.company_id.ibs_default_shift_id', 'check_in', 'check_out',
                  'worked_hours')
     def _compute_overtime_hours(self):
         custom = self._custom_shift_records()
@@ -65,7 +68,8 @@ class HrAttendance(models.Model):
         for attendance in custom:
             attendance.overtime_hours = attendance._custom_shift_overtime_hours()
 
-    @api.depends('employee_id', 'employee_id.shift_id', 'overtime_status',
+    @api.depends('employee_id', 'employee_id.shift_id',
+                 'employee_id.company_id.ibs_default_shift_id', 'overtime_status',
                  'overtime_hours')
     def _compute_validated_overtime_hours(self):
         custom = self._custom_shift_records()
@@ -83,7 +87,7 @@ class HrAttendance(models.Model):
         regular_dates = {
             employee: dates
             for employee, dates in employee_attendance_dates.items()
-            if not employee.shift_id
+            if not employee.effective_shift_id
         }
         result = (super()._update_overtime(regular_dates)
                   if regular_dates else None)
@@ -92,7 +96,7 @@ class HrAttendance(models.Model):
         # Remove Odoo working-schedule rows, which may contain negative hours.
         custom_domain = expression.FALSE_DOMAIN
         for employee, dates in employee_attendance_dates.items():
-            if employee.shift_id:
+            if employee.effective_shift_id:
                 custom_domain = expression.OR([custom_domain, [
                     ('employee_id', '=', employee.id),
                     ('date', 'in', [item[1] for item in dates]),

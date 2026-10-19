@@ -106,6 +106,36 @@ class TestLoanRules(EllithyBridgeCommon):
         loan = self._loan(installment=4)
         self.assertIn('Rule C', '\n'.join(loan._eligibility_failures()))
 
+    # ---- HR letter item 13: exceptional loans -------------------------
+    def test_hr_admin_may_mark_a_loan_as_an_exception(self):
+        admin = self.env['res.users'].create({
+            'name': 'Loan Admin', 'login': 'bridge.loan.admin',
+            'groups_id': [(4, self.env.ref('ellithy_hr_base.group_ellithy_hr_admin').id)]})
+        loan = self.env['hr.loan'].with_user(admin).create({
+            'employee_id': self.employee.id, 'loan_amount': 30000.0,
+            'installment': 12, 'payment_date': '2026-06-01',
+            'is_exception': True, 'exception_reason': 'Medical emergency.'})
+        self.assertEqual(loan._eligibility_failures(), [])
+        loan.action_submit()
+        self.assertEqual(loan.state, 'waiting_approval_1')
+
+    def test_an_exception_still_requires_a_year_of_service(self):
+        self.employee.joining_date = '2026-01-01'
+        loan = self._loan(loan_amount=30000.0, installment=12, is_exception=True,
+                          exception_reason='Medical emergency.')
+        self.assertIn('Rule A', '\n'.join(loan._eligibility_failures()))
+
+    def test_an_exception_needs_a_reason(self):
+        with self.assertRaises(ValidationError):
+            self._loan(is_exception=True)
+
+    def test_hr_personnel_cannot_grant_an_exception(self):
+        with self.assertRaises(ValidationError):
+            self.env['hr.loan'].with_user(self.hr_user).create({
+                'employee_id': self.employee.id, 'loan_amount': 30000.0,
+                'installment': 12, 'is_exception': True,
+                'exception_reason': 'Medical emergency.'})
+
     # ---- CR 2.17 -----------------------------------------------------
     def test_finance_cannot_approve_before_hr(self):
         loan = self._loan()

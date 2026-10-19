@@ -81,6 +81,25 @@ class TestRecruitmentFlow(TransactionCase):
         self.assertEqual(str(candidate.activity_ids.date_deadline), '2026-10-25')
 
 
+    # ---- HR letter item 14 ---------------------------------------------
+    def test_the_hired_stage_creates_the_employee_file(self):
+        hired = self.env.ref('hr_recruitment.stage_job5')
+        self.applicant.stage_id = hired
+        employee = self.applicant.employee_id
+        self.assertTrue(employee, 'the employee file is created at the signed contract')
+        self.assertEqual(employee.identification_id, '29001011234567')
+        self.assertEqual(employee.job_id, self.job)
+        self.assertTrue(employee.activity_ids.filtered(
+            lambda a: 'Complete the new employee file' in (a.summary or '')))
+
+    def test_an_existing_employee_is_linked_not_duplicated(self):
+        former = self.env['hr.employee'].create({
+            'name': 'Returning Person', 'identification_id': '29001011234567'})
+        self.applicant.stage_id = self.env.ref('hr_recruitment.stage_job5')
+        self.assertEqual(self.applicant.employee_id, former)
+        self.assertEqual(self.env['hr.employee'].with_context(active_test=False).search_count(
+            [('identification_id', '=', '29001011234567')]), 1)
+
 @tagged('post_install', '-at_install', 'ellithy_hr')
 class TestCareersPage(HttpCase):
     """Recruitment items 1, 2 and 8: the public application form."""

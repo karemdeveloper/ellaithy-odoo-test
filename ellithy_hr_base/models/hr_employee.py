@@ -8,6 +8,8 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import SQL
 
+from .hr_department import SECTOR
+
 VACATION_ROLE = [
     ('15', '15 Days'),
     ('21', '21 Days'),
@@ -116,10 +118,15 @@ class HrEmployee(models.Model):
              'several branches.')
     section_id = fields.Many2one(
         'hr.department', string='Section', index=True, ondelete='restrict',
-        domain="[('dept_type', '=', 'section')]", tracking=True)
+        domain="[('dept_type', '=', 'section'), ('parent_id', '=?', department_id)]",
+        tracking=True,
+        help='Only the sections of the chosen department are offered.')
     grade_id = fields.Many2one(
         'ellithy.hr.grade', string='Grade', index=True, ondelete='restrict',
         tracking=True)
+    sector = fields.Selection(
+        SECTOR, string='Sector', compute='_compute_sector', store=True, index=True,
+        help='From the department, or the directorate above it.')
 
     # ------------------------------------------------------------------
     # Employment terms
@@ -475,6 +482,15 @@ class HrEmployee(models.Model):
                 lambda line: line.received and line.type_id.required))
             record.document_completeness = 100.0 * received / required_types
 
+    @api.depends('department_id.sector', 'department_id.parent_id.sector',
+                 'department_id.parent_id.parent_id.sector')
+    def _compute_sector(self):
+        for record in self:
+            department, sector = record.department_id, False
+            while department and not sector:
+                sector, department = department.sector, department.parent_id
+            record.sector = sector
+
     @api.depends('employee_code')
     def _compute_employee_code_number(self):
         for record in self:
@@ -668,6 +684,11 @@ class HrEmployee(models.Model):
                     '%(name)s while the employee is still active.',
                     name=record.name or ''))
 
+    @api.onchange('department_id')
+    def _onchange_department_clear_section(self):
+        if self.section_id and self.section_id.parent_id != self.department_id:
+            self.section_id = False
+
     @api.constrains('section_id', 'department_id')
     def _check_section_department(self):
         for record in self:
@@ -719,6 +740,13 @@ class HrEmployee(models.Model):
         if before:
             self._ibs_post_audit(before)
         return result
+
+    @api.model
+    def get_import_templates(self):
+        return [{
+            'label': _('Import Template for Employees (Ellaithy)'),
+            'template': '/ellithy_hr_base/static/xls/employees_import_template.xlsx',
+        }]
 
     def _set_evaluation_due_date(self, vals):
         """Probation evaluation falls due a fixed delay after joining."""

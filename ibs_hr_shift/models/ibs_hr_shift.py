@@ -24,6 +24,85 @@ class IbsHrShift(models.Model):
     line_ids = fields.One2many(
         'ibs.hr.shift.line', 'shift_id', string='Lines', copy=True)
 
+    # HR letter item 15 -- one set of hours for the whole week, generated
+    # into the seven day lines, each of which can still be edited.
+    default_from_time = fields.Float(string='Default From', default=9.0)
+    default_to_time = fields.Float(string='Default To', default=17.0)
+    rest_day = fields.Selection(
+        WEEKDAYS, string='Weekly Rest Day', default='4')
+    second_rest_day = fields.Selection(
+        WEEKDAYS, string='Second Rest Day')
+    employee_count = fields.Integer(compute='_compute_employee_count')
+    is_company_default = fields.Boolean(
+        string='Company Default', compute='_compute_is_company_default')
+
+    def _compute_employee_count(self):
+        data = self.env['hr.employee']._read_group(
+            [('shift_id', 'in', self.ids)], ['shift_id'], ['__count'])
+        counts = {shift.id: count for shift, count in data}
+        for shift in self:
+            shift.employee_count = counts.get(shift.id, 0)
+
+    def _compute_is_company_default(self):
+        defaults = self.env.companies.ibs_default_shift_id
+        for shift in self:
+            shift.is_company_default = shift in defaults
+
+    @api.constrains('default_from_time', 'default_to_time')
+    def _check_default_times(self):
+        for shift in self:
+            if not (0.0 <= shift.default_from_time < 24.0
+                    and 0.0 <= shift.default_to_time < 24.0):
+                raise ValidationError(_('Default From and To must be between 00:00 and 23:59.'))
+            if shift.default_from_time == shift.default_to_time:
+                raise ValidationError(_('Default From and To cannot be equal.'))
+
+    def _week_line_values(self):
+        self.ensure_one()
+        rest = {self.rest_day, self.second_rest_day} - {False}
+        return [{
+            'shift_id': self.id, 'day': day,
+            'is_off': day in rest,
+            'from_time': 0.0 if day in rest else self.default_from_time,
+            'to_time': 0.0 if day in rest else self.default_to_time,
+        } for day, _label in WEEKDAYS]
+
+    def action_generate_week(self):
+        """Write the default hours on all seven days, rest days off.
+
+        Replaces the current day lines; edit any day afterwards for a
+        different start, a short day or a flexible day.
+        """
+        for shift in self:
+            shift.line_ids.unlink()
+            self.env['ibs.hr.shift.line'].create(shift._week_line_values())
+        return True
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        shifts = super().create(vals_list)
+        # A new shift starts with its week filled in, rather than empty.
+        for shift, vals in zip(shifts, vals_list):
+            if not vals.get('line_ids'):
+                shift.action_generate_week()
+        return shifts
+
+    def action_assign_employees(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window', 'name': _('Assign Shift'),
+            'res_model': 'ibs.hr.shift.assign.wizard', 'view_mode': 'form',
+            'target': 'new', 'context': {'default_shift_id': self.id},
+        }
+
+    def action_view_employees(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window', 'name': _('Employees'),
+            'res_model': 'hr.employee', 'view_mode': 'list,form',
+            'domain': [('shift_id', '=', self.id)],
+        }
+
     @api.constrains('from_date', 'to_date')
     def _check_dates(self):
         for shift in self:
@@ -36,7 +115,9 @@ class IbsHrShift(models.Model):
         today = fields.Date.context_today(self)
         for shift in self:
             employees = self.env['hr.employee'].search([
-                ('active', '=', True), ('shift_id', '=', shift.id),
+                ('active', '=', True), '|', ('shift_id', '=', shift.id),
+                '&', ('shift_id', '=', False),
+                ('company_id.ibs_default_shift_id', '=', shift.id),
             ])
             date_to = min(shift.to_date, today)
             if shift.from_date <= date_to:

@@ -77,8 +77,11 @@ class IbsHrWarning(models.Model):
         help='HR Admin only. Replaces "days x daily rate" with this amount. '
              'It is deducted over the penalty days, so the monthly cap '
              'still applies.')
+    # The default covers a new form: its first onchange does not run a
+    # compute that depends only on the user.
     can_override_amount = fields.Boolean(
-        compute='_compute_can_override_amount')
+        compute='_compute_can_override_amount',
+        default=lambda self: self._may_override_amount())
     deducted_amount = fields.Monetary(
         string='Deducted Amount', compute='_compute_deducted_amount',
         store=True, currency_field='currency_id',

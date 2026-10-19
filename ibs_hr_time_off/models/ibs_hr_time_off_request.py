@@ -37,6 +37,10 @@ class IbsHrTimeOffRequest(models.Model):
     date_to = fields.Date(required=True, tracking=True)
     number_of_days = fields.Float(
         compute='_compute_number_of_days', store=True, digits=(8, 4))
+    day_basis = fields.Char(
+        string='Days Counted On', compute='_compute_day_basis',
+        help='The shift, working schedule or default week the working days '
+             'of this request were counted on.')
     reason = fields.Text()
     attachment_ids = fields.Many2many(
         'ir.attachment', 'ibs_time_off_attachment_rel',
@@ -109,9 +113,54 @@ class IbsHrTimeOffRequest(models.Model):
                 and self.employee_id == self.env.user.employee_id):
             raise ValidationError(_('You cannot approve your own request.'))
 
+    def _working_day_basis(self):
+        """How working days are told apart for this employee.
+
+        HR letter item 17: the shift (the employee's own, or the company
+        default), otherwise Saturday to Thursday. A request is never refused
+        only because no shift was assigned yet. Odoo's working schedule is
+        not used: the one employees carry here is the stock Monday-to-Friday
+        week, which would count Friday and drop Sunday.
+        Returns ``(is_working_day(date), description)``.
+        """
+        self.ensure_one()
+        employee = self.employee_id
+        shift = employee.effective_shift_id
+        if shift and shift.line_ids:
+            lines = {line.day: line for line in shift.line_ids}
+
+            def on_shift(day):
+                line = lines.get(str(day.weekday()))
+                return bool(line and not line.is_off)
+            return on_shift, _('Shift: %(shift)s', shift=shift.name)
+        return (lambda day: day.weekday() != 4,
+                _('Saturday to Thursday, Friday off (no shift assigned)'))
+
+    def _working_days(self):
+        """Working, non-holiday dates between date_from and date_to."""
+        self.ensure_one()
+        if not (self.employee_id and self.date_from and self.date_to):
+            return []
+        is_working, _basis = self._working_day_basis()
+        holidays = set(self.env['ibs.hr.public.holiday'].sudo().search([
+            ('date', '>=', self.date_from), ('date', '<=', self.date_to),
+            ('company_id', '=', self.employee_id.company_id.id),
+            ('active', '=', True)]).mapped('date'))
+        days, current = [], self.date_from
+        while current <= self.date_to:
+            if is_working(current) and current not in holidays:
+                days.append(current)
+            current += timedelta(days=1)
+        return days
+
+    @api.depends('employee_id')
+    def _compute_day_basis(self):
+        for request in self:
+            request.day_basis = (request._working_day_basis()[1]
+                                 if request.employee_id else False)
+
     @api.depends('employee_id', 'type_id', 'date_from', 'date_to')
     def _compute_number_of_days(self):
-        holidays = self.env['ibs.hr.public.holiday'].sudo()
         for request in self:
             if not request.employee_id or not request.date_from or not request.date_to:
                 request.number_of_days = 0.0
@@ -120,21 +169,7 @@ class IbsHrTimeOffRequest(models.Model):
                     'birthday', 'public_holiday', 'compensatory_rest'):
                 request.number_of_days = 1.0
                 continue
-            shift = request.employee_id.shift_id
-            current = request.date_from
-            days = 0
-            while shift and current <= request.date_to:
-                line = shift.line_ids.filtered(
-                    lambda item: item.day == str(current.weekday()))[:1]
-                is_holiday = holidays.search_count([
-                    ('date', '=', current),
-                    ('company_id', '=', request.employee_id.company_id.id),
-                    ('active', '=', True),
-                ])
-                if line and not line.is_off and not is_holiday:
-                    days += 1
-                current += timedelta(days=1)
-            request.number_of_days = float(days)
+            request.number_of_days = float(len(request._working_days()))
 
     @api.depends('employee_id', 'type_id', 'date_from')
     def _compute_balance(self):
@@ -282,20 +317,9 @@ class IbsHrTimeOffRequest(models.Model):
     def _leave_days_by_year(self):
         self.ensure_one()
         result = {}
-        shift = self.employee_id.shift_id
-        current = self.date_from
-        holidays = self.env['ibs.hr.public.holiday'].sudo()
-        while shift and current <= self.date_to:
-            line = shift.line_ids.filtered(
-                lambda item: item.day == str(current.weekday()))[:1]
-            holiday = holidays.search_count([
-                ('date', '=', current),
-                ('company_id', '=', self.employee_id.company_id.id),
-                ('active', '=', True)])
-            if line and not line.is_off and not holiday:
-                bucket = result.setdefault(current.year, {'date': current, 'days': 0})
-                bucket['days'] += 1
-            current += timedelta(days=1)
+        for current in self._working_days():
+            bucket = result.setdefault(current.year, {'date': current, 'days': 0})
+            bucket['days'] += 1
         return result
 
     def _reserved_days(self, on_date=None):
@@ -318,7 +342,12 @@ class IbsHrTimeOffRequest(models.Model):
             raise ValidationError(_(
                 'The Time Off Type and employee must belong to the same company.'))
         if self.number_of_days <= 0:
-            raise ValidationError(_('The selected dates contain no working day.'))
+            raise ValidationError(_(
+                'The selected dates contain no working day for %(employee)s '
+                '(days counted on: %(basis)s). Check the dates, or the '
+                "employee's shift if this is wrong.",
+                employee=self.employee_id.name,
+                basis=self._working_day_basis()[1]))
         if kind in ('birthday', 'public_holiday',
                     'compensatory_rest') and self.date_from != self.date_to:
             raise ValidationError(_('This time off type must be exactly one day.'))

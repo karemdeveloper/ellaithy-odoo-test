@@ -60,10 +60,54 @@ class HrApplicant(models.Model):
         if 'interviewer_employee_ids' in vals:
             self._sync_interviewer_users()
         if 'stage_id' in vals:
-            self.filtered(
-                lambda a: a.stage_id != old_stages.get(a.id)
-            )._ask_for_interviewer()
+            moved = self.filtered(lambda a: a.stage_id != old_stages.get(a.id))
+            moved._ask_for_interviewer()
+            moved.filtered(
+                lambda a: a.stage_id.hired_stage and not a.employee_id
+            )._ellithy_hire_employee()
         return result
+
+    # ---- HR letter item 14: the employee file follows the signed contract --
+    def _ellithy_existing_employee(self):
+        """An employee who is already this person: same national ID, or
+        else same email. Former employees count, so a rehire is linked to
+        their old file instead of getting a second one."""
+        self.ensure_one()
+        Employee = self.env['hr.employee'].sudo().with_context(active_test=False)
+        employee = Employee.browse()
+        if self.national_id:
+            employee = Employee.search(
+                [('identification_id', '=', self.national_id)], limit=1)
+        if not employee and self.email_from:
+            employee = Employee.search(
+                ['|', ('work_email', '=ilike', self.email_from),
+                 ('private_email', '=ilike', self.email_from)], limit=1)
+        return employee
+
+    def _ellithy_hire_employee(self):
+        """Create the employee, or link the existing one, when the
+        applicant reaches the hired (contract signed) stage, and leave HR a
+        to-do on the file to complete it."""
+        for applicant in self:
+            employee = applicant._ellithy_existing_employee()
+            if employee:
+                applicant.candidate_id.sudo().employee_id = employee
+                note = (_('Linked to the existing employee file %(name)s.', name=employee.name)
+                        if employee.active else
+                        _('Linked to the former employee file %(name)s (archived); '
+                          'unarchive it to rehire.', name=employee.name))
+            else:
+                action = applicant.sudo().create_employee_from_applicant()
+                employee = self.env['hr.employee'].sudo().browse(action['res_id'])
+                note = _('Employee file %(name)s created from the signed contract.',
+                         name=employee.name)
+            applicant.message_post(body=note)
+            employee.activity_schedule(
+                'mail.mail_activity_data_todo',
+                summary=_('Complete the new employee file'),
+                note=_('Created from application %(ref)s: add the employee code, '
+                       'contract, shift and documents.', ref=applicant.display_name),
+                user_id=(applicant.user_id or self.env.user).id)
 
     def _sync_interviewer_users(self):
         for applicant in self:

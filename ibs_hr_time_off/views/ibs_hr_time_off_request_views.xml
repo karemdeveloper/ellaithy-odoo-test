@@ -49,6 +49,7 @@
                             <field name="approval_route" invisible="1"/>
                             <field name="date_from"/><field name="date_to"/>
                             <field name="number_of_days" readonly="1"/>
+                            <field name="day_basis" readonly="1" class="text-muted"/>
                             <field name="balance" readonly="1"/>
                         </group>
                         <group><field name="holiday_id"

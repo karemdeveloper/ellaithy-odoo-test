@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- HR letter item 24: the reasons already used in the commission
+         penalties on file. HR adds and renames reasons from Configuration. -->
+    <data noupdate="1">
+        <record id="commission_penalty_reason_new_rating" model="ibs.hr.commission.penalty.reason">
+            <field name="name">New Rating</field>
+            <field name="code">new_rating</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="commission_penalty_reason_average_rating" model="ibs.hr.commission.penalty.reason">
+            <field name="name">Average Rating</field>
+            <field name="code">average_rating</field>
+            <field name="sequence">20</field>
+        </record>
+    </data>
+</odoo>

@@ -354,6 +354,7 @@
                 <field name="contract_date_start"/>
                 <field name="contract_date_end"/>
                 <field name="section_id" optional="hide"/>
+                <field name="sector" optional="hide"/>
                 <field name="name_ar" optional="hide"/>
                 <field name="parent_id" widget="many2one_avatar_user" optional="hide"/>
                 <field name="work_phone" class="o_force_ltr" optional="hide"/>
@@ -388,12 +389,21 @@
                         context="{'group_by': 'grade_id'}"/>
                 <filter name="group_departure_reason" string="Leaving Reason"
                         context="{'group_by': 'departure_reason_id'}"/>
+                <filter name="group_sector" string="Sector"
+                        context="{'group_by': 'sector'}"/>
             </filter>
             <filter name="group_department" position="before">
                 <filter name="filter_blacklisted" string="Blacklisted"
                         domain="[('blacklist', '=', True)]"/>
                 <filter name="filter_incomplete_file" string="Incomplete HR File"
                         domain="[('document_completeness', '&lt;', 100)]"/>
+                <filter name="filter_sector_sales" string="Sales Sector"
+                        domain="[('sector', '=', 'sales')]"/>
+                <filter name="filter_sector_services" string="Services Sector"
+                        domain="[('sector', '=', 'services')]"/>
+                <filter name="filter_sector_support" string="Support Sector"
+                        domain="[('sector', '=', 'support')]"/>
+                <separator/>
                 <filter name="filter_probation_pending" string="Probation Evaluation Pending"
                         domain="[('probation_state', '=', 'pending')]"/>
                 <filter name="filter_probation_done" string="Probation Evaluation Completed"

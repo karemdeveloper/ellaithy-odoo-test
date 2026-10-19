@@ -30,6 +30,14 @@
                     <button name="action_generate_sessions" type="object"
                             string="Generate Sessions" class="btn-secondary"
                             invisible="not id or not date_start or not date_end"/>
+                    <button name="action_send_evaluation" type="object"
+                            string="Send Evaluation" class="btn-secondary"
+                            invisible="not id or evaluation_sent_at"
+                            confirm="Mail the evaluation link to every trainee now?"/>
+                    <button name="action_send_evaluation" type="object"
+                            string="Resend Evaluation" class="btn-secondary"
+                            invisible="not evaluation_sent_at"
+                            help="Mails the same link again to trainees who have not answered."/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -40,6 +48,13 @@
                         <button name="action_view_assessments" type="object"
                                 class="oe_stat_button" icon="fa-pencil-square-o">
                             <field name="assessment_count" widget="statinfo" string="Assessments"/>
+                        </button>
+                        <button name="action_view_evaluations" type="object"
+                                class="oe_stat_button" icon="fa-star-half-o">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="evaluation_progress"/></span>
+                                <span class="o_stat_text">Evaluations</span>
+                            </div>
                         </button>
                     </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
@@ -89,8 +104,27 @@
                                            decoration-success="assessment_result == 'pass'"
                                            decoration-danger="assessment_result == 'fail'"
                                            decoration-warning="assessment_result == 'pending'"/>
+                                    <field name="evaluation_state" widget="badge"
+                                           decoration-success="evaluation_state == 'done'"
+                                           decoration-info="evaluation_state == 'sent'"/>
+                                    <field name="evaluation_score"/>
                                 </list>
                             </field>
+                        </page>
+                        <page string="Evaluation" name="evaluation">
+                            <group>
+                                <group string="Evaluation Form">
+                                    <field name="evaluation_survey_id"/>
+                                    <field name="evaluation_auto"/>
+                                    <field name="evaluation_sent_at"/>
+                                    <field name="evaluation_progress"/>
+                                </group>
+                                <group string="Results">
+                                    <field name="evaluation_score" widget="progressbar"/>
+                                    <field name="training_rating" widget="progressbar"/>
+                                    <field name="trainer_rating" widget="progressbar"/>
+                                </group>
+                            </group>
                         </page>
                         <page string="Sessions &amp; Attendance" name="sessions">
                             <field name="session_ids" context="{'default_training_id': id}">
@@ -269,7 +303,60 @@
                        decoration-success="assessment_result == 'pass'"
                        decoration-danger="assessment_result == 'fail'"
                        decoration-warning="assessment_result == 'pending'"/>
+                <field name="evaluation_score" optional="show"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_training_participant_evaluation_list" model="ir.ui.view">
+        <field name="name">training.participant.evaluation.list</field>
+        <field name="model">training.participant</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="training_id"/>
+                <field name="training_type_id"/>
+                <field name="trainer_id"/>
+                <field name="employee_id"/>
+                <field name="date_end"/>
+                <field name="evaluation_state" widget="badge"
+                       decoration-success="evaluation_state == 'done'"
+                       decoration-info="evaluation_state == 'sent'"/>
+                <field name="training_rating" widget="progressbar"/>
+                <field name="trainer_rating" widget="progressbar"/>
+                <field name="evaluation_score" widget="progressbar"/>
+                <button name="action_view_evaluation" type="object" string="Answers"
+                        icon="fa-file-text-o" invisible="evaluation_state != 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_training_participant_pivot" model="ir.ui.view">
+        <field name="name">training.participant.pivot</field>
+        <field name="model">training.participant</field>
+        <field name="arch" type="xml">
+            <pivot string="Training Evaluation" sample="1">
+                <field name="trainer_id" type="row"/>
+                <field name="training_id" type="row"/>
+                <field name="training_rating" type="measure"/>
+                <field name="trainer_rating" type="measure"/>
+                <field name="evaluation_score" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_training_evaluation_report" model="ir.actions.act_window">
+        <field name="name">Training Evaluation</field>
+        <field name="res_model">training.participant</field>
+        <field name="view_mode">pivot,list</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_training_participant_pivot')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_training_participant_evaluation_list')})]"/>
+        <field name="domain">[('evaluation_state', '=', 'done')]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No evaluation received yet</p>
+            <p>Trainees get the evaluation link when their programme ends; their ratings of the training and the trainer appear here.</p>
         </field>
     </record>
 
@@ -282,9 +369,13 @@
                 <field name="training_id"/>
                 <filter name="passed" string="Passed" domain="[('assessment_result', '=', 'pass')]"/>
                 <filter name="failed" string="Failed" domain="[('assessment_result', '=', 'fail')]"/>
+                <separator/>
+                <filter name="evaluated" string="Evaluated" domain="[('evaluation_state', '=', 'done')]"/>
+                <filter name="evaluation_pending" string="Evaluation Pending" domain="[('evaluation_state', '=', 'sent')]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
                     <filter name="group_training" string="Training" context="{'group_by': 'training_id'}"/>
+                    <filter name="group_trainer" string="Trainer" context="{'group_by': 'trainer_id'}"/>
                 </group>
             </search>
         </field>
@@ -301,5 +392,7 @@
               action="action_training_participant" sequence="30"/>
     <menuitem id="menu_training_attendance" name="Attendance" parent="menu_training_root"
               action="action_training_attendance" sequence="25"/>
+    <menuitem id="menu_training_evaluation_report" name="Training Evaluation" parent="menu_training_root"
+              action="action_training_evaluation_report" sequence="35"/>
 
 </odoo>

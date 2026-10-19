@@ -62,3 +62,42 @@ class TestCommissionApproval(IbsHrCommon):
         record.execution_date = '2026-07-01'
         record.date = '2026-06-02'
         self.assertEqual(str(record.execution_date), '2026-07-01')
+
+
+@tagged('post_install', '-at_install', 'ibs_payroll')
+class TestCommissionPenaltyReasons(IbsHrCommon):
+    """HR letter item 24: reasons are a managed list."""
+
+    def test_a_penalty_is_recorded_against_a_listed_reason(self):
+        reason = self.env.ref('ibs_hr.commission_penalty_reason_new_rating')
+        before = reason.penalty_count
+        record = self.env['ibs.hr.commission.penalty'].create({
+            'employee_id': self.employee.id, 'percentage': 10,
+            'reason_id': reason.id, 'date': '2026-06-01'})
+        self.assertEqual(record.reason, 'New Rating')
+        reason.invalidate_recordset()
+        self.assertEqual(reason.penalty_count, before + 1)
+
+    def test_a_code_from_the_legacy_sync_finds_its_reason(self):
+        record = self.env['ibs.hr.commission.penalty'].create({
+            'employee_id': self.employee.id, 'percentage': 5,
+            'reason': 'average_rating', 'date': '2026-06-01'})
+        self.assertEqual(record.reason_id,
+                         self.env.ref('ibs_hr.commission_penalty_reason_average_rating'))
+
+    def test_a_penalty_needs_a_reason(self):
+        with self.assertRaises(ValidationError):
+            self.env['ibs.hr.commission.penalty'].create({
+                'employee_id': self.employee.id, 'percentage': 5,
+                'date': '2026-06-01'})
+
+    def test_penalties_report_by_reason(self):
+        reason = self.env['ibs.hr.commission.penalty.reason'].create({
+            'name': 'Missing Paperwork', 'default_percentage': 7.5})
+        Penalty = self.env['ibs.hr.commission.penalty']
+        for _i in range(2):
+            Penalty.create({'employee_id': self.employee.id, 'percentage': 7.5,
+                            'reason_id': reason.id, 'date': '2026-06-01'})
+        groups = Penalty._read_group([('reason_id', '=', reason.id)],
+                                     ['reason_id'], ['__count'])
+        self.assertEqual(groups, [(reason, 2)])

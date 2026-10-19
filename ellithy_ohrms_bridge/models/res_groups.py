@@ -47,6 +47,9 @@ class ResGroups(models.Model):
                 for source, target in mapping.items():
                     if access.group_id == self.env.ref(source):
                         access.group_id = target
+        # HR letter item 21: employees raise their own advance again. The
+        # vendor's employee rule keeps them to their own requests and
+        # ``salary.advance.write`` keeps every approval with HR and Finance.
         update('ohrms_salary_advance.access_salary_advance_user', {
-            'perm_write': False, 'perm_create': False, 'perm_unlink': False})
+            'perm_write': True, 'perm_create': True, 'perm_unlink': False})
         return True

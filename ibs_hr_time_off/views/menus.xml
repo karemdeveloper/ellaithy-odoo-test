@@ -9,9 +9,12 @@
     <menuitem id="menu_custom_time_off" name="Time Off"
               parent="menu_time_off_root"
               action="time_off_request_action" sequence="10"/>
-    <menuitem id="menu_time_off_balances" name="Time Off Balances"
+    <menuitem id="menu_time_off_leave_balances" name="Leave Balances"
               parent="menu_time_off_root"
-              action="time_off_ledger_action" sequence="11"/>
+              action="time_off_balance_action" sequence="11"/>
+    <menuitem id="menu_time_off_balances" name="Balance Ledger"
+              parent="menu_time_off_root"
+              action="time_off_ledger_action" sequence="13"/>
     <menuitem id="menu_rest_credits" name="Rest Credits"
               parent="menu_time_off_root"
               action="rest_credit_action" sequence="12"/>

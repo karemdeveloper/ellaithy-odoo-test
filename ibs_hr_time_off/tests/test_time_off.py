@@ -193,3 +193,51 @@ class TestCustomTimeOff(TransactionCase):
         ])
         self.assertEqual(day.state, 'leave')
         self.assertTrue(day.is_paid_leave)
+
+
+@tagged('post_install', '-at_install', 'ibs_hr_time_off')
+class TestLeaveLetterItems(TransactionCase):
+    """HR letter items 17 and 18."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env.company.ibs_default_shift_id = False
+        cls.employee = cls.env['hr.employee'].create({
+            'name': 'No Shift Employee', 'joining_date': '2024-01-01'})
+        cls.casual = cls.env.ref('ibs_hr_time_off.time_off_type_casual')
+
+    def _request(self, start, end):
+        return self.env['ibs.hr.time.off.request'].create({
+            'employee_id': self.employee.id, 'type_id': self.casual.id,
+            'date_from': start, 'date_to': end})
+
+    def test_a_leave_is_counted_without_a_shift(self):
+        # Sunday 11 to Saturday 17 October 2026: six days, Friday off.
+        request = self._request('2026-10-11', '2026-10-17')
+        self.assertEqual(request.number_of_days, 6.0)
+        self.assertIn('Saturday to Thursday', request.day_basis)
+        request.action_submit()
+        self.assertEqual(request.state, 'submitted')
+
+    def test_the_company_default_shift_is_used_when_set(self):
+        shift = self.env['ibs.hr.shift'].create({
+            'name': 'Default 6 days', 'from_date': '2026-01-01', 'to_date': '2026-12-31',
+            'rest_day': '4'})
+        self.env.company.ibs_default_shift_id = shift
+        request = self._request('2026-10-11', '2026-10-17')
+        self.assertEqual(request.number_of_days, 6.0)
+        self.assertIn('Default 6 days', request.day_basis)
+
+    def test_balance_summary_per_employee_and_type(self):
+        request = self._request('2026-10-12', '2026-10-13')
+        request.action_submit()
+        request.action_hr_approve()
+        self.env['ibs.hr.time.off.balance'].invalidate_model()
+        line = self.env['ibs.hr.time.off.balance'].search([
+            ('employee_id', '=', self.employee.id), ('type_id', '=', self.casual.id),
+            ('year', '=', 2026)])
+        self.assertEqual(len(line), 1)
+        self.assertEqual(line.used, 2.0)
+        self.assertAlmostEqual(line.remaining, line.entitled - 2.0)
+        self.assertGreater(line.entitled, 0.0)

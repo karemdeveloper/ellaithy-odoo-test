@@ -9,3 +9,4 @@ from . import course_subcategory
 from . import course_course
 from . import course_lesson
 from . import hr_employee
+from . import survey

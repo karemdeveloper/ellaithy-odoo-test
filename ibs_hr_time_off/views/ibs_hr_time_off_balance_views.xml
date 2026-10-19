@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- HR letter item 18: balance per employee and type -->
+    <record id="time_off_balance_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.balance.list</field>
+        <field name="model">ibs.hr.time.off.balance</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false" edit="false">
+                <field name="employee_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="type_id"/>
+                <field name="year"/>
+                <field name="entitled" sum="Total"/>
+                <field name="used" sum="Total"/>
+                <field name="expired" optional="hide"/>
+                <field name="remaining" sum="Total"
+                       decoration-danger="remaining &lt; 0"
+                       decoration-success="remaining &gt; 0"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="time_off_balance_view_pivot" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.balance.pivot</field>
+        <field name="model">ibs.hr.time.off.balance</field>
+        <field name="arch" type="xml">
+            <pivot string="Time Off Balance">
+                <field name="employee_id" type="row"/>
+                <field name="type_id" type="col"/>
+                <field name="remaining" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="time_off_balance_view_search" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.balance.search</field>
+        <field name="model">ibs.hr.time.off.balance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="type_id"/>
+                <filter name="this_year" string="This Year"
+                        domain="[('year', '=', context_today().year)]"/>
+                <filter name="last_year" string="Last Year"
+                        domain="[('year', '=', context_today().year - 1)]"/>
+                <separator/>
+                <filter name="negative" string="Negative Balance" domain="[('remaining', '&lt;', 0)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_type" string="Type" context="{'group_by': 'type_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="time_off_balance_action" model="ir.actions.act_window">
+        <field name="name">Leave Balances</field>
+        <field name="res_model">ibs.hr.time.off.balance</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="context">{'search_default_this_year': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No balance yet</p>
+            <p>Balances appear once grants and accruals are posted to the time off ledger.</p>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_form_time_off_balance" model="ir.ui.view">
+        <field name="name">hr.employee.form.time.off.balance</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_time_off_balance" type="object"
+                        class="oe_stat_button" icon="fa-calendar-check-o"
+                        string="Leave Balance"/>
+            </div>
+        </field>
+    </record>
+</odoo>

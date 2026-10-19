@@ -22,3 +22,5 @@ access_ibs_warning_deduction_user,ibs.hr.warning.deduction.user,model_ibs_hr_war
 access_admin_penalty_employee,admin.penalty.employee,model_ibs_hr_admin_penalty_record,base.group_user,1,0,0,0
 access_commission_penalty_employee,commission.penalty.employee,model_ibs_hr_commission_penalty,base.group_user,1,0,0,0
 access_warning_employee,warning.employee,model_ibs_hr_warning,base.group_user,1,0,0,0
+access_ibs_commission_penalty_reason_user,ibs.hr.commission.penalty.reason.user,model_ibs_hr_commission_penalty_reason,base.group_user,1,0,0,0
+access_ibs_commission_penalty_reason_admin,ibs.hr.commission.penalty.reason.admin,model_ibs_hr_commission_penalty_reason,ibs_hr.penalty_admin,1,1,1,1

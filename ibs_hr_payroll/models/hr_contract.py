@@ -24,7 +24,7 @@ class HrContract(models.Model):
         contract working schedule, then to eight hours.
         """
         self.ensure_one()
-        lines = self.employee_id.shift_id.line_ids.filtered(
+        lines = self.employee_id.effective_shift_id.line_ids.filtered(
             lambda line: not line.is_off and line.number_of_hours > 0)
         if lines:
             return sum(lines.mapped('number_of_hours')) / len(lines)
@@ -32,6 +32,8 @@ class HrContract(models.Model):
 
     @api.depends('wage', 'employee_id.shift_id.line_ids.number_of_hours',
                  'employee_id.shift_id.line_ids.is_off',
+                 'employee_id.company_id.ibs_default_shift_id.line_ids.number_of_hours',
+                 'employee_id.company_id.ibs_default_shift_id.line_ids.is_off',
                  'resource_calendar_id.hours_per_day')
     def _compute_overtime_wages(self):
         for contract in self:

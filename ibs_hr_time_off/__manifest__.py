@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Time Off',
-    'version': '18.0.1.6.0',
+    'version': '18.0.1.7.0',
     'summary': 'Custom time off requests, approvals, balances and accruals',
     'author': 'ibs',
     'website': 'https://ibs-egy.com/',
@@ -23,6 +23,7 @@
         'views/ibs_hr_time_off_type_views.xml',
         'views/ibs_hr_time_off_request_views.xml',
         'views/ibs_hr_time_off_ledger_views.xml',
+        'views/ibs_hr_time_off_balance_views.xml',
         'views/menus.xml',
     ],
     'installable': True,

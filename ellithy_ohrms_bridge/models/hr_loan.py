@@ -60,6 +60,22 @@ class HrLoan(models.Model):
     refusal_reason = fields.Text(
         string='Refusal Reason', copy=False,
         help='Required to refuse a request.')
+    # An exception lets HR Admin raise a loan above the usual amount or over
+    # more instalments than the policy allows (rules B, C and D). Service
+    # length (rule A) still applies, and the HR then Finance approvals are
+    # unchanged. The reason is required and the flag is tracked.
+    is_exception = fields.Boolean(
+        string='Exceptional Request', tracking=True, copy=False,
+        help='HR Admin only. Waives the amount, instalment and financial-year '
+             'limits for this loan. Approvals still apply.')
+    exception_reason = fields.Text(
+        string='Exception Reason', tracking=True, copy=False)
+    # The default covers a new form: its first onchange does not run a
+    # compute that depends only on the user.
+    can_grant_exception = fields.Boolean(
+        compute='_compute_can_grant_exception',
+        default=lambda self: self.env.su or self.env.user.has_group(
+            'ellithy_ohrms_bridge.loan_admin'))
     eligibility_warning = fields.Text(
         string='Eligibility', compute='_compute_eligibility_warning',
         help='CR 2.16 -- the rules this request currently breaks, shown while '
@@ -68,6 +84,26 @@ class HrLoan(models.Model):
     # ------------------------------------------------------------------
     # CR 2.15 / 2.16 -- eligibility
     # ------------------------------------------------------------------
+    @api.depends_context('uid')
+    def _compute_can_grant_exception(self):
+        allowed = self.env.su or self.env.user.has_group('ellithy_ohrms_bridge.loan_admin')
+        for loan in self:
+            loan.can_grant_exception = allowed
+
+    def _check_exception_rights(self, vals):
+        if not ({'is_exception', 'exception_reason'} & vals.keys()):
+            return
+        if not (self.env.su or self.env.user.has_group('ellithy_ohrms_bridge.loan_admin')):
+            raise ValidationError(_('Only HR Admin can mark a loan as an exception.'))
+
+    @api.constrains('is_exception', 'exception_reason', 'installment')
+    def _check_exception(self):
+        for loan in self:
+            if loan.is_exception and not (loan.exception_reason or '').strip():
+                raise ValidationError(_('An exceptional loan needs a reason.'))
+            if loan.is_exception and loan.installment > 60:
+                raise ValidationError(_('Even an exceptional loan is repaid within 60 instalments.'))
+
     @api.model
     def _loan_rule_params(self):
         """Eligibility thresholds, as parameters rather than constants.
@@ -138,6 +174,12 @@ class HrLoan(models.Model):
                     'eligible on %(eligible)s.',
                     months=months_required, name=employee.name,
                     joined=joined, eligible=eligible_from))
+
+        if self.is_exception:
+            # HR Admin waived the amount, instalment and year-end limits.
+            if self.loan_amount <= 0:
+                failures.append(_('Rule B (amount): the loan amount must be positive.'))
+            return failures
 
         # (b) at most twice the monthly salary
         contract = employee.sudo()._ibs_contract_on(start)
@@ -224,6 +266,7 @@ class HrLoan(models.Model):
             raise ValidationError(_('Only %s may perform this approval.', description))
 
     def write(self, vals):
+        self._check_exception_rights(vals)
         if 'employee_id' in vals:
             self._check_request_employee(vals['employee_id'], 'ellithy_ohrms_bridge.loan_generalist')
         vals = dict(vals)
@@ -235,7 +278,7 @@ class HrLoan(models.Model):
         # step in draft: it does so through ``hr.loan.line`` directly, not
         # through this write, so that safety net is unaffected.
         terms = {'employee_id', 'loan_amount', 'installment', 'payment_date',
-                 'currency_id', 'loan_lines'}
+                 'currency_id', 'loan_lines', 'is_exception', 'exception_reason'}
         if terms & vals.keys() and any(r.state != 'draft' for r in self):
             raise ValidationError(
                 _('Loan terms cannot change once the request has been '
@@ -277,6 +320,7 @@ class HrLoan(models.Model):
 
     @api.model
     def create(self, vals):
+        self._check_exception_rights(vals)
         self._check_request_employee(vals.get('employee_id', self.env.user.employee_id.id),
                                      'ellithy_ohrms_bridge.loan_generalist')
         if not self.env.su and (vals.get('state', 'draft') != 'draft' or any(

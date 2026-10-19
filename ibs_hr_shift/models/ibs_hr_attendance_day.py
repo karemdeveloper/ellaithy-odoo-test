@@ -170,7 +170,7 @@ class IbsHrAttendanceDay(models.Model):
 
     @api.model
     def _shift_values(self, employee, work_date):
-        shift = employee.shift_id
+        shift = employee.effective_shift_id
         if not shift or work_date < shift.from_date or work_date > shift.to_date:
             return shift, False, False, False
         line = shift.line_ids.filtered(
@@ -261,6 +261,11 @@ class IbsHrAttendanceDay(models.Model):
                 'check_in': min(attendances.mapped('check_in')),
                 'check_out': max(completed.mapped('check_out')) if completed else False,
             })
+            # A lone fingerprint is imported as a zero-length attendance (an
+            # open one would block the next day's import), so it is read
+            # back here as what it is: a check-in with no check-out.
+            if values['check_out'] and values['check_out'] <= values['check_in']:
+                values['check_out'] = False
             if values['state'] == 'absent':
                 values['state'] = 'present'
             first_in = values['check_in']
@@ -273,7 +278,7 @@ class IbsHrAttendanceDay(models.Model):
                     int((shift_to - last_out).total_seconds() // 60), 0)
                 values['overtime_hours'] = max(
                     (last_out - shift_to).total_seconds() / 3600.0, 0.0)
-            elif last_out and line.is_flexible:
+            elif last_out and line and line.is_flexible:
                 actual_hours = self._interval_hours([
                     (attendance.check_in, attendance.check_out)
                     for attendance in completed])
@@ -371,7 +376,7 @@ class IbsHrAttendanceDay(models.Model):
             current_week += timedelta(days=7)
 
         for employee in employees:
-            shift = employee.shift_id
+            shift = employee.effective_shift_id
             working_days = set(shift.line_ids.mapped('day')) if shift else set()
             if (not shift or len(working_days) < 7
                     or any(shift.line_ids.mapped('is_off'))):

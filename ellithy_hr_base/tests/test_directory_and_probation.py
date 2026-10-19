@@ -75,6 +75,7 @@ class TestDirectoryAndProbation(TransactionCase):
 
     def test_the_onboarding_image_appears_only_when_set(self):
         template = self.env.ref('ellithy_hr_base.mail_template_employee_welcome')
+        self.env.company.hr_onboarding_banner = False
         employee = self._employee(name='Welcome Joiner', work_email='w@example.com')
         body = template._render_field('body_html', employee.ids)[employee.id]
         self.assertNotIn('onboarding_image', body)

@@ -79,6 +79,19 @@
                 <attribute name="invisible">state != 'draft'</attribute>
             </xpath>
 
+            <!-- HR letter item 13: HR Admin may waive the amount and
+                 instalment limits on one request, with a reason. -->
+            <xpath expr="//field[@name='installment']" position="after">
+                <field name="can_grant_exception" invisible="1"/>
+                <field name="is_exception"
+                       invisible="not can_grant_exception and not is_exception"
+                       readonly="not can_grant_exception or state != 'draft'"/>
+                <field name="exception_reason"
+                       invisible="not is_exception" required="is_exception"
+                       readonly="not can_grant_exception or state != 'draft'"
+                       placeholder="Why this loan goes beyond the usual limits"/>
+            </xpath>
+
             <!-- CR 2.16: name the broken rules before the request is sent. -->
             <xpath expr="//div[hasclass('oe_title')]" position="before">
                 <div class="alert alert-warning" role="alert"

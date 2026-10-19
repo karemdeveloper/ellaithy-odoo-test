@@ -11,6 +11,7 @@
                 <field name="email"/>
                 <field name="phone"/>
                 <field name="field_of_expertise"/>
+                <field name="trainer_rating" widget="progressbar"/>
             </list>
         </field>
     </record>
@@ -33,6 +34,8 @@
                         <group>
                             <field name="email" widget="email"/>
                             <field name="phone" widget="phone"/>
+                            <field name="trainer_rating" widget="progressbar"/>
+                            <field name="evaluation_count"/>
                         </group>
                     </group>
                     <group>

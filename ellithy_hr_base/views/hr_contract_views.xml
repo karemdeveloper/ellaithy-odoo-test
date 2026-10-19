@@ -126,4 +126,61 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Contract follow-up: ended contracts of people still working, and
+         contracts ending within a month. -->
+    <record id="hr_contract_view_search_followup" model="ir.ui.view">
+        <field name="name">hr.contract.search.ellithy.followup</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="running" position="before">
+                <filter name="expired_active" string="Ended, Employee Still Working"
+                        domain="[('employee_active', '=', True), ('is_last_contract', '=', True), ('date_end', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="ending_30" string="Ends Within 30 Days"
+                        domain="[('employee_active', '=', True), ('date_end', '&gt;=', context_today().strftime('%Y-%m-%d')), ('date_end', '&lt;=', (context_today() + relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="active_employees" string="Hide Leavers"
+                        domain="[('employee_active', '=', True)]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="hr_contract_view_list_followup" model="ir.ui.view">
+        <field name="name">hr.contract.list.ellithy.followup</field>
+        <field name="model">hr.contract</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list string="Contract Follow-up" default_order="date_end"
+                  decoration-danger="days_to_end &lt; 0"
+                  decoration-warning="days_to_end &gt;= 0 and days_to_end &lt;= 30">
+                <field name="employee_id"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="days_to_end"/>
+                <field name="wage" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'open'"
+                       decoration-danger="state == 'close'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hr_contract_followup" model="ir.actions.act_window">
+        <field name="name">Contract Follow-up</field>
+        <field name="res_model">hr.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="hr_contract_view_list_followup"/>
+        <field name="search_view_id" ref="hr_contract.hr_contract_view_search"/>
+        <field name="domain">[('employee_id', '!=', False)]</field>
+        <field name="context">{'search_default_expired_active': 1, 'search_default_ending_30': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No contract needs action</p>
+            <p>Ended contracts of employees still working, and contracts ending within 30 days, appear here.</p>
+        </field>
+    </record>
 </odoo>

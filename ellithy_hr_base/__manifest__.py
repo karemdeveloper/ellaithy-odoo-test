@@ -1,6 +1,6 @@
 {
     'name': 'Ellaithy HR Base',
-    'version': '18.0.1.9.1',
+    'version': '18.0.1.10.0',
     'summary': 'Employee directory, org structure and HR master data migrated from the legacy Laravel HR platform',
     'description': """
 Ellithy HR Base
@@ -53,6 +53,7 @@ reconcilable against the source MariaDB database.
         'views/res_config_settings_views.xml',
         'views/survey_templates.xml',
         'wizard/hr_welcome_mail_wizard_views.xml',
+        'wizard/data_import_wizard_views.xml',
         'views/menus.xml',
     ],
     'icon': '/ellithy_hr_base/static/description/icon.png',

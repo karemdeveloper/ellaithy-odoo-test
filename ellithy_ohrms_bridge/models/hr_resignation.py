@@ -473,6 +473,80 @@ class HrResignation(models.Model):
                 'clearance_confirmed_by': self.env.user.id,
                 'clearance_confirmed_at': fields.Datetime.now(),
             })
+            resignation._notify_clearance_completed()
+
+    def _notify_clearance_completed(self):
+        """Tell HR and Finance that the leaver is fully cleared.
+
+        Recipients are the managers of the departments flagged "Notified
+        When Clearance Completes" (Human Resources and Finance by default).
+        The mail carries what both need to close the file and pay the final
+        settlement.
+        """
+        departments = self.env['hr.department'].sudo().search(
+            [('clearance_notify', '=', True)])
+        emails = sorted(set(departments.manager_id.mapped('work_email')) - {False})
+        if not emails:
+            self.message_post(body=_(
+                'Clearance completed, but no department is set to be notified '
+                '(Departments > "Notified When Clearance Completes").'))
+            return
+        for resignation in self.sudo():
+            employee = resignation.employee_id
+            rows = Markup('').join(
+                Markup('<tr><td style="padding:4px 10px;border-bottom:1px solid #eee;">%s</td>'
+                       '<td style="padding:4px 10px;border-bottom:1px solid #eee;">%s</td>'
+                       '<td style="padding:4px 10px;border-bottom:1px solid #eee;">%s</td>'
+                       '<td style="padding:4px 10px;border-bottom:1px solid #eee;text-align:right;">%s</td></tr>') % (
+                    line.display_name, line.approved_by.name or '-',
+                    line.approved_at and fields.Datetime.context_timestamp(
+                        self, line.approved_at).strftime('%Y-%m-%d %H:%M') or '-',
+                    '%.2f' % line.amount_due)
+                for line in resignation.clearance_line_ids)
+            facts = [
+                (_('Employee code'), employee.employee_code or '-'),
+                (_('Employee'), employee.name),
+                (_('Department'), employee.department_id.name or '-'),
+                (_('Job'), employee.job_id.name or employee.job_title or '-'),
+                (_('Joining date'), resignation.joined_date or '-'),
+                (_('Last working day'), resignation.approved_revealing_date
+                 or resignation.expected_revealing_date or '-'),
+                (_('Leaving reason'), resignation.departure_reason_id.name or '-'),
+                (_('Total due on clearance'), '%.2f %s' % (
+                    resignation.clearance_total_due, resignation.currency_id.name or '')),
+            ]
+            facts_html = Markup('').join(
+                Markup('<tr><td style="padding:4px 10px;color:#8a6a55;">%s</td>'
+                       '<td style="padding:4px 10px;font-weight:bold;">%s</td></tr>') % (k, v)
+                for k, v in facts)
+            url = '%s/odoo/action-hr_resignation.hr_resignation_action/%s' % (
+                resignation.get_base_url(), resignation.id)
+            body = Markup(
+                '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333;">'
+                '<p>%s</p><p dir="rtl">%s</p>'
+                '<table style="border-collapse:collapse;margin:10px 0;">%s</table>'
+                '<table style="border-collapse:collapse;margin:10px 0;width:100%%;">'
+                '<tr style="background:#FDF6F1;"><th style="padding:4px 10px;text-align:left;">%s</th>'
+                '<th style="padding:4px 10px;text-align:left;">%s</th>'
+                '<th style="padding:4px 10px;text-align:left;">%s</th>'
+                '<th style="padding:4px 10px;text-align:right;">%s</th></tr>%s</table>'
+                '<p><a href="%s">%s</a></p></div>'
+            ) % (
+                _('Clearance is complete: every party has signed for the employee below.'),
+                'تم استكمال إخلاء الطرف للموظف التالي بعد توقيع جميع الجهات.',
+                facts_html, _('Party'), _('Signed by'), _('Signed on'), _('Amount due'),
+                rows, url, _('Open the resignation'))
+            self.env['mail.mail'].sudo().create({
+                'subject': _('Clearance completed: [%(code)s] %(name)s',
+                             code=employee.employee_code or '', name=employee.name),
+                'email_to': ','.join(emails),
+                'email_from': employee.company_id.email or self.env.user.email_formatted,
+                'body_html': body,
+                'model': 'hr.resignation', 'res_id': resignation.id,
+                'auto_delete': False,
+            })
+            resignation.message_post(body=_(
+                'Clearance completion sent to %(emails)s.', emails=', '.join(emails)))
 
     def action_reopen_clearance(self):
         """Send a confirmed clearance back, when something was missed.
@@ -719,7 +793,27 @@ class HrResignation(models.Model):
         self._apply_employee_exit()
         exits = self.filtered(lambda r: r.request_type == 'exit')
         if exits:
+            # The vendor approval cancels every open contract on the spot and
+            # rewrites the last day as "confirmation date + notice period".
+            # For an exit dated in the future that ended the salary early and
+            # could archive the employee before HR's last working day. HR's
+            # date stands, and the contract stays open until that day, when
+            # ``_apply_employee_exit`` closes it.
+            open_contracts = {
+                resignation.id: resignation.employee_id.contract_ids.filtered(
+                    lambda c: c.state == 'open')
+                for resignation in exits}
             super(HrResignation, exits).action_approve_resignation()
+            for resignation in exits:
+                if resignation.expected_revealing_date:
+                    resignation.approved_revealing_date = (
+                        resignation.expected_revealing_date)
+                contracts = open_contracts[resignation.id].filtered(
+                    lambda c: c.state == 'cancel')
+                if resignation.employee_id.active:
+                    contracts.write({'state': 'open'})
+                else:
+                    contracts.write({'state': 'close'})
             # The stock method only flips ``state`` to 'approved' inside its
             # own "contract is still open" branch -- but ``_apply_employee_exit``
             # above has *just* closed that same contract for any exit whose

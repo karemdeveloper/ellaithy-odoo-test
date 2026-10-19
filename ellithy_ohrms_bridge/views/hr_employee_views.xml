@@ -37,6 +37,7 @@
         <field name="arch" type="xml">
             <field name="manager_id" position="after">
                 <field name="clearance_default"/>
+                <field name="clearance_notify"/>
             </field>
         </field>
     </record>

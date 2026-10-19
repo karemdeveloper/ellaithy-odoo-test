@@ -73,4 +73,31 @@
             </field>
         </field>
     </record>
+
+    <!-- HR letter item 19: find the days an upload produced. -->
+    <record id="ibs_hr_attendance_day_view_search" model="ir.ui.view">
+        <field name="name">ibs.hr.attendance.day.search</field>
+        <field name="model">ibs.hr.attendance.day</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="shift_id"/>
+                <field name="date"/>
+                <filter name="present" string="Present" domain="[('state', '=', 'present')]"/>
+                <filter name="absent" string="Absent" domain="[('state', '=', 'absent')]"/>
+                <filter name="no_shift" string="No Shift" domain="[('state', '=', 'no_shift')]"/>
+                <separator/>
+                <filter name="late" string="Late" domain="[('late_minutes', '&gt;', 0)]"/>
+                <filter name="single_punch" string="Single Fingerprint" domain="[('single_punch', '=', True)]"/>
+                <separator/>
+                <filter name="date_filter" string="Date" date="date"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Day" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
 </odoo>

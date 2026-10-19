@@ -1,6 +1,6 @@
 {
     'name': 'Ellithy / OpenHRMS Bridge',
-    'version': '18.0.1.6.0',
+    'version': '18.0.1.7.0',
     'summary': 'Ellithy HR policy on the OpenHRMS loan, advance and '
                'resignation models, plus the joining-date conflict fix',
     'description': """

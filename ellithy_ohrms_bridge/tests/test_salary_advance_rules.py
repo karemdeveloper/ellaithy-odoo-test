@@ -171,6 +171,27 @@ class TestSalaryAdvanceRules(EllithyBridgeCommon):
         advance = self._advance(user=self.hr_user)
         self.assertTrue(advance.id)
 
-    def test_self_service_may_not_raise_an_advance(self):
+    def test_self_service_may_not_raise_an_advance_for_someone_else(self):
         with self.assertRaises(ValidationError):
             self._advance(user=self.plain_user)
+
+    # ---- HR letter item 21 -------------------------------------------
+    def test_an_employee_raises_and_submits_their_own_advance(self):
+        advance = self._advance(user=self.plain_user,
+                                employee_id=self.plain_employee.id)
+        self.assertEqual(advance.employee_id, self.plain_employee)
+        self.assertFalse(advance.is_hr_user)
+        advance.with_user(self.plain_user).action_submit_to_manager()
+        self.assertEqual(advance.state, 'submit')
+
+    def test_the_request_defaults_to_the_users_own_employee(self):
+        advance = self.env['salary.advance'].with_user(self.plain_user).create({
+            'date': '2026-06-10', 'advance': 300.0})
+        self.assertEqual(advance.employee_id, self.plain_employee)
+
+    def test_an_employee_cannot_approve_their_own_advance(self):
+        advance = self._advance(user=self.plain_user,
+                                employee_id=self.plain_employee.id)
+        advance.with_user(self.plain_user).action_submit_to_manager()
+        with self.assertRaises(ValidationError):
+            advance.with_user(self.plain_user).write({'state': 'waiting_approval'})

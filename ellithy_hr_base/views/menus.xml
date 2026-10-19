@@ -18,6 +18,13 @@
     -->
 
     <!-- ============ 3. Employees ============ -->
+    <menuitem id="menu_contract_followup"
+              name="Contract Follow-up"
+              parent="hr.menu_hr_employee_payroll"
+              action="action_hr_contract_followup"
+              sequence="15"
+              groups="ellithy_hr_base.group_ellithy_hr_generalist"/>
+
     <menuitem id="menu_employees_inactive"
               name="Ex-Employees"
               parent="hr.menu_hr_employee_payroll"

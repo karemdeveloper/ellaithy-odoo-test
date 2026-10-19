@@ -1,6 +1,6 @@
 {
     'name': 'IBS HR Flow',
-    'version': '18.0.1.4.0',
+    'version': '18.0.1.5.0',
     'summary': 'Attendance days, discipline and the penalty deduction ledger '
                'that feeds the standard payslip',
     'description': """
@@ -53,6 +53,7 @@ Known legacy defects, deliberately not reproduced -- see README.
         'data/ir_sequence_data.xml',
         'data/mail_template_data.xml',
         'data/hr_salary_rule_data.xml',
+        'data/commission_penalty_reason_data.xml',
         'views/ibs_hr_violation_views.xml',
         'views/ibs_hr_admin_penalty_views.xml',
         'views/ibs_hr_admin_penalty_record_views.xml',

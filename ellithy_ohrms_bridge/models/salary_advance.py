@@ -160,9 +160,34 @@ class SalaryAdvance(models.Model):
             'Salary advance requests are created by the HR department only. '
             'Please contact HR to raise this request.'))
 
+    employee_id = fields.Many2one(
+        default=lambda self: self.env.user.employee_id)
+    # The default covers a new form: its first onchange does not run a
+    # compute that depends only on the user.
+    is_hr_user = fields.Boolean(
+        compute='_compute_is_hr_user',
+        default=lambda self: self.env.su or self.env.user.has_group(HR_GROUP))
+
+    @api.depends_context('uid')
+    def _compute_is_hr_user(self):
+        allowed = self.env.su or self.env.user.has_group(HR_GROUP)
+        for advance in self:
+            advance.is_hr_user = allowed
+
+    def _is_own_request(self, vals=None):
+        """The current user asking for their own advance."""
+        own = self.env.user.employee_id
+        if vals is not None:
+            return bool(own) and vals.get('employee_id', own.id) == own.id
+        return bool(own) and all(advance.employee_id == own for advance in self)
+
     @api.model
     def create(self, vals):
-        self._check_hr_author()
+        # HR letter item 21 replaces CR 2.18: an employee raises their own
+        # advance from self-service; HR and then Finance approve it. Raising
+        # one for someone else is still HR's.
+        if not self._is_own_request(vals):
+            self._check_hr_author()
         self._check_request_employee(vals.get('employee_id', self.env.user.employee_id.id),
                                      'ellithy_ohrms_bridge.advance_generalist')
         if vals.get('exceed_condition'):
@@ -178,7 +203,13 @@ class SalaryAdvance(models.Model):
         if not self.env.su and {'employee_id', 'date', 'advance', 'currency_id'}.intersection(vals) and any(
                 record.state in ('waiting_approval', 'approve') for record in self):
             raise ValidationError(_('The terms are locked after HR approval.'))
-        if not self.env.su:
+        own_draft = (not self.env.su and self._is_own_request()
+                     and all(advance.state == 'draft' for advance in self))
+        if own_draft and target in (None, 'submit', 'cancel') and not (
+                {'journal', 'journal_id', 'debit', 'credit'} & vals.keys()):
+            # The requester edits, submits or withdraws their own draft.
+            pass
+        elif not self.env.su:
             if target == 'approve':
                 role, source = 'advance_finance', 'waiting_approval'
             elif target == 'waiting_approval':

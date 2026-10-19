@@ -8,6 +8,7 @@
             <field name="parent_id" position="after">
                 <field name="name_ar"/>
                 <field name="dept_type"/>
+                <field name="sector" invisible="dept_type != 'directorate'"/>
                 <field name="branch_id"/>
                 <field name="address"/>
                 <field name="phone"/>
@@ -24,6 +25,7 @@
             <field name="name" position="after">
                 <field name="name_ar" optional="show"/>
                 <field name="dept_type" optional="show"/>
+                <field name="sector" optional="show"/>
                 <field name="branch_id" optional="show"/>
             </field>
         </field>

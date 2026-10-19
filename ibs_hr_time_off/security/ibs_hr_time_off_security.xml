@@ -58,6 +58,23 @@
         <field name="model_id" ref="model_ibs_hr_time_off_ledger"/>
         <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
     </record>
+    <record id="rule_time_off_balance_own" model="ir.rule">
+        <field name="name">Time Off Balance: own lines</field>
+        <field name="model_id" ref="model_ibs_hr_time_off_balance"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_time_off_balance_hr" model="ir.rule">
+        <field name="name">Time Off Balance: HR all lines</field>
+        <field name="model_id" ref="model_ibs_hr_time_off_balance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_time_off.ibs_hr_time_off_generalist')])]"/>
+    </record>
+    <record id="rule_time_off_balance_global_company" model="ir.rule">
+        <field name="name">time_off_balance: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_time_off_balance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
     <record id="rule_rest_credit_global_company" model="ir.rule">
         <field name="name">rest_credit: company boundary</field>
         <field name="model_id" ref="model_ibs_hr_rest_credit"/>

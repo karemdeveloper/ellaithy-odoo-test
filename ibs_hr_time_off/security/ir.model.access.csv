@@ -8,3 +8,4 @@ access_time_off_ledger_hr,ibs.hr.time.off.ledger.hr,model_ibs_hr_time_off_ledger
 access_rest_credit_user,ibs.hr.rest.credit.user,model_ibs_hr_rest_credit,base.group_user,1,0,0,0
 access_rest_credit_hr,ibs.hr.rest.credit.hr,model_ibs_hr_rest_credit,ibs_hr_time_off.ibs_hr_time_off_generalist,1,1,1,1
 access_time_off_holiday_admin,time.off.holiday.admin,ibs_hr_holiday.model_ibs_hr_public_holiday,ibs_hr_time_off.ibs_hr_time_off_admin,1,1,1,1
+access_time_off_balance_user,ibs.hr.time.off.balance.user,model_ibs_hr_time_off_balance,base.group_user,1,0,0,0

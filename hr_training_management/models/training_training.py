@@ -2,7 +2,7 @@
 from datetime import timedelta
 
 from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class Training(models.Model):
@@ -72,6 +72,32 @@ class Training(models.Model):
         'res.company', string='Company', default=lambda self: self.env.company
     )
 
+    # HR letter item 8 -- the trainees rate the training and the trainer.
+    evaluation_survey_id = fields.Many2one(
+        'survey.survey', string='Evaluation Form',
+        domain=[('is_hr_evaluation', '=', True)],
+        default=lambda self: self.env.ref(
+            'hr_training_management.survey_training_evaluation',
+            raise_if_not_found=False))
+    evaluation_auto = fields.Boolean(
+        string='Send Evaluation When It Ends', default=True,
+        help='Mail every trainee the evaluation link on the day after the '
+             'end date.')
+    evaluation_sent_at = fields.Datetime(
+        string='Evaluation Sent On', readonly=True, copy=False)
+    evaluation_progress = fields.Char(
+        string='Evaluations Received', compute='_compute_evaluation')
+    evaluation_done_count = fields.Integer(compute='_compute_evaluation')
+    evaluation_score = fields.Float(
+        string='Overall Evaluation (%)', compute='_compute_evaluation',
+        digits=(5, 1))
+    training_rating = fields.Float(
+        string='Training Rating (%)', compute='_compute_evaluation',
+        digits=(5, 1))
+    trainer_rating = fields.Float(
+        string='Trainer Rating (%)', compute='_compute_evaluation',
+        digits=(5, 1))
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -91,6 +117,79 @@ class Training(models.Model):
         for training in self:
             training.session_count = len(training.session_ids)
             training.assessment_count = len(training.assessment_ids)
+
+    @api.depends('participant_ids.evaluation_state',
+                 'participant_ids.evaluation_score')
+    def _compute_evaluation(self):
+        for training in self:
+            participants = training.participant_ids
+            done = participants.filtered(lambda p: p.evaluation_state == 'done')
+            training.evaluation_done_count = len(done)
+            training.evaluation_progress = '%s / %s' % (len(done), len(participants))
+            count = len(done) or 1
+            training.evaluation_score = round(sum(done.mapped('evaluation_score')) / count, 1)
+            training.training_rating = round(sum(done.mapped('training_rating')) / count, 1)
+            training.trainer_rating = round(sum(done.mapped('trainer_rating')) / count, 1)
+
+    def _send_evaluation(self, raise_on_error=False):
+        """Mail the evaluation link to every trainee who has not answered."""
+        sent = self.browse()
+        for training in self:
+            problem = False
+            if not training.evaluation_survey_id:
+                problem = _('Choose an evaluation form first.')
+            elif not training.participant_ids:
+                problem = _('The training has no trainees.')
+            if problem:
+                if raise_on_error:
+                    raise UserError(problem)
+                continue
+            skipped = training.participant_ids._send_evaluation(
+                training.evaluation_survey_id.sudo())
+            training.evaluation_sent_at = fields.Datetime.now()
+            if skipped:
+                training.message_post(body=_(
+                    'Evaluation not sent to %(names)s: no work email on file.',
+                    names=', '.join(skipped.employee_id.mapped('name'))))
+            sent |= training
+        return sent
+
+    def action_send_evaluation(self):
+        self._send_evaluation(raise_on_error=True)
+        return {
+            'type': 'ir.actions.client', 'tag': 'display_notification',
+            'params': {'type': 'success',
+                       'message': _('The evaluation link was sent to the trainees.'),
+                       'next': {'type': 'ir.actions.act_window_close'}},
+        }
+
+    @api.model
+    def _cron_send_evaluations(self):
+        """Send each finished programme's evaluation once.
+
+        Only programmes that ended in the last ``window`` days are picked
+        up, so switching this on does not mail trainees about last year's
+        courses. Older ones can still be sent from the form.
+        """
+        window = int(self.env['ir.config_parameter'].sudo().get_param(
+            'hr_training_management.evaluation_window_days', 30))
+        today = fields.Date.context_today(self)
+        self.search([
+            ('evaluation_auto', '=', True), ('evaluation_sent_at', '=', False),
+            ('date_end', '<', today),
+            ('date_end', '>=', today - timedelta(days=window)),
+        ])._send_evaluation()
+
+    def action_view_evaluations(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window', 'name': _('Evaluations'),
+            'res_model': 'training.participant', 'view_mode': 'list,pivot',
+            'views': [(self.env.ref('hr_training_management.view_training_participant_evaluation_list').id, 'list'),
+                      (False, 'pivot')],
+            'domain': [('training_id', '=', self.id)],
+            'context': {'create': False},
+        }
 
     def _sync_trainees(self):
         """Keep one history line and one attendance line per trainee."""

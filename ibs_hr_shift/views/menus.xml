@@ -6,4 +6,11 @@
               action="ibs_hr_shift_action"
               sequence="25"
               groups="ibs_hr_shift.ibs_hr_shift_admin"/>
+
+    <menuitem id="menu_ta_import_punches"
+              name="Upload Fingerprints"
+              parent="ellithy_hr_base.menu_time_attendance"
+              action="ibs_hr_punch_import_wizard_action"
+              sequence="80"
+              groups="ibs_hr_shift.ibs_hr_shift_generalist"/>
 </odoo>

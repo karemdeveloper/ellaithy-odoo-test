@@ -19,3 +19,4 @@ access_ellithy_hr_line_user,ellithy.hr.line.user,model_ellithy_hr_line,base.grou
 access_ellithy_hr_line_hr,ellithy.hr.line.hr,model_ellithy_hr_line,group_ellithy_hr_generalist,1,1,1,0
 access_ellithy_hr_line_admin,ellithy.hr.line.admin,model_ellithy_hr_line,group_ellithy_hr_admin,1,1,1,1
 access_ellithy_hr_welcome_mail_wizard,ellithy.hr.welcome.mail.wizard,model_ellithy_hr_welcome_mail_wizard,group_ellithy_hr_generalist,1,1,1,1
+access_ellithy_data_import_wizard,ellithy.data.import.wizard,model_ellithy_data_import_wizard,group_ellithy_hr_admin,1,1,1,1

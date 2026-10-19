@@ -67,14 +67,42 @@ class TestExitRequirements(EllithyBridgeCommon):
         self.assertEqual(len(mails), 2, 'one mail per line the manager signs')
 
     def test_a_future_exit_is_announced_on_the_employee(self):
-        # The approved last day is the confirmation date plus the contract's
-        # notice period; that is the day the daily job archives the leaver.
+        # The approved last day is the last day HR entered, not the vendor's
+        # confirmation date plus notice period, and the contract stays
+        # running until that day.
         self.contract.notice_days = 10
-        last_day = fields.Date.today() + timedelta(days=10)
+        last_day = fields.Date.today() + timedelta(days=25)
         resignation = self._exit(last_day=last_day)
         resignation.action_approve_resignation()
         self.employee.invalidate_recordset()
         self.assertTrue(self.employee.active)
-        self.assertEqual(self.employee.scheduled_exit_date,
-                         resignation.approved_revealing_date)
+        self.assertEqual(resignation.approved_revealing_date, last_day)
         self.assertEqual(self.employee.scheduled_exit_date, last_day)
+        self.assertEqual(self.contract.state, 'open')
+
+    def test_a_same_day_exit_closes_the_contract_rather_than_cancelling_it(self):
+        resignation = self._exit()
+        resignation.action_approve_resignation()
+        self.assertEqual(resignation.approved_revealing_date, fields.Date.today())
+        self.assertEqual(self.contract.state, 'close')
+
+    def test_completed_clearance_is_reported_to_notified_departments(self):
+        hr_head = self.env['hr.employee'].create({
+            'name': 'HR Head', 'work_email': 'hr.head@example.com'})
+        self.env['hr.department'].create({
+            'name': 'Human Resources', 'manager_id': hr_head.id,
+            'clearance_notify': True})
+        resignation = self._exit()
+        resignation.action_approve_resignation()
+        self.env['hr.resignation.clearance.wizard'].create({
+            'resignation_id': resignation.id,
+            'include_direct_manager': False}).action_start_clearance()
+        for line in resignation.clearance_line_ids:
+            line.action_approve()
+        resignation.action_confirm_clearance()
+        mail = self.env['mail.mail'].search([
+            ('model', '=', 'hr.resignation'), ('res_id', '=', resignation.id),
+            ('subject', 'like', 'Clearance completed'),
+            ('email_to', 'like', 'hr.head@example.com')])
+        self.assertEqual(len(mail), 1)
+        self.assertIn(self.reason.name, mail.body_html)

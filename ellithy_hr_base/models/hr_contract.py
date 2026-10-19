@@ -1,3 +1,5 @@
+from datetime import date
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -96,6 +98,43 @@ class HrContract(models.Model):
     social_insurance_price = fields.Monetary(string='Social Insurance Cost')
 
     legacy_id = fields.Integer(string='Legacy ID', index=True, copy=False)
+
+    # ---- contract follow-up -------------------------------------------
+    # An ended contract only needs action if it is the employee's newest one
+    # and the employee is still working; an older ended contract has already
+    # been renewed, and a leaver's contract needs nothing.
+    is_last_contract = fields.Boolean(
+        string='Latest Contract', compute='_compute_is_last_contract',
+        store=True, index=True)
+    employee_active = fields.Boolean(
+        related='employee_id.active', store=True, string='Employee Active')
+    days_to_end = fields.Integer(
+        string='Days Left', compute='_compute_days_to_end',
+        help='Days until the contract ends; negative once it has ended.')
+
+    @api.depends('employee_id.contract_ids.date_start',
+                 'employee_id.contract_ids.state')
+    def _compute_is_last_contract(self):
+        for contract in self:
+            siblings = contract.employee_id.contract_ids.filtered(
+                lambda c: c.state != 'cancel')
+            latest = max(siblings, key=lambda c: (c.date_start or date.min, c.id)) \
+                if siblings else False
+            contract.is_last_contract = latest == contract
+
+    @api.model
+    def get_import_templates(self):
+        return [{
+            'label': _('Import Template for Contracts (Ellaithy)'),
+            'template': '/ellithy_hr_base/static/xls/contracts_import_template.xlsx',
+        }]
+
+    @api.depends('date_end')
+    def _compute_days_to_end(self):
+        today = fields.Date.context_today(self)
+        for contract in self:
+            contract.days_to_end = (
+                (contract.date_end - today).days if contract.date_end else 0)
 
     @api.depends('has_social_insurance', 'subscription_wage',
                  'social_insurance_percentage', 'currency_id')
