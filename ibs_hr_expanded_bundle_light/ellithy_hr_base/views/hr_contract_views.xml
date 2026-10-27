@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_contract_view_form_inherit" model="ir.ui.view">
+        <field name="name">hr.contract.form.ellithy</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+
+            <!--
+                Anchored on the salary GROUP, not on the wage field.
+                Stock wraps the wage in <div class="o_row mw-50"> together
+                with its "/ month" caption; inserting after the field put
+                these five monetary inputs inside that narrow inline row,
+                unlabelled, and squashed the wage itself down with them.
+            -->
+            <xpath expr="//group[@name='salary']" position="inside">
+                <field name="subscription_wage"/>
+                <field name="total_wage"/>
+                <field name="transportation_allowance"/>
+                <field name="transportation_allowance_daily"/>
+                <field name="employment_allowance"/>
+                <field name="commitment_allowance"/>
+                <field name="other_allowance"/>
+                <field name="bonus"/>
+                <separator string="Deductions"/>
+                <field name="mobile_invoice_deduction"/>
+            </xpath>
+
+            <!--
+                Insurance is a term of the engagement, so it is entered here.
+                The employee form mirrors it read-only.
+
+                Two tabs, not one: the two insurances are separate schemes
+                with separate registrations, separate numbers and separate
+                money, and HR works on one at a time: social when someone
+                is registered at an office, medical when a tier or a card
+                changes. Sixteen fields stacked on a single tab made the
+                reader hunt for which half they were in.
+            -->
+            <xpath expr="//page[@name='information']" position="after">
+
+                <page string="Social Insurance" name="ellithy_social_insurance">
+                    <group>
+                        <group string="Registration">
+                            <field name="has_social_insurance"/>
+                            <field name="social_insurance_office_id"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_number"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_start_date"
+                                   invisible="not has_social_insurance"/>
+                        </group>
+                        <group string="Contribution Basis"
+                               invisible="not has_social_insurance">
+                            <field name="subscription_wage" readonly="1"/>
+                            <field name="social_insurance_percentage"/>
+                            <field name="social_insurance_amount" readonly="1"/>
+                            <div colspan="2" class="text-muted">
+                                Contributions are calculated on the
+                                subscription salary. Change it under Salary
+                                Information.
+                            </div>
+                        </group>
+                    </group>
+                    <group string="Superseded Insurance Columns"
+                           groups="base.group_no_one">
+                        <group>
+                            <field name="insurance_entered_date"/>
+                        </group>
+                        <group>
+                            <field name="insurance_salary"/>
+                            <field name="social_insurance_price"/>
+                        </group>
+                    </group>
+                </page>
+
+                <page string="Medical Insurance" name="ellithy_medical_insurance">
+                    <group>
+                        <group string="Coverage">
+                            <field name="medical_insurance_type"/>
+                            <field name="medical_insurance_date"/>
+                            <field name="medical_card_number"/>
+                            <field name="has_medical_relative"/>
+                        </group>
+                        <group string="Cost">
+                            <field name="medical_cost_per_year"/>
+                            <field name="medical_cost_per_month"/>
+                            <field name="medical_employee_share"/>
+                        </group>
+                    </group>
+                    <separator string="Covered Relatives"/>
+                    <!--
+                        The same list the employee file shows: a dependant
+                        belongs to the person, so it is stored there and
+                        can be edited from either screen.
+                    -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="employee_id">
+                        Choose an employee first -- relatives are recorded
+                        against the person, not against this contract.
+                    </div>
+                    <field name="dependant_ids" invisible="not employee_id"
+                           context="{'default_medical_insurance_type': medical_insurance_type}">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="relation"/>
+                            <field name="birthday"/>
+                            <field name="age"/>
+                            <field name="medical_insurance_type"/>
+                            <field name="card_number"/>
+                            <field name="code"/>
+                            <field name="insurance_date"/>
+                            <field name="overage_price"/>
+                            <field name="cost_per_year"/>
+                            <field name="cost_per_month"/>
+                            <field name="employee_share"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <div class="text-muted" invisible="not employee_id">
+                        Also listed on the employee file. Either screen may
+                        edit them.
+                    </div>
+                </page>
+
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Contract follow-up: ended contracts of people still working, and
+         contracts ending within a month. -->
+    <record id="hr_contract_view_search_followup" model="ir.ui.view">
+        <field name="name">hr.contract.search.ellithy.followup</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="running" position="before">
+                <filter name="expired_active" string="Ended, Employee Still Working"
+                        domain="[('employee_active', '=', True), ('is_last_contract', '=', True), ('date_end', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="ending_30" string="Ends Within 30 Days"
+                        domain="[('employee_active', '=', True), ('date_end', '&gt;=', context_today().strftime('%Y-%m-%d')), ('date_end', '&lt;=', (context_today() + relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="active_employees" string="Hide Leavers"
+                        domain="[('employee_active', '=', True)]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="hr_contract_view_list_followup" model="ir.ui.view">
+        <field name="name">hr.contract.list.ellithy.followup</field>
+        <field name="model">hr.contract</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list string="Contract Follow-up" default_order="date_end"
+                  decoration-danger="days_to_end &lt; 0"
+                  decoration-warning="days_to_end &gt;= 0 and days_to_end &lt;= 30">
+                <field name="employee_id"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="days_to_end"/>
+                <field name="wage" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'open'"
+                       decoration-danger="state == 'close'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hr_contract_followup" model="ir.actions.act_window">
+        <field name="name">Contract Follow-up</field>
+        <field name="res_model">hr.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="hr_contract_view_list_followup"/>
+        <field name="search_view_id" ref="hr_contract.hr_contract_view_search"/>
+        <field name="domain">[('employee_id', '!=', False)]</field>
+        <field name="context">{'search_default_expired_active': 1, 'search_default_ending_30': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No contract needs action</p>
+            <p>Ended contracts of employees still working, and contracts ending within 30 days, appear here.</p>
+        </field>
+    </record>
+</odoo>

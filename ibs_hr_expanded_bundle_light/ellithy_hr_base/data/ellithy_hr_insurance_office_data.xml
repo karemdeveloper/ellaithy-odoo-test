@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="insurance_office_nozha" model="ellithy.hr.insurance.office">
+            <field name="name">El Nozha</field>
+            <field name="name_ar">مكتب النزهة</field>
+            <field name="code">nozha</field>
+        </record>
+        <record id="insurance_office_bakry" model="ellithy.hr.insurance.office">
+            <field name="name">Mansheyet El Bakry</field>
+            <field name="name_ar">منشية البكري</field>
+            <field name="code">bakry</field>
+        </record>
+        <record id="insurance_office_nasr1" model="ellithy.hr.insurance.office">
+            <field name="name">Nasr City 1</field>
+            <field name="name_ar">مدينة نصر أول</field>
+            <field name="code">nasr1</field>
+        </record>
+        <record id="insurance_office_nasr2" model="ellithy.hr.insurance.office">
+            <field name="name">Nasr City 2</field>
+            <field name="name_ar">مدينة نصر ثان</field>
+            <field name="code">nasr2</field>
+        </record>
+    </data>
+</odoo>

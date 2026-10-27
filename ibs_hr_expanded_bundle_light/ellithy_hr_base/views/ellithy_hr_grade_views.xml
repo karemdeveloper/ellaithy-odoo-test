@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ellithy_hr_grade_view_list" model="ir.ui.view">
+        <field name="name">ellithy.hr.grade.list</field>
+        <field name="model">ellithy.hr.grade</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="name_ar"/>
+                <field name="legacy_value"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ellithy_hr_grade_action" model="ir.actions.act_window">
+        <field name="name">Grades</field>
+        <field name="res_model">ellithy.hr.grade</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

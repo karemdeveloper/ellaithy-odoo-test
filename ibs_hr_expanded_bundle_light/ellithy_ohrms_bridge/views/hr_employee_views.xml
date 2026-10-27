@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        CR 2.7: resignation is handled on its own screen. The employee form
+        gets a way in, not a copy of the fields.
+    -->
+    <record id="hr_employee_view_form_resignation" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.ellithy.resignation</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <field name="scheduled_exit_id" invisible="1"/>
+                <div class="alert alert-warning mb-0 text-center" role="status"
+                     invisible="not scheduled_exit_date">
+                    Exit approved: this employee leaves on
+                    <field name="scheduled_exit_date" readonly="1" class="fw-bold"/>
+                    and moves to Ex-Employees automatically that day.
+                </div>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_view_resignations" type="object"
+                        class="oe_stat_button" icon="fa-sign-out"
+                        invisible="resignation_count == 0"
+                        groups="hr.group_hr_user">
+                    <field name="resignation_count" widget="statinfo"
+                           string="Resignation"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record id="hr_department_view_form_clearance" model="ir.ui.view">
+        <field name="name">hr.department.form.clearance</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_form"/>
+        <field name="arch" type="xml">
+            <field name="manager_id" position="after">
+                <field name="clearance_default"/>
+                <field name="clearance_notify"/>
+            </field>
+        </field>
+    </record>
+</odoo>

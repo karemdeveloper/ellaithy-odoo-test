@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="doc_type_qualifications" model="ellithy.hr.document.type">
+            <field name="name">Qualifications</field>
+            <field name="sequence">10</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">qualifications</field>
+        </record>
+        <record id="doc_type_military_status" model="ellithy.hr.document.type">
+            <field name="name">Military Status</field>
+            <field name="sequence">20</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">military_status</field>
+        </record>
+        <record id="doc_type_birth_certificate" model="ellithy.hr.document.type">
+            <field name="name">Birth Certificate</field>
+            <field name="sequence">30</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">birth_certificate</field>
+        </record>
+        <record id="doc_type_identity_card_copy" model="ellithy.hr.document.type">
+            <field name="name">Identity Card Copy</field>
+            <field name="sequence">40</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">identity_card_copy</field>
+        </record>
+        <record id="doc_type_personal_photos" model="ellithy.hr.document.type">
+            <field name="name">Personal Photos</field>
+            <field name="sequence">50</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">personal_photos</field>
+        </record>
+        <record id="doc_type_employment_application" model="ellithy.hr.document.type">
+            <field name="name">Employment Application</field>
+            <field name="sequence">60</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">employment_application</field>
+        </record>
+        <record id="doc_type_criminal_record" model="ellithy.hr.document.type">
+            <field name="name">Criminal Record</field>
+            <field name="sequence">70</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">criminal_record</field>
+        </record>
+        <record id="doc_type_insurance_printout" model="ellithy.hr.document.type">
+            <field name="name">Insurance Printout</field>
+            <field name="sequence">80</field>
+            <field name="required" eval="False"/>
+            <field name="legacy_column">insurance_printout</field>
+        </record>
+        <record id="doc_type_form_111" model="ellithy.hr.document.type">
+            <field name="name">Form 111</field>
+            <field name="sequence">90</field>
+            <field name="required" eval="False"/>
+            <field name="legacy_column">form_111</field>
+        </record>
+        <record id="doc_type_work_card" model="ellithy.hr.document.type">
+            <field name="name">Work Card</field>
+            <field name="sequence">100</field>
+            <field name="required" eval="False"/>
+            <field name="legacy_column">work_card</field>
+        </record>
+        <record id="doc_type_union_card" model="ellithy.hr.document.type">
+            <field name="name">Union Card</field>
+            <field name="sequence">110</field>
+            <field name="required" eval="False"/>
+            <field name="legacy_column">union_card</field>
+        </record>
+        <record id="doc_type_license_copies" model="ellithy.hr.document.type">
+            <field name="name">Licence Copies</field>
+            <field name="sequence">120</field>
+            <field name="required" eval="False"/>
+            <field name="legacy_column">license_copies</field>
+        </record>
+        <record id="doc_type_contract" model="ellithy.hr.document.type">
+            <field name="name">Contract</field>
+            <field name="sequence">130</field>
+            <field name="required" eval="True"/>
+            <field name="legacy_column">contract</field>
+        </record>
+        <record id="doc_type_evaluation_file" model="ellithy.hr.document.type">
+            <field name="name">Evaluation File</field>
+            <field name="sequence">140</field>
+            <field name="required" eval="False"/>
+            <field name="legacy_column">evaluation_file</field>
+        </record>
+        <record id="doc_type_insurance_doc" model="ellithy.hr.document.type">
+            <field name="name">Insurance Document</field>
+            <field name="sequence">150</field>
+            <field name="required" eval="False"/>
+            <field name="legacy_column">insurance_doc</field>
+        </record>
+    </data>
+</odoo>

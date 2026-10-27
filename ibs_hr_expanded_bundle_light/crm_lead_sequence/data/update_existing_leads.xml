@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Function to update existing leads on module installation -->
+        <function model="crm.lead" name="action_update_existing_leads" eval="()" />
+    </data>
+</odoo>

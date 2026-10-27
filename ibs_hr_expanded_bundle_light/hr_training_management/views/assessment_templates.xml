@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Trainee-facing assessment page. Self-contained (inline styles, no
+        asset bundle) so it renders the same on a phone in a branch as on a
+        desktop, with or without the website module.
+    -->
+    <template id="assessment_page" name="Training Assessment">
+        <t t-set="answers" t-value="{a.question_id.id: a for a in attempt.answer_ids}"/>
+        <t t-set="missing_ids" t-value="missing_ids or []"/>
+        <html lang="ar">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title t-out="assessment.name"/>
+                <style>
+                    body { margin: 0; background: #f6f4f2; color: #1d1916; font: 16px/1.6 "Segoe UI", Tahoma, Arial, sans-serif; }
+                    .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+                    .band { background: #E4610F; color: #fff; padding: 18px 20px; border-radius: 8px 8px 0 0; }
+                    .band h1 { margin: 0; font-size: 22px; }
+                    .band p { margin: 4px 0 0; opacity: .9; font-size: 14px; }
+                    .card { background: #fff; border: 1px solid #e6dfd8; border-radius: 0 0 8px 8px; padding: 20px; }
+                    .q { border-top: 1px solid #eee7e1; padding: 16px 0; }
+                    .q:first-of-type { border-top: 0; }
+                    .q.missing { background: #fdecea; margin: 0 -20px; padding: 16px 20px; }
+                    .q h3 { margin: 0 0 8px; font-size: 16px; white-space: pre-wrap; }
+                    .marks { color: #8a7a6d; font-size: 13px; font-weight: normal; }
+                    label.opt { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid #e6dfd8; border-radius: 6px; margin: 6px 0; cursor: pointer; }
+                    textarea { width: 100%; box-sizing: border-box; min-height: 120px; font: inherit; padding: 10px; border: 1px solid #d9d0c8; border-radius: 6px; }
+                    .btn { background: #E4610F; color: #fff; border: 0; border-radius: 6px; padding: 12px 22px; font: 600 16px/1 inherit; cursor: pointer; }
+                    .alert { padding: 12px 14px; border-radius: 6px; margin-bottom: 14px; }
+                    .alert.err { background: #fdecea; color: #8e2a20; }
+                    .alert.ok { background: #e7f4ec; color: #1d6b3e; }
+                    .alert.wait { background: #fff4dc; color: #7a5410; }
+                    .score { font-size: 32px; font-weight: 700; }
+                </style>
+            </head>
+            <body>
+                <div class="wrap">
+                    <div class="band">
+                        <h1 t-out="assessment.name"/>
+                        <p>
+                            <t t-out="attempt.employee_id.name"/>
+                            <t t-if="assessment.training_id"> · <t t-out="assessment.training_id.name"/></t>
+                            · Pass mark <t t-out="int(assessment.pass_mark)"/> / 100
+                        </p>
+                    </div>
+                    <div class="card">
+                        <t t-if="attempt.state == 'graded'">
+                            <div t-attf-class="alert #{'ok' if attempt.result == 'pass' else 'err'}">
+                                <div class="score"><t t-out="round(attempt.score, 1)"/> / 100</div>
+                                <t t-if="attempt.result == 'pass'">Passed / ناجح</t>
+                                <t t-else="">Not passed / راسب</t>
+                            </div>
+                        </t>
+                        <t t-elif="attempt.state == 'submitted'">
+                            <div class="alert wait">
+                                Your answers were received. The essay questions are being marked;
+                                HR will share your result.
+                                <br/>تم استلام إجاباتك، وجارٍ تصحيح الأسئلة المقالية وسيتم إبلاغك بالنتيجة.
+                            </div>
+                        </t>
+                        <t t-elif="assessment.state != 'published'">
+                            <div class="alert err">This assessment is closed. / هذا الاختبار مغلق.</div>
+                        </t>
+                        <t t-else="">
+                            <div t-if="assessment.description" t-out="assessment.description"/>
+                            <div t-if="error" class="alert err" t-out="error"/>
+                            <form method="post">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <t t-foreach="questions" t-as="q">
+                                    <div t-attf-class="q #{'missing' if q.id in missing_ids else ''}">
+                                        <h3><t t-out="q_index + 1"/>. <t t-out="q.name"/>
+                                            <span class="marks">(<t t-out="q.marks"/>)</span></h3>
+                                        <t t-if="q.question_type == 'mcq'">
+                                            <t t-foreach="q.option_ids" t-as="o">
+                                                <label class="opt">
+                                                    <input type="radio" t-att-name="'q_%s' % q.id" t-att-value="o.id"
+                                                           t-att-checked="answers.get(q.id) and answers[q.id].option_id == o"/>
+                                                    <span t-out="o.name"/>
+                                                </label>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <textarea t-att-name="'q_%s' % q.id" t-out="answers.get(q.id) and answers[q.id].essay_answer or ''"/>
+                                        </t>
+                                    </div>
+                                </t>
+                                <button type="submit" class="btn">Submit answers / إرسال الإجابات</button>
+                            </form>
+                        </t>
+                    </div>
+                </div>
+            </body>
+        </html>
+    </template>
+</odoo>

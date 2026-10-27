@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="manpower_request_view_list" model="ir.ui.view">
+        <field name="name">ellithy.manpower.request.list</field>
+        <field name="model">ellithy.manpower.request</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state in ('filled', 'cancel')" decoration-danger="state == 'open' and priority == '2'">
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <field name="branch_id" optional="show"/>
+                <field name="required_count" sum="Required"/>
+                <field name="current_count"/>
+                <field name="shortage" sum="Shortage"/>
+                <field name="pipeline_count"/>
+                <field name="priority" widget="priority" optional="show"/>
+                <field name="target_date" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'open'"
+                       decoration-success="state == 'filled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="manpower_request_view_form" model="ir.ui.view">
+        <field name="name">ellithy.manpower.request.form</field>
+        <field name="model">ellithy.manpower.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open" type="object" string="Open" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_filled" type="object" string="Mark Filled"
+                            invisible="state != 'open'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('filled', 'cancel')"/>
+                    <button name="action_reset" type="object" string="Reset to Draft"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,filled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_applications" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="pipeline_count" widget="statinfo" string="Applications"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="department_id"/>
+                            <field name="job_id"/>
+                            <field name="branch_id"/>
+                            <field name="reason"/>
+                            <field name="priority" widget="priority"/>
+                        </group>
+                        <group>
+                            <field name="required_count"/>
+                            <field name="current_count"/>
+                            <field name="shortage" decoration-danger="shortage &gt; 0"/>
+                            <field name="date"/>
+                            <field name="target_date"/>
+                            <field name="requested_by_id"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Why the positions are needed, profile wanted..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="manpower_request_view_pivot" model="ir.ui.view">
+        <field name="name">ellithy.manpower.request.pivot</field>
+        <field name="model">ellithy.manpower.request</field>
+        <field name="arch" type="xml">
+            <pivot string="Manpower Shortage">
+                <field name="department_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="required_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="manpower_request_view_search" model="ir.ui.view">
+        <field name="name">ellithy.manpower.request.search</field>
+        <field name="model">ellithy.manpower.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <filter name="open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="urgent" string="Urgent" domain="[('priority', '=', '2')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_manpower_request" model="ir.actions.act_window">
+        <field name="name">Manpower Shortage</field>
+        <field name="res_model">ellithy.manpower.request</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="context">{'search_default_group_department': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record a department's headcount gap</p>
+            <p>Required minus current headcount gives the shortage, which closes as people are hired.</p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+
+        <record id="hr_end_service_tree_view" model="ir.ui.view">
+            <field name="name">end.service.tree</field>
+            <field name="model">end.service</field>
+            <field name="arch" type="xml">
+                <list string="End Of Service ">
+                    <field name="employee_id"/>
+                    <field name="department_id"/>
+                    <field name="location_id"/>
+                    <field name="country_id"/>
+                    <field name="state" widget="badge" decoration-info="state == 'cancel'"
+                           decoration-warning="state == 'draft'" decoration-success="state == 'confirmed'"/>
+                    <field name="end_date" string="End date"/>
+                    <field name="service_gratuity" string="Total service settlement "/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="hr_end_service_search_view" model="ir.ui.view">
+            <field name="name">end.service.search</field>
+            <field name="model">end.service</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="employee_id"/>
+                    <field name="department_id"/>
+                    <field name="state"/>
+                    <field name="end_date" string="Date"/>
+                    <field name="total_rewords"/>
+
+
+                </search>
+            </field>
+        </record>
+
+
+        <record id="hr_end_service_form_view" model="ir.ui.view">
+            <field name="name">end.service.form</field>
+            <field name="model">end.service</field>
+            <field name="arch" type="xml">
+                <form string="Employee">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+
+                        <button name="action_confirm" type="object" string="Confirm" class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_draft" type="object" string="Set draft" class="oe_highlight"
+                                invisible="state != 'cancel'"/>
+
+                        <button name="action_cancel" type="object" string="cancel" class="oe_highlight"
+                                invisible="state == 'cancel'"/>
+
+
+                    </header>
+
+                    <sheet>
+
+                        <group>
+                            <group string="Statement of settlement of dues">
+                                <field name="employee_id"/>
+                                <field name="department_id"/>
+                                <field name="location_id"/>
+                                <field name="country_id"/>
+                                <field name="contract_id"/>
+                                <field name="wage"/>
+                                <field name="allowances"/>
+                                <field name="gross"/>
+                                <field name="hiring_date"/>
+                                <field name="payslip_date"/>
+                                <field name="end_date"/>
+
+
+                            </group>
+                            <group string="Calculate the salary due (days)">
+                                <field name="working_days"/>
+                                <field name="days_in_month"/>
+                                <field name="daily"/>
+                                <field name="salary_due"/>
+                                 <field name="amount"/>
+                                <field name="amount2"/>
+                                <field name="amount_ded"/>
+                                <field name="reason_grant" widget="many2many_tags"/>
+
+
+                            </group>
+                            <group string="Calculate annual leave due (days)">
+                                <field name="actual_days"/>
+                                <field name="value"/>
+                                <field name="vacation_day"/>
+                                <field name="leave_allowance"/>
+
+
+                            </group>
+                            <group string="End of service gratuity calculation">
+
+                                <field name="type_resignation"/>
+                                <field name="type_violation"
+                                       invisible="type_resignation == 'resignation' or type_resignation == 'end_of_service'"/>
+                                <field name="leave_allowance_total"/>
+                                <field name="service_gratuity"/>
+                                <field name="total"/>
+                                <field name="total_end"/>
+
+
+                            </group>
+                        </group>
+<!--                        <notebook>-->
+<!--                            <page string="Accounting">-->
+<!--                                <group colspan="4">-->
+<!--                                    <field name="account_move_id"/>-->
+<!--                                    <field name="account_debit_id"/>-->
+<!--                                    <field name="account_credit_id"/>-->
+<!--                                </group>-->
+<!--                            </page>-->
+<!--                        </notebook>-->
+
+                    </sheet>
+                    <chatter/>
+
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_end_service_action" model="ir.actions.act_window">
+            <field name="name">End Of Service Reward</field>
+            <field name="res_model">end.service</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="hr_end_service_search_view"/>  <!-- Link the search view here -->
+        </record>
+
+
+        <menuitem id="hr_end_service_action_menu" name="End of service settlement"
+                  parent="hr_end_rewards_category_menu"
+                  groups="hr.group_hr_user,account.group_account_invoice"
+                  action="view_end_service_action" sequence="1"/>
+
+
+    </data>
+</odoo>
+
+
+

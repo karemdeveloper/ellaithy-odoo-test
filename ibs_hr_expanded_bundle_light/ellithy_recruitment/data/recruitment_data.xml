@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_manpower_request" model="ir.sequence">
+            <field name="name">Manpower Shortage</field>
+            <field name="code">ellithy.manpower.request</field>
+            <field name="prefix">MPR/%(year)s/</field>
+            <field name="padding">4</field>
+        </record>
+
+        <!-- Where an application came from -->
+        <record id="utm_source_job_link" model="utm.source"><field name="name">Job link / رابط الوظيفة</field></record>
+        <record id="utm_source_qr_code" model="utm.source"><field name="name">QR code (branch) / كود QR بالفرع</field></record>
+        <record id="utm_source_walk_in" model="utm.source"><field name="name">Walk-in / حضور شخصي</field></record>
+        <record id="utm_source_referral" model="utm.source"><field name="name">Employee referral / ترشيح موظف</field></record>
+        <record id="utm_source_whatsapp" model="utm.source"><field name="name">WhatsApp / واتساب</field></record>
+        <record id="utm_source_wuzzuf" model="utm.source"><field name="name">Wuzzuf</field></record>
+        <record id="utm_source_forasna" model="utm.source"><field name="name">Forasna</field></record>
+
+        <!-- Educational qualifications common in Egypt, beside Odoo's four -->
+        <record id="degree_high_school" model="hr.recruitment.degree"><field name="name">High School / ثانوية عامة</field><field name="sequence">1</field></record>
+        <record id="degree_diploma" model="hr.recruitment.degree"><field name="name">Technical Diploma / دبلوم فني</field><field name="sequence">2</field></record>
+
+        <record id="language_arabic" model="ellithy.recruitment.language"><field name="name">Arabic / العربية</field><field name="sequence">1</field></record>
+        <record id="language_english" model="ellithy.recruitment.language"><field name="name">English / الإنجليزية</field><field name="sequence">2</field></record>
+        <record id="language_french" model="ellithy.recruitment.language"><field name="name">French / الفرنسية</field><field name="sequence">3</field></record>
+        <record id="language_german" model="ellithy.recruitment.language"><field name="name">German / الألمانية</field><field name="sequence">4</field></record>
+        <record id="language_italian" model="ellithy.recruitment.language"><field name="name">Italian / الإيطالية</field><field name="sequence">5</field></record>
+        <record id="language_spanish" model="ellithy.recruitment.language"><field name="name">Spanish / الإسبانية</field><field name="sequence">6</field></record>
+        <record id="language_chinese" model="ellithy.recruitment.language"><field name="name">Chinese / الصينية</field><field name="sequence">7</field></record>
+
+        <!--
+            Applicant stages agreed with HR. Odoo's six are renamed rather
+            than deleted (they are noupdate data of hr_recruitment, and the
+            pipeline may already hold applications in them); the rest are
+            added. Order: intake, interviews, decision, hired, closed.
+        -->
+        <record id="hr_recruitment.stage_job0" model="hr.recruitment.stage">
+            <field name="name">New</field>
+            <field name="sequence">0</field>
+        </record>
+        <record id="hr_recruitment.stage_job1" model="hr.recruitment.stage">
+            <field name="name">Phone Screen</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="hr_recruitment.stage_job2" model="hr.recruitment.stage">
+            <field name="name">First Interview</field>
+            <field name="sequence">2</field>
+            <field name="interview_round">first</field>
+        </record>
+        <record id="hr_recruitment.stage_job3" model="hr.recruitment.stage">
+            <field name="name">Second Interview</field>
+            <field name="sequence">3</field>
+            <field name="interview_round">second</field>
+        </record>
+        <record id="stage_third_interview" model="hr.recruitment.stage">
+            <field name="name">Third Interview</field>
+            <field name="sequence">4</field>
+            <field name="interview_round">third</field>
+        </record>
+        <record id="hr_recruitment.stage_job4" model="hr.recruitment.stage">
+            <field name="name">Job Fit</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="stage_maybe" model="hr.recruitment.stage">
+            <field name="name">Maybe</field>
+            <field name="sequence">6</field>
+        </record>
+        <record id="stage_maybe_other_job" model="hr.recruitment.stage">
+            <field name="name">Maybe for Another Job</field>
+            <field name="sequence">7</field>
+        </record>
+        <record id="stage_pending" model="hr.recruitment.stage">
+            <field name="name">Pending</field>
+            <field name="sequence">8</field>
+        </record>
+        <record id="hr_recruitment.stage_job5" model="hr.recruitment.stage">
+            <field name="name">Hired</field>
+            <field name="sequence">9</field>
+            <field name="hired_stage" eval="True"/>
+            <field name="fold" eval="True"/>
+        </record>
+        <record id="stage_not_fit" model="hr.recruitment.stage">
+            <field name="name">Not Fit</field>
+            <field name="sequence">10</field>
+            <field name="fold" eval="True"/>
+        </record>
+        <record id="stage_not_interested" model="hr.recruitment.stage">
+            <field name="name">Not Interested</field>
+            <field name="sequence">11</field>
+            <field name="fold" eval="True"/>
+            <field name="template_id" ref="hr_recruitment.email_template_data_applicant_not_interested"/>
+        </record>
+        <!-- Moving an application here mails the candidate the rejection
+             template, which HR edits under Settings > Email Templates. -->
+        <record id="stage_rejected" model="hr.recruitment.stage">
+            <field name="name">Rejected</field>
+            <field name="sequence">12</field>
+            <field name="fold" eval="True"/>
+            <field name="template_id" ref="hr_recruitment.email_template_data_applicant_refuse"/>
+        </record>
+    </data>
+</odoo>

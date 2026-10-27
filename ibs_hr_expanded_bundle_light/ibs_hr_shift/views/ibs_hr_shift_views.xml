@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_shift_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.shift.list</field>
+        <field name="model">ibs.hr.shift</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="employee_count" string="Employees"/>
+                <field name="is_company_default" widget="boolean_toggle" readonly="1" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ibs_hr_shift_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.shift.form</field>
+        <field name="model">ibs.hr.shift</field>
+        <field name="arch" type="xml">
+            <form string="Shift">
+                <header>
+                    <button name="action_generate_attendance" type="object"
+                            string="Generate Attendance" class="btn-primary"
+                            groups="ibs_hr_shift.ibs_hr_shift_admin"/>
+                    <button name="action_assign_employees" type="object"
+                            string="Assign Employees" class="btn-secondary"
+                            invisible="not id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_employees" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="employee_count" widget="statinfo" string="Employees"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Company Default" bg_color="text-bg-info"
+                            invisible="not is_company_default"/>
+                    <field name="is_company_default" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="from_date"/>
+                            <field name="to_date"/>
+                        </group>
+                        <group string="Same Hours Every Day">
+                            <label for="default_from_time" string="Working Hours"/>
+                            <div class="o_row">
+                                <field name="default_from_time" widget="float_time"/>
+                                <span>to</span>
+                                <field name="default_to_time" widget="float_time"/>
+                            </div>
+                            <field name="rest_day"/>
+                            <field name="second_rest_day"/>
+                            <div colspan="2">
+                                <button name="action_generate_week" type="object"
+                                        string="Apply to All Days" icon="fa-magic"
+                                        class="btn-link ps-0"
+                                        confirm="This replaces the seven day lines below with these hours. Continue?"/>
+                            </div>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="day"/>
+                            <field name="from_time" widget="float_time"/>
+                            <field name="to_time" widget="float_time"/>
+                            <field name="number_of_hours" widget="float_time"/>
+                            <field name="is_off"/>
+                            <field name="is_flexible"/>
+                            <field name="flexible_hours" widget="float_time"
+                                   invisible="not is_flexible"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ibs_hr_shift_action" model="ir.actions.act_window">
+        <field name="name">Shifts</field>
+        <field name="res_model">ibs.hr.shift</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

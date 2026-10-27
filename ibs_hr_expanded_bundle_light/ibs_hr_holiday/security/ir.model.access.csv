@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_public_holiday_user,ibs.hr.public.holiday.user,model_ibs_hr_public_holiday,base.group_user,1,0,0,0
+access_public_holiday_admin,ibs.hr.public.holiday.admin,model_ibs_hr_public_holiday,ellithy_hr_base.group_ellithy_hr_admin,1,1,1,1
+

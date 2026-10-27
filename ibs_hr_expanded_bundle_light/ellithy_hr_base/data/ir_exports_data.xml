@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Saved export template: Employees > select > Export > Template
+        "Full Employee File". Everything HR keeps on the employee file in one
+        XLSX, instead of re-picking ~70 fields on every export. Field-level
+        security still applies: a column the user cannot read is refused by
+        the export like any other.
+    -->
+    <data noupdate="1">
+        <record id="ir_exports_full_employee_file" model="ir.exports">
+            <field name="name">Full Employee File</field>
+            <field name="resource">hr.employee</field>
+            <field name="export_fields" eval="[
+                (0, 0, {'name': 'employee_code'}),
+                (0, 0, {'name': 'name'}),
+                (0, 0, {'name': 'name_ar'}),
+                (0, 0, {'name': 'job_title'}),
+                (0, 0, {'name': 'job_id'}),
+                (0, 0, {'name': 'department_id'}),
+                (0, 0, {'name': 'section_id'}),
+                (0, 0, {'name': 'branch_id'}),
+                (0, 0, {'name': 'grade_id'}),
+                (0, 0, {'name': 'parent_id'}),
+                (0, 0, {'name': 'coach_id'}),
+                (0, 0, {'name': 'work_email'}),
+                (0, 0, {'name': 'work_phone'}),
+                (0, 0, {'name': 'mobile_phone'}),
+                (0, 0, {'name': 'private_phone'}),
+                (0, 0, {'name': 'private_email'}),
+                (0, 0, {'name': 'joining_date'}),
+                (0, 0, {'name': 'first_contract_date'}),
+                (0, 0, {'name': 'contract_id'}),
+                (0, 0, {'name': 'contract_date_start'}),
+                (0, 0, {'name': 'contract_date_end'}),
+                (0, 0, {'name': 'identification_id'}),
+                (0, 0, {'name': 'passport_id'}),
+                (0, 0, {'name': 'birthday'}),
+                (0, 0, {'name': 'place_of_birth'}),
+                (0, 0, {'name': 'country_of_birth'}),
+                (0, 0, {'name': 'country_id'}),
+                (0, 0, {'name': 'gender'}),
+                (0, 0, {'name': 'marital'}),
+                (0, 0, {'name': 'children'}),
+                (0, 0, {'name': 'religion'}),
+                (0, 0, {'name': 'private_street'}),
+                (0, 0, {'name': 'private_city'}),
+                (0, 0, {'name': 'emergency_contact'}),
+                (0, 0, {'name': 'emergency_phone'}),
+                (0, 0, {'name': 'certificate'}),
+                (0, 0, {'name': 'study_field'}),
+                (0, 0, {'name': 'study_school'}),
+                (0, 0, {'name': 'employee_type'}),
+                (0, 0, {'name': 'work_type'}),
+                (0, 0, {'name': 'workspace_type'}),
+                (0, 0, {'name': 'time_role'}),
+                (0, 0, {'name': 'vacation_role'}),
+                (0, 0, {'name': 'overtime_role'}),
+                (0, 0, {'name': 'overtime_report'}),
+                (0, 0, {'name': 'basic_salary'}),
+                (0, 0, {'name': 'subscription_salary'}),
+                (0, 0, {'name': 'total_salary'}),
+                (0, 0, {'name': 'has_social_insurance'}),
+                (0, 0, {'name': 'social_insurance_office_id'}),
+                (0, 0, {'name': 'social_insurance_number'}),
+                (0, 0, {'name': 'social_insurance_start_date'}),
+                (0, 0, {'name': 'medical_insurance_type'}),
+                (0, 0, {'name': 'medical_insurance_date'}),
+                (0, 0, {'name': 'medical_card_number'}),
+                (0, 0, {'name': 'document_completeness'}),
+                (0, 0, {'name': 'probation_state'}),
+                (0, 0, {'name': 'probation_score'}),
+                (0, 0, {'name': 'blacklist'}),
+                (0, 0, {'name': 'inactive_type'}),
+                (0, 0, {'name': 'resignation_type'}),
+                (0, 0, {'name': 'resignation_date'}),
+                (0, 0, {'name': 'last_working_day'}),
+                (0, 0, {'name': 'departure_reason_id'}),
+                (0, 0, {'name': 'active'}),
+            ]"/>
+        </record>
+    </data>
+</odoo>

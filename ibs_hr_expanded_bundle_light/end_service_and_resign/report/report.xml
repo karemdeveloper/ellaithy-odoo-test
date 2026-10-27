@@ -1,0 +1,15 @@
+<odoo>
+
+
+     <record id="action_report_end_rewards" model="ir.actions.report">
+            <field name="name">End of Service Report</field>
+            <field name="model">end.rewards</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">end_service_and_resign.ending_service_reward_report</field>
+            <field name="report_file">end_service_and_resign.ending_service_reward_report</field>
+            <field name="binding_model_id" ref="model_end_rewards"/>
+            <field name="binding_type">report</field>
+        </record>
+
+
+</odoo>

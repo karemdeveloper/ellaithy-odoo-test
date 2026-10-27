@@ -1,0 +1,24 @@
+<odoo>
+
+    <record id="view_call_type_tree_inherit_website" model="ir.ui.view">
+        <field name="name">call.type.tree.inherit.website</field>
+        <field name="model">call.type</field>
+        <field name="inherit_id" ref="crm_customization.view_call_type_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_website_call_type"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_call_type_form_inherit_website" model="ir.ui.view">
+        <field name="name">call.type.form.inherit.website</field>
+        <field name="model">call.type</field>
+        <field name="inherit_id" ref="crm_customization.view_call_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_website_call_type"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

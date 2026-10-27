@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_attendance_day_view_list_shift" model="ir.ui.view">
+        <field name="name">ibs.hr.attendance.day.list.shift</field>
+        <field name="model">ibs.hr.attendance.day</field>
+        <field name="inherit_id" ref="ibs_hr.ibs_hr_attendance_day_view_list"/>
+        <field name="arch" type="xml">
+            <field name="state" position="attributes">
+                <attribute name="widget">badge</attribute>
+                <attribute name="decoration-success">state == 'present'</attribute>
+                <attribute name="decoration-danger">state == 'absent'</attribute>
+                <attribute name="decoration-info">state == 'leave'</attribute>
+                <attribute name="decoration-warning">state == 'holiday'</attribute>
+                <attribute name="decoration-muted">state in ('weekend', 'no_shift')</attribute>
+            </field>
+            <field name="state" position="after">
+                <field name="shift_id"/>
+                <field name="shift_from"/>
+                <field name="shift_to"/>
+                <field name="permission_minutes"/>
+                <field name="mission_hours" widget="float_time"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="ibs_hr_attendance_day_view_form_shift" model="ir.ui.view">
+        <field name="name">ibs.hr.attendance.day.form.shift</field>
+        <field name="model">ibs.hr.attendance.day</field>
+        <field name="inherit_id" ref="ibs_hr.ibs_hr_attendance_day_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group[1]" position="before">
+                <div name="button_box" class="oe_button_box">
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-clock-o" invisible="attendance_count == 0" context="{'day_record_kind': 'attendance'}">
+                        <field name="attendance_count" widget="statinfo" string="Fingerprints"/>
+                    </button>
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-hourglass-half" invisible="permission_count == 0" context="{'day_record_kind': 'permission'}">
+                        <field name="permission_count" widget="statinfo" string="Permissions"/>
+                    </button>
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-map-marker" invisible="mission_count == 0" context="{'day_record_kind': 'mission'}">
+                        <field name="mission_count" widget="statinfo" string="Missions"/>
+                    </button>
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-calendar" invisible="time_off_count == 0" context="{'day_record_kind': 'time_off'}">
+                        <field name="time_off_count" widget="statinfo" string="Time Off"/>
+                    </button>
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-clock-o" invisible="overtime_count == 0" context="{'day_record_kind': 'overtime'}">
+                        <field name="overtime_count" widget="statinfo" string="Overtime"/>
+                    </button>
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-calendar-check-o" invisible="holiday_count == 0" context="{'day_record_kind': 'holiday'}">
+                        <field name="holiday_count" widget="statinfo" string="Public Holidays"/>
+                    </button>
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-bed" invisible="rest_credit_count == 0" context="{'day_record_kind': 'rest_credit'}">
+                        <field name="rest_credit_count" widget="statinfo" string="Rest Credits"/>
+                    </button>
+                    <button name="action_open_day_records" type="object" class="oe_stat_button" icon="fa-exclamation-triangle" invisible="warning_count == 0" context="{'day_record_kind': 'warning'}">
+                        <field name="warning_count" widget="statinfo" string="Penalties"/>
+                    </button>
+                </div>
+            </xpath>
+            <field name="state" position="attributes">
+                <attribute name="widget">badge</attribute>
+                <attribute name="decoration-success">state == 'present'</attribute>
+                <attribute name="decoration-danger">state == 'absent'</attribute>
+                <attribute name="decoration-info">state == 'leave'</attribute>
+                <attribute name="decoration-warning">state == 'holiday'</attribute>
+                <attribute name="decoration-muted">state in ('weekend', 'no_shift')</attribute>
+            </field>
+            <field name="state" position="after">
+                <field name="shift_id"/>
+                <field name="shift_from"/>
+                <field name="shift_to"/>
+                <field name="permission_minutes"/>
+                <field name="mission_hours" widget="float_time"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- HR letter item 19: find the days an upload produced. -->
+    <record id="ibs_hr_attendance_day_view_search" model="ir.ui.view">
+        <field name="name">ibs.hr.attendance.day.search</field>
+        <field name="model">ibs.hr.attendance.day</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="shift_id"/>
+                <field name="date"/>
+                <filter name="present" string="Present" domain="[('state', '=', 'present')]"/>
+                <filter name="absent" string="Absent" domain="[('state', '=', 'absent')]"/>
+                <filter name="no_shift" string="No Shift" domain="[('state', '=', 'no_shift')]"/>
+                <separator/>
+                <filter name="late" string="Late" domain="[('late_minutes', '&gt;', 0)]"/>
+                <filter name="single_punch" string="Single Fingerprint" domain="[('single_punch', '=', True)]"/>
+                <separator/>
+                <filter name="date_filter" string="Date" date="date"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Day" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

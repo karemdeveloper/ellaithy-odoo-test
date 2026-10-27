@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Sent when a penalty is submitted, so the approver named by
+            CR 2.13 learns there is something waiting rather than having to
+            poll the list.
+        -->
+        <record id="mail_template_penalty_pending" model="mail.template">
+            <field name="name">Penalty: Awaiting Approval</field>
+            <field name="model_id" ref="model_ibs_hr_warning"/>
+            <field name="subject">Penalty awaiting approval: {{ object.name }}</field>
+            <field name="email_from">{{ (object.employee_id.company_id.email or user.email_formatted) }}</field>
+            <field name="email_to">{{ object._ibs_approver_emails() }}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+                <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#14171A;">
+                    <p>A disciplinary penalty has been submitted and is waiting for approval.</p>
+                    <table style="border-collapse:collapse;font-size:13px;">
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Reference</td>
+                            <td style="padding:4px 0;"><t t-out="object.name or ''">-</t></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Employee</td>
+                            <td style="padding:4px 0;"><t t-out="object.employee_id.name or ''">-</t></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Violation</td>
+                            <td style="padding:4px 0;"><t t-out="object.violation_id.name or ''">-</t></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Penalty</td>
+                            <td style="padding:4px 0;"><t t-out="object.penalty_days or 0">0</t> day(s)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Execution date</td>
+                            <td style="padding:4px 0;"><t t-out="object.execution_date or ''">-</t></td>
+                        </tr>
+                    </table>
+                    <p>Approving, rejecting or cancelling all require a single sign-off;
+                        a rejection or cancellation must carry a reason.</p>
+                </div>
+            </field>
+        </record>
+
+        <!-- The same, for an administrative penalty. -->
+        <record id="mail_template_admin_penalty_pending" model="mail.template">
+            <field name="name">Administrative Penalty: Awaiting Approval</field>
+            <field name="model_id" ref="model_ibs_hr_admin_penalty_record"/>
+            <field name="subject">Administrative penalty awaiting approval: {{ object.name }}</field>
+            <field name="email_from">{{ (object.employee_id.company_id.email or user.email_formatted) }}</field>
+            <field name="email_to">{{ object._ibs_approver_emails() }}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+                <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#14171A;">
+                    <p>An administrative penalty has been raised and is waiting for approval.</p>
+                    <table style="border-collapse:collapse;font-size:13px;">
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Reference</td>
+                            <td style="padding:4px 0;"><t t-out="object.name or ''">-</t></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Employee</td>
+                            <td style="padding:4px 0;"><t t-out="object.employee_id.name or ''">-</t></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Penalty</td>
+                            <td style="padding:4px 0;"><t t-out="object.name_snapshot or ''">-</t></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:4px 14px 4px 0;color:#6B7482;">Amount</td>
+                            <td style="padding:4px 0;"><t t-out="object.amount or 0">0</t></td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,23 @@
+{
+    "name": "Website Integration",
+    "version": "18.0.0.0",
+    "summary": "Model For Website Integration",
+    "category": "Technical/Integratio",
+    "author": "Mahmoud Yasser",
+    "depends": ["base", "crm_customization"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/sequence.xml",
+        "views/base_menu.xml",
+        "views/car_request_views.xml",
+        "views/car_order_views.xml",
+        "views/contact_us_views.xml",
+        "views/suggestion_complaint_views.xml",
+        "views/instant_approval_request_views.xml",
+        "views/crm_lead_rel_view.xml",
+        "views/res_users_views.xml",
+        "views/res_source_views.xml",
+        "views/call_type_views.xml",
+    ],
+    "installable": True,
+}

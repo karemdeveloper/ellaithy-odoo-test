@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="penalty_category" model="ir.module.category"><field name="name">Penalties and Commissions</field><field name="sequence">25</field></record>
+    <record id="penalty_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="penalty_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('penalty_user'))]"/></record>
+    <record id="penalty_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="penalty_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr.penalty_user')), (4, ref('hr.group_hr_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('penalty_generalist'))]"/></record>
+    <record id="penalty_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="penalty_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr.penalty_generalist'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('penalty_admin'))]"/></record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_ibs_admin_penalty_approver'))]"/>
+    </record>
+    <record id="rule_admin_penalty_record_employee" model="ir.rule">
+        <field name="name">Penalty: own record</field>
+        <field name="model_id" ref="model_ibs_hr_admin_penalty_record"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_admin_penalty_record_generalist" model="ir.rule">
+        <field name="name">Penalty: HR companies</field>
+        <field name="model_id" ref="model_ibs_hr_admin_penalty_record"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('penalty_generalist')), (4, ref('group_ibs_admin_penalty_approver'))]"/>
+    </record>
+    <record id="rule_commission_penalty_employee" model="ir.rule">
+        <field name="name">Penalty: own record</field>
+        <field name="model_id" ref="model_ibs_hr_commission_penalty"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_commission_penalty_generalist" model="ir.rule">
+        <field name="name">Penalty: HR companies</field>
+        <field name="model_id" ref="model_ibs_hr_commission_penalty"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('penalty_generalist')), (4, ref('group_ibs_admin_penalty_approver'))]"/>
+    </record>
+    <function model="res.groups" name="_ibs_apply_penalty_roles"/>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ibs_hr'"/>
+        <value eval="'penalty'"/>
+        <value eval="False"/>
+    </function>
+    <record id="rule_warning_own_hcm" model="ir.rule">
+        <field name="name">warning own</field>
+        <field name="model_id" ref="model_ibs_hr_warning"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_warning_hr_hcm" model="ir.rule">
+        <field name="name">warning hr</field>
+        <field name="model_id" ref="model_ibs_hr_warning"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('penalty_generalist'))]"/>
+    </record>
+    <record id="rule_warning_company_hcm" model="ir.rule">
+        <field name="name">warning company</field>
+        <field name="model_id" ref="model_ibs_hr_warning"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_warning_deduction_own_hcm" model="ir.rule">
+        <field name="name">warning_deduction own</field>
+        <field name="model_id" ref="model_ibs_hr_warning_deduction"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_warning_deduction_hr_hcm" model="ir.rule">
+        <field name="name">warning_deduction hr</field>
+        <field name="model_id" ref="model_ibs_hr_warning_deduction"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('penalty_generalist'))]"/>
+    </record>
+    <record id="rule_warning_deduction_company_hcm" model="ir.rule">
+        <field name="name">warning_deduction company</field>
+        <field name="model_id" ref="model_ibs_hr_warning_deduction"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_admin_penalty_company" model="ir.rule">
+        <field name="name">Administrative penalty: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_admin_penalty_record"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_commission_penalty_company" model="ir.rule">
+        <field name="name">Commission penalty: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_commission_penalty"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ellithy_ohrms_bridge.loan_finance" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('account.group_account_user'))]"/>
+    </record>
+    <record id="rule_loan_employee" model="ir.rule">
+        <field name="name">Loans: own requests</field>
+        <field name="model_id" ref="ohrms_loan.model_hr_loan"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_loan_approver" model="ir.rule">
+        <field name="name">Loans: authorized companies</field>
+        <field name="model_id" ref="ohrms_loan.model_hr_loan"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ellithy_ohrms_bridge.loan_generalist')), (4, ref('ellithy_ohrms_bridge.loan_finance'))]"/>
+    </record>
+    <record id="rule_loan_line_employee" model="ir.rule">
+        <field name="name">Loan installments: own requests</field>
+        <field name="model_id" ref="ohrms_loan.model_hr_loan_line"/>
+        <field name="domain_force">[('loan_id.employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_loan_line_approver" model="ir.rule">
+        <field name="name">Loan installments: authorized companies</field>
+        <field name="model_id" ref="ohrms_loan.model_hr_loan_line"/>
+        <field name="domain_force">[('loan_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ellithy_ohrms_bridge.loan_generalist')), (4, ref('ellithy_ohrms_bridge.loan_finance'))]"/>
+    </record>
+    <record id="ellithy_ohrms_bridge.advance_finance" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('account.group_account_user'))]"/>
+    </record>
+    <function model="res.groups" name="_ellithy_apply_hcm_document_access"/>
+    <record id="rule_resignation_company_boundary" model="ir.rule">
+        <field name="name">resignation: company boundary</field>
+        <field name="model_id" ref="hr_resignation.model_hr_resignation"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_clearance_company_boundary" model="ir.rule">
+        <field name="name">clearance: company boundary</field>
+        <field name="model_id" ref="model_hr_resignation_clearance"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_inherit_api_token" model="ir.ui.view">
+        <field name="name">res.users.form.inherit.api.token</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <!-- Add a new tab in the user form after "Preferences" tab -->
+            <xpath expr="//page[@name='preferences']" position="after">
+                <page name="api_tokens" string="API Tokens">
+                    <group>
+                        <field name="api_token_ids" nolabel="1">
+                            <list create="false" delete="false" edit="false" editable="bottom" >
+                                <field name="token"/>
+                                <field name="expires"/>
+                                <field name="create_date" string="Created"/>
+                            </list>
+                            <form create="false" delete="false" edit="false" editable="bottom">
+                                <group>
+                                    <field name="token" readonly="1"/>
+                                    <field name="expires" readonly="1"/>
+                                    <field name="create_date" readonly="1"/>
+                                </group>
+                            </form>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

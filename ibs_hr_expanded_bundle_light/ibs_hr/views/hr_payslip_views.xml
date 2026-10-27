@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        CR 2.12: the payslip has to show not only what was deducted for
+        discipline but what the ceiling pushed into a later month, otherwise
+        an employee querying a short deduction has nothing to be shown.
+    -->
+    <record id="hr_payslip_view_form_penalty" model="ir.ui.view">
+        <field name="name">hr.payslip.form.inherit.ibs.penalty</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll_community.hr_payslip_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="ibs_penalties" string="Penalties">
+                    <group>
+                        <group>
+                            <field name="penalty_days_taken"/>
+                            <field name="penalty_amount"/>
+                        </group>
+                        <group>
+                            <field name="penalty_days_deferred"/>
+                        </group>
+                    </group>
+                    <field name="penalty_deduction_ids" readonly="1">
+                        <list>
+                            <field name="warning_id"/>
+                            <field name="date"/>
+                            <field name="days"/>
+                            <field name="amount"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <p class="text-muted">
+                        Disciplinary deductions are capped per month. Days
+                        above the ceiling are carried into the next payslip
+                        rather than written off.
+                    </p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="ibs_hr_warning_deduction_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.warning.deduction.list</field>
+        <field name="model">ibs.hr.warning.deduction</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="warning_id"/>
+                <field name="payslip_id"/>
+                <field name="days"/>
+                <field name="amount"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ibs_hr_warning_deduction_action" model="ir.actions.act_window">
+        <field name="name">Penalty Deductions</field>
+        <field name="res_model">ibs.hr.warning.deduction</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

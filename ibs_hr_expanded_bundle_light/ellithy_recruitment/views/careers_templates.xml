@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Public application pages. Self-contained HTML (inline styles, no
+        asset bundle, no website app) so they load fast on a phone that just
+        scanned a branch poster.
+    -->
+    <template id="careers_layout" name="Careers Layout">
+        <html lang="en">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title t-out="title or 'Careers'"/>
+                <style>
+                    body { margin: 0; background: #f6f4f2; color: #1d1916; font: 16px/1.6 "Segoe UI", Tahoma, Arial, sans-serif; }
+                    .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+                    .band { background: #E4610F; color: #fff; padding: 20px; border-radius: 8px 8px 0 0; }
+                    .band h1 { margin: 0; font-size: 22px; }
+                    .band p { margin: 4px 0 0; opacity: .92; font-size: 14px; }
+                    .card { background: #fff; border: 1px solid #e6dfd8; border-radius: 0 0 8px 8px; padding: 20px; }
+                    .job { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid #eee7e1; }
+                    .job:first-child { border-top: 0; }
+                    .job small { color: #8a7a6d; display: block; }
+                    a.btn, button.btn { background: #E4610F; color: #fff; border: 0; border-radius: 6px; padding: 11px 18px; font: 600 15px/1 inherit; text-decoration: none; cursor: pointer; }
+                    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+                    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+                    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+                    label .ar { font-weight: normal; color: #8a7a6d; }
+                    input, select, textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 9px 10px; border: 1px solid #d9d0c8; border-radius: 6px; background: #fff; }
+                    .full { grid-column: 1 / -1; }
+                    .err { color: #b8322a; font-size: 13px; }
+                    .langs { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+                    .langs label { display: inline-flex; gap: 6px; font-weight: normal; }
+                    .langs input { width: auto; }
+                    .hp { position: absolute; left: -10000px; }
+                    .ok { background: #e7f4ec; color: #1d6b3e; padding: 14px; border-radius: 6px; }
+                    dl { display: grid; grid-template-columns: 180px 1fr; gap: 6px 12px; }
+                    dt { color: #8a7a6d; }
+                    dd { margin: 0; }
+                    @media print { .noprint { display: none; } body { background: #fff; } }
+                </style>
+            </head>
+            <body>
+                <div class="wrap"><t t-out="0"/></div>
+            </body>
+        </html>
+    </template>
+
+    <template id="careers_list" name="Careers">
+        <t t-call="ellithy_recruitment.careers_layout">
+            <t t-set="title" t-value="'Careers - %s' % company.name"/>
+            <div class="band">
+                <h1>Careers at <t t-out="company.name"/></h1>
+                <p>الوظائف المتاحة · Open positions</p>
+            </div>
+            <div class="card">
+                <t t-if="not jobs"><p>No open positions right now. / لا توجد وظائف متاحة حاليًا.</p></t>
+                <div t-foreach="jobs" t-as="job" class="job">
+                    <div>
+                        <strong t-out="job.name"/>
+                        <small><t t-out="job.department_id.name or ''"/></small>
+                    </div>
+                    <a class="btn" t-att-href="'/careers/%s' % job.id">Apply / تقدّم</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="careers_apply" name="Apply">
+        <t t-call="ellithy_recruitment.careers_layout">
+            <t t-set="title" t-value="job.name"/>
+            <div class="band">
+                <h1 t-out="job.name"/>
+                <p><t t-out="job.department_id.name or ''"/> · <t t-out="company.name"/></p>
+            </div>
+            <div class="card">
+                <p t-if="errors" class="err">Please correct the highlighted fields. / برجاء تصحيح الحقول الموضحة.</p>
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="src" t-att-value="src"/>
+                    <input type="text" name="website_url" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true"/>
+                    <div class="grid">
+                        <div class="full">
+                            <label for="name">Full name <span class="ar">الاسم بالكامل</span> *</label>
+                            <input id="name" name="name" t-att-value="values.get('name')" required="required"/>
+                            <div class="err" t-if="errors.get('name')" t-out="errors['name']"/>
+                        </div>
+                        <div>
+                            <label for="phone">Mobile <span class="ar">الموبايل</span> *</label>
+                            <input id="phone" name="phone" type="tel" t-att-value="values.get('phone')" required="required"/>
+                            <div class="err" t-if="errors.get('phone')" t-out="errors['phone']"/>
+                        </div>
+                        <div>
+                            <label for="email">Email <span class="ar">البريد الإلكتروني</span></label>
+                            <input id="email" name="email" type="email" t-att-value="values.get('email')"/>
+                            <div class="err" t-if="errors.get('email')" t-out="errors['email']"/>
+                        </div>
+                        <div>
+                            <label for="national_id">National ID <span class="ar">الرقم القومي</span> *</label>
+                            <input id="national_id" name="national_id" inputmode="numeric" maxlength="14" t-att-value="values.get('national_id')" required="required"/>
+                            <div class="err" t-if="errors.get('national_id')" t-out="errors['national_id']"/>
+                        </div>
+                        <div>
+                            <label for="birthdate">Birthdate <span class="ar">تاريخ الميلاد</span></label>
+                            <input id="birthdate" name="birthdate" type="date" t-att-value="values.get('birthdate')"/>
+                        </div>
+                        <div>
+                            <label for="marital_status">Marital status <span class="ar">الحالة الاجتماعية</span></label>
+                            <select id="marital_status" name="marital_status">
+                                <option value=""/>
+                                <option t-foreach="marital" t-as="m" t-att-value="m[0]" t-att-selected="values.get('marital_status') == m[0]" t-out="m[1]"/>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="military_status">Military status <span class="ar">الموقف من التجنيد</span></label>
+                            <select id="military_status" name="military_status">
+                                <option value=""/>
+                                <option t-foreach="military" t-as="m" t-att-value="m[0]" t-att-selected="values.get('military_status') == m[0]" t-out="m[1]"/>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="degree_id">Educational qualification <span class="ar">المؤهل الدراسي</span></label>
+                            <select id="degree_id" name="degree_id">
+                                <option value=""/>
+                                <option t-foreach="degrees" t-as="d" t-att-value="d.id" t-att-selected="values.get('degree_id') == str(d.id)" t-out="d.name"/>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="previous_job_title">Previous job title <span class="ar">المسمى الوظيفي السابق</span></label>
+                            <input id="previous_job_title" name="previous_job_title" t-att-value="values.get('previous_job_title')"/>
+                        </div>
+                        <div>
+                            <label for="experience_years">Years of experience <span class="ar">سنوات الخبرة</span></label>
+                            <input id="experience_years" name="experience_years" type="number" min="0" step="0.5" t-att-value="values.get('experience_years')"/>
+                        </div>
+                        <div>
+                            <label for="notice_period_days">Notice period, days <span class="ar">فترة الإشعار بالأيام</span></label>
+                            <input id="notice_period_days" name="notice_period_days" type="number" min="0" t-att-value="values.get('notice_period_days')"/>
+                        </div>
+                        <div class="full">
+                            <label>Languages <span class="ar">اللغات</span></label>
+                            <div class="langs">
+                                <label t-foreach="languages" t-as="lang"><input type="checkbox" name="language_ids" t-att-value="lang.id"/> <t t-out="lang.name"/></label>
+                            </div>
+                        </div>
+                        <div class="full">
+                            <label for="previous_experience">Previous experience <span class="ar">الخبرات السابقة</span></label>
+                            <textarea id="previous_experience" name="previous_experience" rows="3" t-out="values.get('previous_experience') or ''"/>
+                        </div>
+                        <div class="full">
+                            <label for="cv">CV (PDF, Word or image, up to 5 MB) <span class="ar">السيرة الذاتية</span></label>
+                            <input id="cv" name="cv" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"/>
+                            <div class="err" t-if="errors.get('cv')" t-out="errors['cv']"/>
+                        </div>
+                        <div class="full"><button type="submit" class="btn">Submit application / إرسال الطلب</button></div>
+                    </div>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <template id="careers_thanks" name="Application Received">
+        <t t-call="ellithy_recruitment.careers_layout">
+            <t t-set="title" t-value="job.name"/>
+            <div class="band">
+                <h1>Application received / تم استلام طلبك</h1>
+                <p><t t-out="job.name"/> · <t t-out="company.name"/></p>
+            </div>
+            <div class="card">
+                <p class="ok">Thank you, <t t-out="candidate.partner_name"/>. Reference <strong>APP-<t t-out="applicant.id"/></strong>.
+                    <br/>شكرًا لك، سيتم التواصل معك بعد مراجعة الطلب.</p>
+                <dl>
+                    <dt>Job</dt><dd t-out="job.name"/>
+                    <dt>Name</dt><dd t-out="candidate.partner_name"/>
+                    <dt>Mobile</dt><dd t-out="candidate.partner_phone or ''"/>
+                    <dt>National ID</dt><dd t-out="candidate.national_id or ''"/>
+                    <dt>Qualification</dt><dd t-out="candidate.type_id.name or ''"/>
+                    <dt>Previous job</dt><dd t-out="candidate.previous_job_title or ''"/>
+                    <dt>Experience (years)</dt><dd t-out="candidate.previous_experience_years"/>
+                </dl>
+                <p class="noprint"><button type="button" class="btn" onclick="window.print()">Print / طباعة</button></p>
+            </div>
+        </t>
+    </template>
+</odoo>

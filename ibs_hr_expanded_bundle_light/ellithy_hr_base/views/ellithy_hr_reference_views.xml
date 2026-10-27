@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ellithy_hr_suspension_reason_view_list" model="ir.ui.view">
+        <field name="name">ellithy.hr.suspension.reason.list</field>
+        <field name="model">ellithy.hr.suspension.reason</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ellithy_hr_suspension_reason_action" model="ir.actions.act_window">
+        <field name="name">Suspension Reasons</field>
+        <field name="res_model">ellithy.hr.suspension.reason</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="ellithy_hr_insurance_office_view_list" model="ir.ui.view">
+        <field name="name">ellithy.hr.insurance.office.list</field>
+        <field name="model">ellithy.hr.insurance.office</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="name_ar"/>
+                <field name="code"/>
+                <field name="employee_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ellithy_hr_insurance_office_action" model="ir.actions.act_window">
+        <field name="name">Insurance Offices</field>
+        <field name="res_model">ellithy.hr.insurance.office</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="ellithy_hr_document_type_view_list" model="ir.ui.view">
+        <field name="name">ellithy.hr.document.type.list</field>
+        <field name="model">ellithy.hr.document.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="required"/>
+                <field name="legacy_column"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ellithy_hr_document_type_action" model="ir.actions.act_window">
+        <field name="name">Document Types</field>
+        <field name="res_model">ellithy.hr.document.type</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="ellithy_hr_uniform_view_list" model="ir.ui.view">
+        <field name="name">ellithy.hr.uniform.list</field>
+        <field name="model">ellithy.hr.uniform</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="distributor"/>
+                <field name="price"/>
+                <field name="stock"/>
+                <field name="employee_count"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ellithy_hr_uniform_action" model="ir.actions.act_window">
+        <field name="name">Uniforms</field>
+        <field name="res_model">ellithy.hr.uniform</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

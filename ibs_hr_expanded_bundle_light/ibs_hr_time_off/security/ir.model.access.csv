@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_time_off_type_user,ibs.hr.time.off.type.user,model_ibs_hr_time_off_type,base.group_user,1,0,0,0
+access_time_off_type_admin,ibs.hr.time.off.type.admin,model_ibs_hr_time_off_type,ibs_hr_time_off.ibs_hr_time_off_admin,1,1,1,1
+access_time_off_request_user,ibs.hr.time.off.request.user,model_ibs_hr_time_off_request,base.group_user,1,1,1,0
+access_time_off_request_hr,ibs.hr.time.off.request.hr,model_ibs_hr_time_off_request,ibs_hr_time_off.ibs_hr_time_off_generalist,1,1,1,1
+access_time_off_ledger_user,ibs.hr.time.off.ledger.user,model_ibs_hr_time_off_ledger,base.group_user,1,0,0,0
+access_time_off_ledger_hr,ibs.hr.time.off.ledger.hr,model_ibs_hr_time_off_ledger,ibs_hr_time_off.ibs_hr_time_off_generalist,1,1,1,0
+access_rest_credit_user,ibs.hr.rest.credit.user,model_ibs_hr_rest_credit,base.group_user,1,0,0,0
+access_rest_credit_hr,ibs.hr.rest.credit.hr,model_ibs_hr_rest_credit,ibs_hr_time_off.ibs_hr_time_off_generalist,1,1,1,1
+access_time_off_holiday_admin,time.off.holiday.admin,ibs_hr_holiday.model_ibs_hr_public_holiday,ibs_hr_time_off.ibs_hr_time_off_admin,1,1,1,1
+access_time_off_balance_user,ibs.hr.time.off.balance.user,model_ibs_hr_time_off_balance,base.group_user,1,0,0,0

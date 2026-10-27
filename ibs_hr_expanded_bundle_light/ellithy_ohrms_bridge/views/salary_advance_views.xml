@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        CR 2.19: the earned-to-date ceiling is shown beside the requested
+        amount, so HR can see the limit rather than discover it on save.
+    -->
+    <record id="salary_advance_view_form_ellithy" model="ir.ui.view">
+        <field name="name">salary.advance.view.form.inherit.ellithy</field>
+        <field name="model">salary.advance</field>
+        <field name="inherit_id" ref="ohrms_salary_advance.salary_advance_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='approve_request']" position="attributes">
+                <attribute name="groups">ellithy_ohrms_bridge.advance_generalist</attribute>
+            </xpath>
+            <xpath expr="//button[@name='approve_request_acc_dept']" position="attributes">
+                <attribute name="groups">ellithy_ohrms_bridge.advance_finance</attribute>
+            </xpath>
+
+            <!--
+                The exception belongs beside the ceiling it lifts, not two
+                columns away under the reason, so it is taken out of the
+                vendor's group first and re-added below.
+            -->
+            <xpath expr="//field[@name='exceed_condition']" position="replace"/>
+
+            <!-- HR letter item 21: an employee's own request is filled in for
+                 them; only HR picks someone else. -->
+            <field name="employee_id" position="attributes">
+                <attribute name="readonly">not is_hr_user or state != 'draft'</attribute>
+            </field>
+            <field name="employee_id" position="after">
+                <field name="is_hr_user" invisible="1"/>
+            </field>
+
+            <field name="advance" position="after">
+                <field name="earned_to_date" readonly="1"/>
+                <field name="exceed_condition"
+                       readonly="state in ('approve','cancel','reject')"
+                       groups="ellithy_ohrms_bridge.advance_admin"/>
+            </field>
+
+            <!--
+                The running contract is already implied by the employee, and
+                the ceiling beside the amount is what HR actually needs from
+                it. The field stays on the record: the vendor's
+                ``approve_request`` still reads it.
+            -->
+            <xpath expr="//field[@name='employee_contract_id']"
+                   position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!--
+                Ellithy runs a single company, so the company is never a
+                decision on the form. It keeps its default, which is what the
+                journal domain and the currency are drawn from.
+            -->
+            <xpath expr="//field[@name='company_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!--
+        HR letter item 21 (replacing CR 2.18): employees request their own
+        salary advance from self-service, so the vendor's own-request menus
+        are open to every employee again. The model still keeps requests for
+        someone else, and every approval, with HR and Finance.
+    -->
+    <record id="ohrms_salary_advance.salary_advance_menu_own" model="ir.ui.menu">
+        <field name="name">My Salary Advances</field>
+        <field name="groups_id"
+               eval="[(6, 0, [ref('ellithy_ohrms_bridge.advance_user')])]"/>
+    </record>
+
+    <record id="ohrms_salary_advance.salary_advance_menu_my_approved"
+            model="ir.ui.menu">
+        <field name="groups_id"
+               eval="[(6, 0, [ref('ellithy_ohrms_bridge.advance_user')])]"/>
+    </record>
+    <record id="ohrms_salary_advance.salary_advance_menu_to_approve" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('advance_generalist'), ref('advance_finance')])]"/>
+    </record>
+</odoo>

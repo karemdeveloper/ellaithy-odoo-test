@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="time_off_ledger_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.time.off.ledger.list</field>
+        <field name="model">ibs.hr.time.off.ledger</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false"><field name="date"/>
+                <field name="employee_id"/><field name="type_id"/>
+                <field name="entry_type"/><field name="amount"/>
+                <field name="request_id"/><field name="description"/>
+            </list>
+        </field>
+    </record>
+    <record id="time_off_ledger_action" model="ir.actions.act_window">
+        <field name="name">Time Off Balances</field>
+        <field name="res_model">ibs.hr.time.off.ledger</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="rest_credit_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.rest.credit.list</field>
+        <field name="model">ibs.hr.rest.credit</field>
+        <field name="arch" type="xml">
+            <list><field name="employee_id"/><field name="source_date"/>
+                <field name="days"/><field name="state"/><field name="request_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="rest_credit_action" model="ir.actions.act_window">
+        <field name="name">Rest Credits</field>
+        <field name="res_model">ibs.hr.rest.credit</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
+

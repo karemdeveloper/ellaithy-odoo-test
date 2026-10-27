@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="action_report_end_service" model="ir.actions.report">
+        <field name="name">End of Service</field>
+        <field name="model">end.service</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">end_service_and_resign.report_end_service_template</field>
+        <field name="report_file">end_service_and_resign.report_end_service_template</field>
+        <field name="print_report_name">'End of Service Report - %s' % (object.employee_id.name or '')</field>
+        <field name="binding_model_id" ref="model_end_service"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_end_service_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <main>
+                    <t t-foreach="docs" t-as="doc">
+                        <div class="page">
+
+                            <h2 class="text-center">End of Service /Resignation Report</h2>
+
+                            <!-- ================= GROUP 1 ================= -->
+                            <h3>Statement of End of dues</h3>
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td>Employee</td>
+                                        <td>
+                                            <t t-esc="doc.employee_id.name"/>
+                                        </td>
+                                        <td>Department</td>
+                                        <td>
+                                            <t t-esc="doc.department_id.name"/>
+                                        </td>
+                                        <td>Work location</td>
+                                        <td>
+                                            <t t-esc="doc.location_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Nationality</td>
+                                        <td>
+                                            <t t-esc="doc.country_id.name"/>
+                                        </td>
+                                        <td>Contract</td>
+                                        <td>
+                                            <t t-esc="doc.contract_id.name"/>
+                                        </td>
+                                        <td>Grad</td>
+                                        <td>
+                                            <t t-esc="doc.grade_End"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Basic Wage</td>
+                                        <td>
+                                            <t t-esc="doc.wage"/>
+                                        </td>
+                                        <td>Allowances</td>
+                                        <td>
+                                            <t t-esc="doc.allowances"/>
+                                        </td>
+                                        <td>Total salary</td>
+                                        <td>
+                                            <t t-esc="doc.gross"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hiring Date</td>
+                                        <td>
+                                            <t t-esc="doc.hiring_date"/>
+                                        </td>
+                                        <td>Payslip Date</td>
+                                        <td>
+                                            <t t-esc="doc.payslip_date"/>
+                                        </td>
+                                        <td>Current Date</td>
+                                        <td>
+                                            <t t-esc="doc.end_date"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- ================= GROUP 2 ================= -->
+                            <h3>Calculate the salary due (days)</h3>
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td>Working Days</td>
+                                        <td>
+                                            <t t-esc="doc.working_days"/>
+                                        </td>
+                                        <td>Working days during this month</td>
+                                        <td>
+                                            <t t-esc="doc.days_in_month"/>
+                                        </td>
+                                        <td>Daily Wage</td>
+                                        <td>
+                                            <t t-esc="doc.daily"/>
+                                        </td>
+                                        <td>Total salary due</td>
+                                        <td>
+                                            <t t-esc="doc.salary_due"/>
+                                        </td>
+                                        <td>Amount of grant</td>
+                                        <td>
+                                            <t t-esc="doc.amount"/>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Reason for Grant</td>
+                                        <td>
+                                            <t t-esc="doc.reason_grant1.name"/>
+                                        </td>
+                                        <td>Grant Amount</td>
+                                        <td>
+                                            <t t-esc="doc.amount2"/>
+                                        </td>
+                                        <td>Reason for Grant</td>
+                                        <td>
+                                            <t t-esc="doc.reason_grant2.name"/>
+                                        </td>
+                                        <td>Deduction</td>
+                                        <td>
+                                            <t t-esc="doc.amount_ded"/>
+                                        </td>
+                                        <td>Reason Deduction</td>
+                                        <td>
+                                            <t t-esc="doc.reason_grant.name"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- ================= GROUP 3 ================= -->
+                            <h3>Calculate annual leave due (days)</h3>
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td>Actual Days</td>
+                                        <td>
+                                            <t t-esc="doc.actual_days"/>
+                                        </td>
+                                        <td>Daily Leave Value</td>
+                                        <td>
+                                            <t t-esc="doc.value"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Vacation Days</td>
+                                        <td>
+                                            <t t-esc="doc.vacation_days"/>
+                                        </td>
+                                        <td>Leave Allowance</td>
+                                        <td>
+                                            <t t-esc="doc.leave_allowance"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- ================= GROUP 4 ================= -->
+                            <h3>End of service gratuity calculation</h3>
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td>Type of Resignation</td>
+                                        <td>
+                                            <t t-esc="doc.type_resignation"/>
+                                        </td>
+                                        <td>Leave allowance Total</td>
+                                        <td>
+                                            <t t-esc="doc.leave_allowance_total"/>
+                                        </td>
+                                        <td>Total of service gratuity</td>
+                                        <td>
+                                            <t t-esc="doc.service_gratuity"/>
+                                        </td>
+                                    </tr>
+                                    <t t-if="doc.type_resignation == 'violation'">
+                                        <tr>
+                                            <td>Type of Violation</td>
+                                            <td colspan="5">
+                                                <t t-esc="doc.type_violation"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <!-- ================= SIGNATURE ================= -->
+                            <h3 class="text-center">Signature</h3>
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td>Employee</td>
+                                    <td>HR Manager</td>
+                                    <td>Director</td>
+                                </tr>
+                                <tr>
+                                    <td style="height:80px;"></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+
+                            <div style="page-break-after: always;"></div>
+
+                        </div>
+                    </t>
+                </main>
+            </t>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_violation_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.violation.list</field>
+        <field name="model">ibs.hr.violation</field>
+        <field name="arch" type="xml">
+            <list><field name="code"/><field name="name"/></list></field>
+    </record>
+    <record id="ibs_hr_violation_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.violation.form</field>
+        <field name="model">ibs.hr.violation</field>
+        <field name="arch" type="xml">
+            <form><sheet>
+                    <div class="oe_title"><h1><field name="name" placeholder="Violation"/></h1></div>
+                    <group><field name="code"/><field name="active" invisible="1"/></group>
+                    <field name="description" placeholder="Description"/>
+                    <separator string="Escalation Ladder"/>
+                    <field name="penalty_ids">
+                        <list editable="bottom">
+                            <field name="occurrence"/>
+                            <field name="action"/>
+                            <field name="penalty_days"/>
+                            <field name="notes"/>
+                        </list>
+                    </field>
+                </sheet></form>
+        </field>
+    </record>
+    <record id="ibs_hr_violation_action" model="ir.actions.act_window">
+        <field name="name">Violations</field>
+        <field name="res_model">ibs.hr.violation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

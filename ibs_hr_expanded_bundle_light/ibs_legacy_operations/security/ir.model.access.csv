@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ibs_hr_warehouse,access.ibs_hr_warehouse,model_ibs_hr_warehouse,hr.group_hr_user,1,1,1,0
+access_ibs_hr_inventory_category,access.ibs_hr_inventory_category,model_ibs_hr_inventory_category,hr.group_hr_user,1,1,1,0
+access_ibs_hr_inventory_product,access.ibs_hr_inventory_product,model_ibs_hr_inventory_product,hr.group_hr_user,1,1,1,0
+access_ibs_hr_stock_movement,access.ibs_hr_stock_movement,model_ibs_hr_stock_movement,hr.group_hr_user,1,1,1,0
+access_ibs_hr_purchase_request,access.ibs_hr_purchase_request,model_ibs_hr_purchase_request,hr.group_hr_user,1,1,1,0
+access_ibs_hr_purchase_line,access.ibs_hr_purchase_line,model_ibs_hr_purchase_line,hr.group_hr_user,1,1,1,0
+access_ibs_hr_investigation,access.ibs_hr_investigation,model_ibs_hr_investigation,hr.group_hr_user,1,1,1,0
+access_ibs_hr_clearance,access.ibs_hr_clearance,model_ibs_hr_clearance,hr.group_hr_user,1,1,1,0
+access_ibs_hr_clearance_item,access.ibs_hr_clearance_item,model_ibs_hr_clearance_item,hr.group_hr_user,1,1,1,0
+access_ibs_hr_notice,access.ibs_hr_notice,model_ibs_hr_notice,hr.group_hr_user,1,1,1,0
+access_ibs_hr_team_meeting,access.ibs_hr_team_meeting,model_ibs_hr_team_meeting,hr.group_hr_user,1,1,1,0
+access_ibs_hr_employee_asset,access.ibs_hr_employee_asset,model_ibs_hr_employee_asset,hr.group_hr_user,1,1,1,0

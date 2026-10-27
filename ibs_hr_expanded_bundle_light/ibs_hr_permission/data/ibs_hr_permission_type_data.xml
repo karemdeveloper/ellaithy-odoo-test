@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="permission_type_lateness" model="ibs.hr.permission.type">
+            <field name="name">Lateness</field>
+            <field name="sequence">10</field>
+            <field name="code">lateness</field>
+        </record>
+        <record id="permission_type_early_leave" model="ibs.hr.permission.type">
+            <field name="name">Early Leave</field>
+            <field name="sequence">20</field>
+            <field name="code">early_leave</field>
+        </record>
+    </data>
+</odoo>

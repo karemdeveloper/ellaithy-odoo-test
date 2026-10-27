@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_form_hcm_roles" model="ir.ui.view">
+        <field name="name">hr.payslip.form.hcm.roles</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll_community.hr_payslip_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_compute_sheet']" position="attributes">
+                <attribute name="groups">ibs_hr_payroll.ibs_hr_payroll_generalist</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_payslip_done']" position="attributes">
+                <attribute name="groups">ibs_hr_payroll.ibs_hr_payroll_finance</attribute>
+                <attribute name="string">Finance Confirm</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_payslip_draft']" position="attributes">
+                <attribute name="groups">ibs_hr_payroll.ibs_hr_payroll_admin</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_payslip_cancel']" position="attributes">
+                <attribute name="groups">ibs_hr_payroll.ibs_hr_payroll_admin</attribute>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-calendar-check-o"
+                        context="{'hcm_document_kind': 'day'}">
+                    <field name="hcm_day_record_count" widget="statinfo" string="Day Treatments"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-clock-o"
+                        context="{'hcm_document_kind': 'fingerprint'}">
+                    <field name="hcm_fingerprint_count" widget="statinfo" string="Fingerprints"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-calendar"
+                        context="{'hcm_document_kind': 'holiday'}">
+                    <field name="hcm_holiday_count" widget="statinfo" string="Public Holidays"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-calendar-minus-o"
+                        context="{'hcm_document_kind': 'time_off'}">
+                    <field name="hcm_time_off_count" widget="statinfo" string="Time Off"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-hourglass-half"
+                        context="{'hcm_document_kind': 'permission'}">
+                    <field name="hcm_permission_count" widget="statinfo" string="Permissions"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-map-marker"
+                        context="{'hcm_document_kind': 'mission'}">
+                    <field name="hcm_mission_count" widget="statinfo" string="Missions"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-exclamation-triangle"
+                        context="{'hcm_document_kind': 'penalty'}">
+                    <field name="hcm_penalty_count" widget="statinfo" string="Penalties"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-plus-circle"
+                        context="{'hcm_document_kind': 'overtime'}">
+                    <field name="hcm_overtime_count" widget="statinfo" string="Overtime"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-mobile"
+                        context="{'hcm_document_kind': 'mobile'}">
+                    <field name="hcm_mobile_count" widget="statinfo" string="Mobile Invoices"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-credit-card"
+                        context="{'hcm_document_kind': 'loan'}"
+                        invisible="not hcm_loan_count">
+                    <field name="hcm_loan_count" widget="statinfo" string="Loans"/>
+                </button>
+                <button name="action_open_hcm_documents" type="object"
+                        class="oe_stat_button" icon="fa-money"
+                        context="{'hcm_document_kind': 'advance'}"
+                        invisible="not hcm_advance_count">
+                    <field name="hcm_advance_count" widget="statinfo" string="Salary Advances"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Payroll Period" name="hcm_payroll_period">
+                    <group>
+                        <group string="Calendar and Attendance">
+                            <field name="period_day_count"/>
+                            <field name="weekend_day_count"/>
+                            <field name="public_holiday_day_count"/>
+                            <field name="attendance_day_count"/>
+                        </group>
+                        <group string="Leave and Payroll Time">
+                            <field name="paid_leave_day_count"/>
+                            <field name="unpaid_leave_day_count"/>
+                            <field name="absent_day_count"/>
+                            <field name="lateness_minutes"/>
+                            <field name="overtime_hours" widget="float_time"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

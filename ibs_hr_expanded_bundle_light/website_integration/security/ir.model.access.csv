@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_car_request,access_car_request,model_car_request,,1,1,1,1
+access_car_order,access_car_order,model_car_order,,1,1,1,1
+access_contact_us,access_contact_us,model_contact_us,,1,1,1,1
+access_suggestion_complaint,access_suggestion_complaint,model_suggestion_complaint,,1,1,1,1
+access_instant_approval_request,access_instant_approval_request,model_instant_approval_request,,1,1,1,1
+access_api_token,access_api_token,model_api_token,,1,1,1,1

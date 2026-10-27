@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_legacy_project_user,Legacy Project User,model_ibs_legacy_project,hr.group_hr_user,1,1,1,1
+access_legacy_task_user,Legacy Task User,model_ibs_legacy_task,hr.group_hr_user,1,1,1,1
+access_legacy_checklist_user,Legacy Checklist User,model_ibs_legacy_task_checklist,hr.group_hr_user,1,1,1,1
+access_legacy_kpi_point_user,Legacy KPI Point User,model_ibs_legacy_kpi_point,hr.group_hr_user,1,1,1,1
+access_legacy_kpi_evaluation_user,Legacy KPI Evaluation User,model_ibs_legacy_kpi_evaluation,hr.group_hr_user,1,1,1,1

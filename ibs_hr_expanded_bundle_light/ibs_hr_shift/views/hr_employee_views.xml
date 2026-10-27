@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_view_form_shift" model="ir.ui.view">
+        <field name="name">hr.employee.form.shift</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <field name="department_id" position="after">
+                <field name="shift_id"/>
+                <field name="effective_shift_id" string="Working Shift"
+                       invisible="shift_id or not effective_shift_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- HR letter item 16: assign a shift to many employees at once -->
+    <record id="ibs_hr_shift_assign_wizard_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.shift.assign.wizard.form</field>
+        <field name="model">ibs.hr.shift.assign.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Assign Shift">
+                <group>
+                    <group>
+                        <field name="shift_id"/>
+                        <field name="only_without_shift"/>
+                        <field name="regenerate"/>
+                    </group>
+                    <group string="Add a Whole Group">
+                        <field name="department_id"/>
+                        <field name="branch_id"/>
+                    </group>
+                </group>
+                <field name="employee_ids">
+                    <list>
+                        <field name="employee_code"/>
+                        <field name="name"/>
+                        <field name="department_id"/>
+                        <field name="branch_id"/>
+                        <field name="shift_id" string="Current Shift"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_assign" type="object" string="Assign"
+                            class="btn-primary"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="ibs_hr_shift_assign_wizard_action" model="ir.actions.act_window">
+        <field name="name">Assign Shift</field>
+        <field name="res_model">ibs.hr.shift.assign.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="hr.model_hr_employee"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('ibs_hr_shift.ibs_hr_shift_generalist'))]"/>
+    </record>
+
+    <!-- HR letter item 19: fingerprint device export -->
+    <record id="ibs_hr_punch_import_wizard_view_form" model="ir.ui.view">
+        <field name="name">ibs.hr.punch.import.wizard.form</field>
+        <field name="model">ibs.hr.punch.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Fingerprint Punches">
+                <field name="state" invisible="1"/>
+                <div invisible="state != 'upload'">
+                    <p class="text-muted">
+                        One punch per row, exactly as the device exports it: an employee
+                        code column and a date-time column (or separate date and time
+                        columns). The first and last punch of each day become the check-in
+                        and check-out; a day with one punch is kept as a single
+                        fingerprint. Days already on file are not touched.
+                    </p>
+                    <group>
+                        <field name="file" filename="filename" required="state == 'upload'"/>
+                        <field name="filename" invisible="1"/>
+                        <field name="match_by" widget="radio" options="{'horizontal': true}"/>
+                        <field name="regenerate"/>
+                    </group>
+                </div>
+                <div invisible="state != 'done'">
+                    <field name="result" nolabel="1" class="font-monospace"/>
+                </div>
+                <footer>
+                    <button name="action_import" type="object" string="Import"
+                            class="btn-primary" invisible="state != 'upload'"/>
+                    <button name="action_template" type="object" string="Download Template"
+                            class="btn-secondary" invisible="state != 'upload'"/>
+                    <button special="cancel" string="Close"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="ibs_hr_punch_import_wizard_action" model="ir.actions.act_window">
+        <field name="name">Import Fingerprint Punches</field>
+        <field name="res_model">ibs.hr.punch.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="res_config_settings_view_form_shift" model="ir.ui.view">
+        <field name="name">res.config.settings.form.ibs.shift</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr_attendance.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block name="overtime_settings" position="before">
+                <block title="Shifts" name="ibs_shift_settings">
+                    <setting string="Default Shift"
+                             help="Used for employees with no shift of their own: attendance days, lateness and leave day counts.">
+                        <field name="ibs_default_shift_id"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>
+

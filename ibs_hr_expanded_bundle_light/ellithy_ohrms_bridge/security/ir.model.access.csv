@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clearance_hr,hr.resignation.clearance.hr,model_hr_resignation_clearance,ellithy_ohrms_bridge.resignation_generalist,1,1,1,1
+access_clearance_mgr,hr.resignation.clearance.mgr,model_hr_resignation_clearance,ellithy_ohrms_bridge.resignation_generalist,1,1,1,0
+access_clearance_user,hr.resignation.clearance.user,model_hr_resignation_clearance,base.group_user,1,1,0,0
+access_clearance_wizard,hr.resignation.clearance.wizard,model_hr_resignation_clearance_wizard,ellithy_ohrms_bridge.resignation_generalist,1,1,1,1
+access_loan_finance,hr.loan.finance,ohrms_loan.model_hr_loan,ellithy_ohrms_bridge.loan_finance,1,1,0,0
+access_loan_line_finance,hr.loan.line.finance,ohrms_loan.model_hr_loan_line,ellithy_ohrms_bridge.loan_finance,1,1,0,0
+access_loan_generalist,hr.loan.generalist,ohrms_loan.model_hr_loan,ellithy_ohrms_bridge.loan_generalist,1,1,1,0
+access_loan_line_generalist,hr.loan.line.generalist,ohrms_loan.model_hr_loan_line,ellithy_ohrms_bridge.loan_generalist,1,1,1,0
+access_advance_generalist,advance.generalist,ohrms_salary_advance.model_salary_advance,ellithy_ohrms_bridge.advance_generalist,1,1,1,0
+access_advance_finance,advance.finance,ohrms_salary_advance.model_salary_advance,ellithy_ohrms_bridge.advance_finance,1,1,0,0
+access_resignation_generalist,resignation.generalist,hr_resignation.model_hr_resignation,ellithy_ohrms_bridge.resignation_generalist,1,1,1,0

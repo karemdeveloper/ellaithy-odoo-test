@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_payroll_category" model="ir.module.category"><field name="name">HCM Payroll</field><field name="sequence">25</field></record>
+    <record id="ibs_hr_payroll_user" model="res.groups">
+        <field name="name">User (Employee)</field>
+        <field name="category_id" ref="ibs_hr_payroll_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_user" model="res.groups"><field name="implied_ids" eval="[(4, ref('ibs_hr_payroll_user'))]"/></record>
+    <record id="ibs_hr_payroll_generalist" model="res.groups">
+        <field name="name">HR Generalist</field>
+        <field name="category_id" ref="ibs_hr_payroll_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_payroll.ibs_hr_payroll_user')), (4, ref('hr.group_hr_user')), (4, ref('hr_payroll_community.group_hr_payroll_community_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_generalist" model="res.groups"><field name="implied_ids" eval="[(4, ref('ibs_hr_payroll_generalist'))]"/></record>
+    <record id="ibs_hr_payroll_finance" model="res.groups">
+        <field name="name">Financial Approval</field>
+        <field name="category_id" ref="ibs_hr_payroll_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_payroll.ibs_hr_payroll_user')), (4, ref('hr_payroll_community.group_hr_payroll_community_user'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_financial_approval" model="res.groups"><field name="implied_ids" eval="[(4, ref('ibs_hr_payroll_finance'))]"/></record>
+    <record id="ibs_hr_payroll_admin" model="res.groups">
+        <field name="name">HR Admin</field>
+        <field name="category_id" ref="ibs_hr_payroll_category"/>
+        <field name="implied_ids" eval="[(4, ref('ibs_hr_payroll.ibs_hr_payroll_generalist')), (4, ref('ibs_hr_payroll.ibs_hr_payroll_finance'))]"/>
+    </record>
+    <record id="ellithy_hr_base.group_ellithy_hr_admin" model="res.groups"><field name="implied_ids" eval="[(4, ref('ibs_hr_payroll_admin'))]"/></record>
+    <function model="res.groups" name="_ellithy_bind_module_roles">
+        <value eval="'ibs_hr_payroll'"/>
+        <value eval="'ibs_hr_payroll'"/>
+        <value eval="True"/>
+    </function>
+    <function model="res.groups" name="_hcm_apply_payroll_security"/>
+</odoo>

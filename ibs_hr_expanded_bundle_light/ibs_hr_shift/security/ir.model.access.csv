@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ibs_hr_shift_user,ibs.hr.shift.user,model_ibs_hr_shift,base.group_user,1,0,0,0
+access_ibs_hr_shift_admin,ibs.hr.shift.admin,model_ibs_hr_shift,ibs_hr_shift.ibs_hr_shift_admin,1,1,1,1
+access_ibs_hr_shift_line_user,ibs.hr.shift.line.user,model_ibs_hr_shift_line,base.group_user,1,0,0,0
+access_ibs_hr_shift_line_admin,ibs.hr.shift.line.admin,model_ibs_hr_shift_line,ibs_hr_shift.ibs_hr_shift_admin,1,1,1,1
+access_attendance_shift_user,attendance.shift.user,ibs_hr.model_ibs_hr_attendance_day,base.group_user,1,0,0,0
+access_attendance_shift_generalist,attendance.shift.generalist,ibs_hr.model_ibs_hr_attendance_day,ibs_hr_shift.ibs_hr_shift_generalist,1,1,1,0
+access_ibs_hr_shift_assign_wizard,ibs.hr.shift.assign.wizard,model_ibs_hr_shift_assign_wizard,ibs_hr_shift.ibs_hr_shift_generalist,1,1,1,1
+access_ibs_hr_punch_import_wizard,ibs.hr.punch.import.wizard,model_ibs_hr_punch_import_wizard,ibs_hr_shift.ibs_hr_shift_generalist,1,1,1,1

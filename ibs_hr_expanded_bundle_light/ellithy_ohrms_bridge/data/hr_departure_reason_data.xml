@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Ellaithy's leaving reasons, beside Odoo's three (Fired, Resigned,
+        Retired). noupdate: HR maintains the list from Employees >
+        Configuration > Departure Reasons after this first load.
+    -->
+    <data noupdate="1">
+        <record id="departure_reason_better_offer" model="hr.departure.reason">
+            <field name="name">Better salary or job offer / عرض راتب أو وظيفة أفضل</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="departure_reason_career" model="hr.departure.reason">
+            <field name="name">Career growth / فرصة ترقي وتطور</field>
+            <field name="sequence">105</field>
+        </record>
+        <record id="departure_reason_environment" model="hr.departure.reason">
+            <field name="name">Work environment / بيئة العمل</field>
+            <field name="sequence">110</field>
+        </record>
+        <record id="departure_reason_manager" model="hr.departure.reason">
+            <field name="name">Relationship with manager / العلاقة مع المدير المباشر</field>
+            <field name="sequence">115</field>
+        </record>
+        <record id="departure_reason_workload" model="hr.departure.reason">
+            <field name="name">Workload or pressure / ضغط العمل</field>
+            <field name="sequence">120</field>
+        </record>
+        <record id="departure_reason_hours" model="hr.departure.reason">
+            <field name="name">Working hours or shifts / مواعيد العمل والشيفتات</field>
+            <field name="sequence">125</field>
+        </record>
+        <record id="departure_reason_commute" model="hr.departure.reason">
+            <field name="name">Distance or commute / بعد المسافة والمواصلات</field>
+            <field name="sequence">130</field>
+        </record>
+        <record id="departure_reason_personal" model="hr.departure.reason">
+            <field name="name">Personal or family reasons / ظروف شخصية أو عائلية</field>
+            <field name="sequence">135</field>
+        </record>
+        <record id="departure_reason_health" model="hr.departure.reason">
+            <field name="name">Health reasons / ظروف صحية</field>
+            <field name="sequence">140</field>
+        </record>
+        <record id="departure_reason_study_travel" model="hr.departure.reason">
+            <field name="name">Study or travel / الدراسة أو السفر</field>
+            <field name="sequence">145</field>
+        </record>
+        <record id="departure_reason_military" model="hr.departure.reason">
+            <field name="name">Military service / التجنيد</field>
+            <field name="sequence">150</field>
+        </record>
+        <record id="departure_reason_performance" model="hr.departure.reason">
+            <field name="name">Performance / ضعف الأداء</field>
+            <field name="sequence">155</field>
+        </record>
+        <record id="departure_reason_discipline" model="hr.departure.reason">
+            <field name="name">Disciplinary / مخالفات وجزاءات</field>
+            <field name="sequence">160</field>
+        </record>
+        <record id="departure_reason_absence" model="hr.departure.reason">
+            <field name="name">Absence without notice / الانقطاع عن العمل</field>
+            <field name="sequence">165</field>
+        </record>
+        <record id="departure_reason_contract_end" model="hr.departure.reason">
+            <field name="name">End of contract / انتهاء العقد</field>
+            <field name="sequence">170</field>
+        </record>
+        <record id="departure_reason_probation" model="hr.departure.reason">
+            <field name="name">Failed probation / عدم اجتياز فترة الاختبار</field>
+            <field name="sequence">175</field>
+        </record>
+        <record id="departure_reason_restructuring" model="hr.departure.reason">
+            <field name="name">Restructuring / إعادة هيكلة</field>
+            <field name="sequence">180</field>
+        </record>
+        <record id="departure_reason_death" model="hr.departure.reason">
+            <field name="name">Death / وفاة</field>
+            <field name="sequence">185</field>
+        </record>
+        <record id="departure_reason_other" model="hr.departure.reason">
+            <field name="name">Other / أخرى</field>
+            <field name="sequence">190</field>
+        </record>
+    </data>
+</odoo>

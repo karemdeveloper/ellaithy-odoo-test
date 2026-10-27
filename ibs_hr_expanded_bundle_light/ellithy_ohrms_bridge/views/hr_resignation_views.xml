@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ CR 2.10: the clearance form ============ -->
+    <record id="hr_resignation_clearance_view_list" model="ir.ui.view">
+        <field name="name">hr.resignation.clearance.list</field>
+        <field name="model">hr.resignation.clearance</field>
+        <field name="arch" type="xml">
+            <list string="Clearance" editable="bottom"
+                  decoration-success="state == 'approved'"
+                  decoration-danger="state == 'rejected'">
+                <field name="sequence" widget="handle"/>
+                <field name="line_type" readonly="1"/>
+                <field name="department_id" readonly="1"/>
+                <field name="manager_id" readonly="1" optional="show"/>
+                <field name="employee_id" column_invisible="1"/>
+                <field name="state" readonly="1"/>
+                <!-- Who signed, and when. The whole point of the form. -->
+                <field name="approved_by" readonly="1" optional="show"/>
+                <field name="approved_at" readonly="1" optional="show"/>
+                <field name="amount_due" sum="Total Due" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="rejection_reason" optional="hide"/>
+                <field name="note" optional="hide"/>
+                <button name="action_approve" type="object" string="Clear"
+                        icon="fa-check" title="Sign this department off"
+                        invisible="state == 'approved'"/>
+                <button name="action_reject" type="object" string="Block"
+                        icon="fa-ban" title="Block clearance"
+                        invisible="state == 'rejected'"/>
+                <button name="action_reset" type="object" string="Reset"
+                        icon="fa-undo" invisible="state == 'pending'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_resignation_clearance_action" model="ir.actions.act_window">
+        <field name="name">Clearance</field>
+        <field name="res_model">hr.resignation.clearance</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- ============ CR 2.7 / 2.8 / 2.9 / 2.10 on the resignation ============ -->
+    <record id="hr_resignation_view_form_ellithy" model="ir.ui.view">
+        <field name="name">hr.resignation.view.form.inherit.ellithy</field>
+        <field name="model">hr.resignation</field>
+        <field name="inherit_id" ref="hr_resignation.hr_resignation_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- CR 2.8: the line manager endorses before HR approves. -->
+            <xpath expr="//button[@name='action_approve_resignation']"
+                   position="before">
+                <button string="Endorse" type="object"
+                        name="action_endorse_resignation"
+                        class="oe_highlight"
+                        invisible="state != 'confirm'"
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
+            </xpath>
+
+            <xpath expr="//button[@name='action_approve_resignation']"
+                   position="attributes">
+                <attribute name="invisible">state != 'endorsed'</attribute>
+                <attribute name="class">oe_highlight</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.resignation_admin</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_reject_resignation']"
+                   position="attributes">
+                <attribute name="invisible">state not in ('confirm', 'endorsed')</attribute>
+            </xpath>
+
+            <!-- The employee's own withdrawal. Once a manager has endorsed
+                 it (or further), it is no longer theirs alone to undo:
+                 enforced in Python too, on ``action_cancel_resignation``. -->
+            <xpath expr="//button[@name='action_cancel_resignation']"
+                   position="attributes">
+                <attribute name="invisible">state not in ('draft', 'confirm')</attribute>
+            </xpath>
+
+            <!--
+                Clearance is driven from the header: started from a wizard,
+                confirmed once every department has signed. It runs after
+                approval, not before it: handing back company property is
+                something that happens on the actual last working day, not a
+                precondition for deciding the exit may go ahead. "Start
+                Clearance" therefore only appears once approved AND on that
+                exact day; the wizard itself re-checks both (see
+                ``action_open_clearance_wizard``), a stale open form is not
+                a way around either.
+            -->
+            <xpath expr="//button[@name='action_reject_resignation']"
+                   position="after">
+                <button string="Start Clearance" type="object"
+                        name="action_open_clearance_wizard"
+                        class="oe_highlight"
+                        invisible="request_type != 'exit' or state != 'approved' or clearance_state != 'none' or expected_revealing_date != context_today().strftime('%Y-%m-%d')"
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
+                <button string="Add Departments" type="object"
+                        name="action_open_clearance_wizard"
+                        invisible="request_type != 'exit' or clearance_state != 'progress'"
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
+                <button string="Confirm Clearance" type="object"
+                        name="action_confirm_clearance"
+                        class="oe_highlight"
+                        invisible="request_type != 'exit' or clearance_state != 'progress' or not clearance_complete"
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
+                <button string="Reopen Clearance" type="object"
+                        name="action_reopen_clearance"
+                        invisible="request_type != 'exit' or clearance_state != 'done'"
+                        groups="ellithy_ohrms_bridge.resignation_generalist"/>
+                <field name="clearance_state" invisible="1"/>
+                <field name="clearance_complete" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,confirm,endorsed,approved</attribute>
+            </xpath>
+
+            <!--
+                Suspension and blacklisting moved here from the employee
+                form's Change Status wizard, so every way an employee stops
+                working leaves one reviewable record.
+            -->
+            <!-- Not shown at all, to HR either: which kind of request this
+                 is now comes from which menu it was raised from (each sets
+                 ``default_request_type`` and filters its own list by it),
+                 so a field to pick or reveal it on the form would only be
+                 redundant, and it stays a real field other elements'
+                 ``invisible`` domains still read (e.g. the Clearance page
+                 below). -->
+            <xpath expr="//field[@name='change_employee']" position="before">
+                <field name="request_type" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='resignation_type']" position="attributes">
+                <attribute name="invisible">request_type != 'exit'</attribute>
+                <attribute name="required">request_type == 'exit' and state != 'draft'</attribute>
+            </xpath>
+            <!-- The classified leaving reason HR picks while reviewing; the
+                 leaver's own words stay in "Reason". -->
+            <xpath expr="//field[@name='resignation_type']" position="after">
+                <field name="departure_reason_id"
+                       invisible="request_type != 'exit'"
+                       required="request_type == 'exit' and state == 'endorsed'"
+                       options="{'no_create': True}"
+                       groups="ellithy_ohrms_bridge.resignation_generalist"/>
+            </xpath>
+
+            <!-- HR's own record of which contract is ending, not the
+                 leaver's business. The vendor's plain-text column is
+                 dropped from the form outright and replaced by the real
+                 relation, rather than merely hidden from the employee. -->
+            <xpath expr="//field[@name='employee_contract']" position="replace">
+                <field name="employee_contract_id" groups="ellithy_ohrms_bridge.resignation_generalist"/>
+            </xpath>
+
+            <!-- Migrated, not requested: the leaver states when they want
+                 to go, not when they started. -->
+            <xpath expr="//field[@name='joined_date']" position="attributes">
+                <attribute name="readonly">not change_employee</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='expected_revealing_date']" position="attributes">
+                <attribute name="string">Last Working Day</attribute>
+                <attribute name="invisible">request_type != 'exit'</attribute>
+                <attribute name="required">request_type == 'exit'</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='notice_period']" position="attributes">
+                <attribute name="invisible">request_type != 'exit'</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.resignation_generalist</attribute>
+            </xpath>
+
+            <!-- The stated reason is locked the moment the request is
+                 submitted: the vendor only locked it once fully
+                 approved, which let it be rewritten throughout review. -->
+            <xpath expr="//field[@name='reason']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+
+            <!-- "Resignation Details / Reason" is exit-only: a suspension
+                 already has its own reason (``suspension_reason_id`` /
+                 ``suspension_comment``), so showing this too would be a
+                 second, differently-labelled place to say the same thing.
+                 The group, not just the field, so a suspension is not left
+                 with an empty "Resignation Details" header once
+                 ``resignation_type`` (already HR-only) is also hidden. -->
+            <xpath expr="//field[@name='reason']/.." position="attributes">
+                <attribute name="invisible">request_type != 'exit'</attribute>
+            </xpath>
+
+            <!-- Anchored on a field rather than a group label: Odoo refuses
+                 @string as an inheritance selector. Two levels up from
+                 "reason" is the outer group, so these land beside it in the
+                 sheet rather than nested inside it. -->
+            <xpath expr="//field[@name='reason']/../.." position="after">
+                <!-- Both groups are what HR decides, not the leaver: how the
+                     exit is legally classified, whether it is a suspension,
+                     and whether the person is blacklisted or logged out.
+                     ``groups`` keeps them out of a plain employee's form
+                     entirely, not just visually hidden. -->
+                <group string="Suspension"
+                       invisible="request_type != 'suspension'"
+                       groups="ellithy_ohrms_bridge.resignation_generalist">
+                    <field name="suspension_start"
+                           required="request_type == 'suspension'"
+                           readonly="state == 'approved'"/>
+                    <field name="suspension_end"
+                           readonly="state == 'approved'"
+                           placeholder="Leave empty to lift by hand"/>
+                    <field name="suspension_reason_id"
+                           readonly="state == 'approved'"/>
+                    <field name="suspension_comment"
+                           readonly="state == 'approved'"/>
+                </group>
+                <!-- Not eligible for rehire is an exit concept: someone
+                     suspended is coming back, so there is nothing here for
+                     that case. ``disable_login`` is not blacklist-specific
+                     though (a suspension disables the login too, while it
+                     lasts: see ``_apply_employee_exit``), so it stays in
+                     its own group rather than being hidden along with it. -->
+                <group string="Blacklist" groups="ellithy_ohrms_bridge.resignation_generalist"
+                       invisible="request_type != 'exit'">
+                    <field name="blacklist" readonly="state == 'approved'"/>
+                    <field name="blacklist_reason"
+                           invisible="not blacklist"
+                           required="blacklist"
+                           readonly="state == 'approved'"/>
+                </group>
+                <group string="Login" groups="ellithy_ohrms_bridge.resignation_generalist">
+                    <field name="disable_login" readonly="state == 'approved'"/>
+                </group>
+            </xpath>
+
+            <!-- CR 2.10: clearance is not optional, so it is not hidden. -->
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <!-- HR sees clearance throughout; a plain employee only
+                         once it is fully signed off (``clearance_state ==
+                         'done'``): there is nothing for them to act on
+                         before then, and an in-progress sheet can carry
+                         department remarks not meant for the leaver. Once
+                         visible to them it is read-only: signing is HR's or
+                         the department manager's act, never the leaver's
+                         own. -->
+                    <page name="clearance" string="Clearance"
+                          invisible="request_type != 'exit' or (not change_employee and clearance_state != 'done')">
+                        <group>
+                            <group>
+                                <field name="clearance_state"/>
+                                <field name="clearance_progress"/>
+                                <field name="clearance_complete" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="clearance_confirmed_by"
+                                       invisible="clearance_state != 'done'"/>
+                                <field name="clearance_confirmed_at"
+                                       invisible="clearance_state != 'done'"/>
+                                <field name="clearance_total_due"
+                                       invisible="clearance_state == 'none'"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+
+                        <div class="alert alert-info" role="status"
+                             invisible="clearance_state != 'none'"
+                             groups="ellithy_ohrms_bridge.resignation_generalist">
+                            Clearance has not been started. Once the exit is
+                            approved, use <b>Start Clearance</b> on the
+                            employee's last working day to choose which
+                            departments have to sign.
+                        </div>
+
+                        <field name="clearance_line_ids" nolabel="1"
+                               invisible="clearance_state == 'none'"
+                               readonly="clearance_state == 'done' or state in ('approved', 'cancel') or not change_employee"
+                               context="{'default_resignation_id': id}"/>
+                    </page>
+                    <page name="approvals" string="Approvals"
+                          groups="ellithy_ohrms_bridge.resignation_generalist">
+                        <group>
+                            <group string="Endorsement">
+                                <field name="endorsed_by"/>
+                                <field name="endorsed_at"/>
+                            </group>
+                            <group string="Approval">
+                                <field name="approved_by"/>
+                                <field name="approved_at"/>
+                            </group>
+                        </group>
+                        <field name="rejection_reason"
+                               placeholder="Reason: required to reject"/>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_resignation_view_tree_ellithy" model="ir.ui.view">
+        <field name="name">hr.resignation.view.tree.inherit.ellithy</field>
+        <field name="model">hr.resignation</field>
+        <field name="inherit_id" ref="hr_resignation.hr_resignation_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="clearance_state"/>
+                <field name="clearance_progress"/>
+            </field>
+            <field name="employee_contract" position="replace">
+                <field name="employee_contract_id" groups="ellithy_ohrms_bridge.resignation_generalist"/>
+            </field>
+        </field>
+    </record>
+
+    <!--
+        CR 2.7: one screen per request kind. The vendor splits resignations
+        across a "Request" menu that hides approved records and an
+        "Approved" menu that shows only those; a leaver's record therefore
+        moves between two places depending on its state. One unfiltered
+        action per ``request_type`` replaces both: an exit does not move
+        as its state changes, and a suspension no longer shares a screen
+        full of resignation-only columns and fields it never uses.
+    -->
+    <record id="hr_resignation.hr_resignation_action" model="ir.actions.act_window">
+        <field name="name">Resignation</field>
+        <field name="domain">[('request_type', '=', 'exit')]</field>
+        <field name="context">{'default_request_type': 'exit'}</field>
+    </record>
+
+    <record id="hr_resignation.hr_resignation_menu_request" model="ir.ui.menu">
+        <field name="name">Resignation</field>
+    </record>
+
+    <record id="hr_resignation.hr_resignation_menu_approved_request"
+            model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- ============ Suspension: its own menu, its own columns ============ -->
+    <!-- Only the fields a suspension actually uses. Everything about
+         leaving: resignation type, last working day, notice period,
+         clearance: already hides itself on the shared form once
+         ``request_type`` is 'suspension' (each carries its own
+         ``invisible="request_type != 'exit'"``); this list view drops the
+         same columns outright rather than showing them blank on every
+         row. -->
+    <record id="hr_resignation_view_tree_suspension" model="ir.ui.view">
+        <field name="name">hr.resignation.view.tree.suspension</field>
+        <field name="model">hr.resignation</field>
+        <field name="arch" type="xml">
+            <list string="Suspensions">
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="suspension_start"/>
+                <field name="suspension_end"/>
+                <field name="suspension_reason_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_resignation_suspension_action" model="ir.actions.act_window">
+        <field name="name">Suspension</field>
+        <field name="res_model">hr.resignation</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="hr_resignation_view_tree_suspension"/>
+        <field name="domain">[('request_type', '=', 'suspension')]</field>
+        <field name="context">{'default_request_type': 'suspension'}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Suspend an employee</p>
+        </field>
+    </record>
+
+    <!-- HR only: an employee never suspends anyone, least of all
+         themselves, so this menu is not offered to a plain employee at
+         all: not hidden fields, an absent menu. -->
+    <menuitem id="hr_resignation_menu_suspension"
+              parent="hr_resignation.hr_resignation_menu_root"
+              name="Suspension" action="hr_resignation_suspension_action"
+              groups="ellithy_ohrms_bridge.resignation_generalist" sequence="5"/>
+
+</odoo>

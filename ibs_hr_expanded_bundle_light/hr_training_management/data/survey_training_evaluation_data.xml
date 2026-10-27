@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        HR letter item 8: the trainees rate the training and the trainer from
+        1 to 5 through a token link mailed when the programme ends. Each
+        question is tagged Training or Trainer so the two ratings are kept
+        apart; the overall result is the survey's own percentage. noupdate,
+        so HR can reword questions in Surveys without an upgrade undoing it.
+    -->
+    <data noupdate="1">
+        <record id="survey_training_evaluation" model="survey.survey">
+            <field name="title">Training &amp; Trainer Evaluation / تقييم التدريب والمدرب</field>
+            <field name="survey_type">custom</field>
+            <field name="access_mode">token</field>
+            <field name="users_login_required" eval="False"/>
+            <field name="users_can_go_back" eval="True"/>
+            <field name="questions_layout">one_page</field>
+            <field name="scoring_type">scoring_without_answers</field>
+            <field name="scoring_success_min">60</field>
+            <field name="is_hr_evaluation" eval="True"/>
+            <field name="is_attempts_limited" eval="True"/>
+            <field name="attempts_limit">1</field>
+            <field name="description" type="html">
+<p>Please rate the training and the trainer from 1 (poor) to 5 (outstanding).</p>
+<p dir="rtl">برجاء تقييم البرنامج التدريبي والمدرب من 1 (ضعيف) إلى 5 (ممتاز).</p></field>
+            <field name="description_done" type="html">
+<p>Thank you. Your evaluation has been recorded.</p>
+<p dir="rtl">شكرًا لك، تم تسجيل تقييمك.</p></field>
+        </record>
+
+        <record id="training_eval_question_content" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">1</field>
+            <field name="title">The content met the training objectives / محتوى البرنامج حقق الأهداف المعلنة</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">training</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_content_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_content"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_content_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_content"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_content_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_content"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_content_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_content"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_content_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_content"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_relevance" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">2</field>
+            <field name="title">The training is relevant to my job / البرنامج مرتبط بطبيعة عملي</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">training</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_relevance_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_relevance"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_relevance_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_relevance"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_relevance_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_relevance"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_relevance_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_relevance"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_relevance_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_relevance"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_material" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">3</field>
+            <field name="title">Quality of the training material / جودة المادة التدريبية</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">training</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_material_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_material"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_material_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_material"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_material_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_material"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_material_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_material"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_material_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_material"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_logistics" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">4</field>
+            <field name="title">Organisation, venue and timing / التنظيم والمكان والتوقيت</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">training</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_logistics_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_logistics"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_logistics_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_logistics"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_logistics_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_logistics"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_logistics_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_logistics"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_logistics_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_logistics"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_trainer_knowledge" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">5</field>
+            <field name="title">The trainer's knowledge of the subject / إلمام المدرب بالموضوع</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">trainer</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_trainer_knowledge_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_knowledge"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_trainer_knowledge_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_knowledge"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_trainer_knowledge_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_knowledge"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_trainer_knowledge_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_knowledge"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_trainer_knowledge_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_knowledge"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_trainer_clarity" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">6</field>
+            <field name="title">Clarity of explanation / وضوح الشرح وتوصيل المعلومة</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">trainer</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_trainer_clarity_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_clarity"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_trainer_clarity_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_clarity"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_trainer_clarity_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_clarity"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_trainer_clarity_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_clarity"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_trainer_clarity_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_clarity"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_trainer_interaction" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">7</field>
+            <field name="title">Interaction and answering questions / التفاعل مع المتدربين والإجابة على الأسئلة</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">trainer</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_trainer_interaction_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_interaction"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_trainer_interaction_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_interaction"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_trainer_interaction_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_interaction"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_trainer_interaction_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_interaction"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_trainer_interaction_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_interaction"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_trainer_time" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">8</field>
+            <field name="title">Time management / إدارة وقت التدريب</field>
+            <field name="question_type">simple_choice</field>
+            <field name="training_eval_part">trainer</field>
+            <field name="constr_mandatory" eval="True"/>
+        </record>
+        <record id="training_eval_question_trainer_time_1" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_time"/>
+            <field name="sequence">1</field>
+            <field name="value">1 - Poor / ضعيف</field>
+            <field name="answer_score">1</field>
+        </record>
+        <record id="training_eval_question_trainer_time_2" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_time"/>
+            <field name="sequence">2</field>
+            <field name="value">2 - Fair / مقبول</field>
+            <field name="answer_score">2</field>
+        </record>
+        <record id="training_eval_question_trainer_time_3" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_time"/>
+            <field name="sequence">3</field>
+            <field name="value">3 - Good / جيد</field>
+            <field name="answer_score">3</field>
+        </record>
+        <record id="training_eval_question_trainer_time_4" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_time"/>
+            <field name="sequence">4</field>
+            <field name="value">4 - Very good / جيد جدًا</field>
+            <field name="answer_score">4</field>
+        </record>
+        <record id="training_eval_question_trainer_time_5" model="survey.question.answer">
+            <field name="question_id" ref="training_eval_question_trainer_time"/>
+            <field name="sequence">5</field>
+            <field name="value">5 - Outstanding / ممتاز</field>
+            <field name="answer_score">5</field>
+        </record>
+        <record id="training_eval_question_comments" model="survey.question">
+            <field name="survey_id" ref="survey_training_evaluation"/>
+            <field name="sequence">20</field>
+            <field name="title">Comments and suggestions / ملاحظات ومقترحات</field>
+            <field name="question_type">text_box</field>
+            <field name="constr_mandatory" eval="False"/>
+        </record>
+    </data>
+</odoo>

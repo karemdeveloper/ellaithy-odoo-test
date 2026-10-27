@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ibs_hr_permission_type_view_list" model="ir.ui.view">
+        <field name="name">ibs.hr.permission.type.list</field>
+        <field name="model">ibs.hr.permission.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="ibs_hr_permission_type_action" model="ir.actions.act_window">
+        <field name="name">Permission Types</field>
+        <field name="res_model">ibs.hr.permission.type</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+</odoo>

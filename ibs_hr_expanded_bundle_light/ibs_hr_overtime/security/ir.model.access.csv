@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_overtime_user,ibs.hr.overtime.user,model_ibs_hr_overtime,base.group_user,1,1,0,0
+access_overtime_manager,ibs.hr.overtime.manager,model_ibs_hr_overtime,ibs_hr_overtime.ibs_hr_overtime_generalist,1,1,0,0
+access_overtime_hr,ibs.hr.overtime.hr,model_ibs_hr_overtime,ibs_hr_overtime.ibs_hr_overtime_generalist,1,1,0,0
+access_overtime_finance,ibs.hr.overtime.finance,model_ibs_hr_overtime,ibs_hr_overtime.ibs_hr_overtime_finance,1,1,0,0

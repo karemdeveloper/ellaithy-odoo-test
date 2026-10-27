@@ -1,0 +1,503 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+  <record id="view_ibs_hr_warehouse_list" model="ir.ui.view">
+    <field name="name">ibs.hr.warehouse.list</field>
+    <field name="model">ibs.hr.warehouse</field>
+    <field name="arch" type="xml">
+      <list string="Warehouse">
+        <field name="name" />
+        <field name="location" />
+        <field name="manager_id" />
+        <field name="notes" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_warehouse_form" model="ir.ui.view">
+    <field name="name">ibs.hr.warehouse.form</field>
+    <field name="model">ibs.hr.warehouse</field>
+    <field name="arch" type="xml">
+      <form string="Warehouse">
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="location" />
+            <field name="manager_id" />
+            <field name="notes" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_warehouse" model="ir.actions.act_window">
+    <field name="name">Warehouse</field>
+    <field name="res_model">ibs.hr.warehouse</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_inventory_category_list" model="ir.ui.view">
+    <field name="name">ibs.hr.inventory.category.list</field>
+    <field name="model">ibs.hr.inventory.category</field>
+    <field name="arch" type="xml">
+      <list string="Inventory Category">
+        <field name="name" />
+        <field name="description" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_inventory_category_form" model="ir.ui.view">
+    <field name="name">ibs.hr.inventory.category.form</field>
+    <field name="model">ibs.hr.inventory.category</field>
+    <field name="arch" type="xml">
+      <form string="Inventory Category">
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="description" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_inventory_category" model="ir.actions.act_window">
+    <field name="name">Inventory Category</field>
+    <field name="res_model">ibs.hr.inventory.category</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_inventory_product_list" model="ir.ui.view">
+    <field name="name">ibs.hr.inventory.product.list</field>
+    <field name="model">ibs.hr.inventory.product</field>
+    <field name="arch" type="xml">
+      <list string="Inventory Product">
+        <field name="name" />
+        <field name="sku" />
+        <field name="category_id" />
+        <field name="warehouse_id" />
+        <field name="unit_cost" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_inventory_product_form" model="ir.ui.view">
+    <field name="name">ibs.hr.inventory.product.form</field>
+    <field name="model">ibs.hr.inventory.product</field>
+    <field name="arch" type="xml">
+      <form string="Inventory Product">
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="sku" />
+            <field name="category_id" />
+            <field name="warehouse_id" />
+            <field name="unit_cost" />
+            <field name="quantity_on_hand" />
+            <field name="reorder_level" />
+            <field name="description" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_inventory_product" model="ir.actions.act_window">
+    <field name="name">Inventory Product</field>
+    <field name="res_model">ibs.hr.inventory.product</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_stock_movement_list" model="ir.ui.view">
+    <field name="name">ibs.hr.stock.movement.list</field>
+    <field name="model">ibs.hr.stock.movement</field>
+    <field name="arch" type="xml">
+      <list string="Stock Movement">
+        <field name="name" />
+        <field name="product_id" />
+        <field name="movement_type" />
+        <field name="quantity" />
+        <field name="date" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_stock_movement_form" model="ir.ui.view">
+    <field name="name">ibs.hr.stock.movement.form</field>
+    <field name="model">ibs.hr.stock.movement</field>
+    <field name="arch" type="xml">
+      <form string="Stock Movement">
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="product_id" />
+            <field name="movement_type" />
+            <field name="quantity" />
+            <field name="date" />
+            <field name="employee_id" />
+            <field name="reference" />
+            <field name="notes" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_stock_movement" model="ir.actions.act_window">
+    <field name="name">Stock Movement</field>
+    <field name="res_model">ibs.hr.stock.movement</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_purchase_request_list" model="ir.ui.view">
+    <field name="name">ibs.hr.purchase.request.list</field>
+    <field name="model">ibs.hr.purchase.request</field>
+    <field name="arch" type="xml">
+      <list string="Purchase Request">
+        <field name="name" />
+        <field name="requester_id" />
+        <field name="department_id" />
+        <field name="request_date" />
+        <field name="needed_date" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_purchase_request_form" model="ir.ui.view">
+    <field name="name">ibs.hr.purchase.request.form</field>
+    <field name="model">ibs.hr.purchase.request</field>
+    <field name="arch" type="xml">
+      <form string="Purchase Request">
+        <header>
+          <button name="action_submit" type="object" string="Submit" invisible="state != 'draft'" />
+          <button name="action_approve" type="object" string="Approve" invisible="state != 'submitted'" />
+          <button name="action_reject" type="object" string="Reject" invisible="state != 'submitted'" />
+          <field name="state" widget="statusbar" />
+        </header>
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="requester_id" />
+            <field name="department_id" />
+            <field name="request_date" />
+            <field name="needed_date" />
+            <field name="state" />
+            <field name="approver_id" />
+            <field name="approved_date" />
+            <field name="reason" />
+          </group>
+          <notebook>
+            <page string="Items">
+              <field name="line_ids" />
+            </page>
+          </notebook>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_purchase_request" model="ir.actions.act_window">
+    <field name="name">Purchase Request</field>
+    <field name="res_model">ibs.hr.purchase.request</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_purchase_line_list" model="ir.ui.view">
+    <field name="name">ibs.hr.purchase.line.list</field>
+    <field name="model">ibs.hr.purchase.line</field>
+    <field name="arch" type="xml">
+      <list string="Purchase Request Line">
+        <field name="name" />
+        <field name="request_id" />
+        <field name="product_id" />
+        <field name="quantity" />
+        <field name="estimated_unit_cost" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_purchase_line_form" model="ir.ui.view">
+    <field name="name">ibs.hr.purchase.line.form</field>
+    <field name="model">ibs.hr.purchase.line</field>
+    <field name="arch" type="xml">
+      <form string="Purchase Request Line">
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="request_id" />
+            <field name="product_id" />
+            <field name="quantity" />
+            <field name="estimated_unit_cost" />
+            <field name="notes" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_purchase_line" model="ir.actions.act_window">
+    <field name="name">Purchase Request Line</field>
+    <field name="res_model">ibs.hr.purchase.line</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_investigation_list" model="ir.ui.view">
+    <field name="name">ibs.hr.investigation.list</field>
+    <field name="model">ibs.hr.investigation</field>
+    <field name="arch" type="xml">
+      <list string="Employee Investigation">
+        <field name="name" />
+        <field name="employee_id" />
+        <field name="incident_date" />
+        <field name="investigator_id" />
+        <field name="state" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_investigation_form" model="ir.ui.view">
+    <field name="name">ibs.hr.investigation.form</field>
+    <field name="model">ibs.hr.investigation</field>
+    <field name="arch" type="xml">
+      <form string="Employee Investigation">
+        <header>
+          <button name="action_submit" type="object" string="Submit" invisible="state != 'draft'" />
+          <button name="action_approve" type="object" string="Approve" invisible="state != 'submitted'" />
+          <button name="action_reject" type="object" string="Reject" invisible="state != 'submitted'" />
+          <field name="state" widget="statusbar" />
+        </header>
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="employee_id" />
+            <field name="incident_date" />
+            <field name="investigator_id" />
+            <field name="state" />
+            <field name="description" />
+            <field name="findings" />
+            <field name="resolution" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_investigation" model="ir.actions.act_window">
+    <field name="name">Employee Investigation</field>
+    <field name="res_model">ibs.hr.investigation</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_clearance_list" model="ir.ui.view">
+    <field name="name">ibs.hr.clearance.list</field>
+    <field name="model">ibs.hr.clearance</field>
+    <field name="arch" type="xml">
+      <list string="Employee Clearance">
+        <field name="name" />
+        <field name="employee_id" />
+        <field name="last_working_date" />
+        <field name="approver_id" />
+        <field name="state" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_clearance_form" model="ir.ui.view">
+    <field name="name">ibs.hr.clearance.form</field>
+    <field name="model">ibs.hr.clearance</field>
+    <field name="arch" type="xml">
+      <form string="Employee Clearance">
+        <header>
+          <button name="action_submit" type="object" string="Submit" invisible="state != 'draft'" />
+          <button name="action_approve" type="object" string="Approve" invisible="state != 'submitted'" />
+          <button name="action_reject" type="object" string="Reject" invisible="state != 'submitted'" />
+          <field name="state" widget="statusbar" />
+        </header>
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="employee_id" />
+            <field name="last_working_date" />
+            <field name="approver_id" />
+            <field name="state" />
+            <field name="notes" />
+          </group>
+          <notebook>
+            <page string="Items">
+              <field name="item_ids" />
+            </page>
+          </notebook>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_clearance" model="ir.actions.act_window">
+    <field name="name">Employee Clearance</field>
+    <field name="res_model">ibs.hr.clearance</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_clearance_item_list" model="ir.ui.view">
+    <field name="name">ibs.hr.clearance.item.list</field>
+    <field name="model">ibs.hr.clearance.item</field>
+    <field name="arch" type="xml">
+      <list string="Clearance Item">
+        <field name="name" />
+        <field name="clearance_id" />
+        <field name="department_id" />
+        <field name="owner_id" />
+        <field name="complete" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_clearance_item_form" model="ir.ui.view">
+    <field name="name">ibs.hr.clearance.item.form</field>
+    <field name="model">ibs.hr.clearance.item</field>
+    <field name="arch" type="xml">
+      <form string="Clearance Item">
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="clearance_id" />
+            <field name="department_id" />
+            <field name="owner_id" />
+            <field name="complete" />
+            <field name="notes" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_clearance_item" model="ir.actions.act_window">
+    <field name="name">Clearance Item</field>
+    <field name="res_model">ibs.hr.clearance.item</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_notice_list" model="ir.ui.view">
+    <field name="name">ibs.hr.notice.list</field>
+    <field name="model">ibs.hr.notice</field>
+    <field name="arch" type="xml">
+      <list string="Employee Notice">
+        <field name="name" />
+        <field name="body" />
+        <field name="publish_date" />
+        <field name="expiry_date" />
+        <field name="department_id" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_notice_form" model="ir.ui.view">
+    <field name="name">ibs.hr.notice.form</field>
+    <field name="model">ibs.hr.notice</field>
+    <field name="arch" type="xml">
+      <form string="Employee Notice">
+        <header>
+          <button name="action_submit" type="object" string="Submit" invisible="state != 'draft'" />
+          <button name="action_approve" type="object" string="Approve" invisible="state != 'submitted'" />
+          <button name="action_reject" type="object" string="Reject" invisible="state != 'submitted'" />
+          <field name="state" widget="statusbar" />
+        </header>
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="body" />
+            <field name="publish_date" />
+            <field name="expiry_date" />
+            <field name="department_id" />
+            <field name="employee_ids" />
+            <field name="state" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_notice" model="ir.actions.act_window">
+    <field name="name">Employee Notice</field>
+    <field name="res_model">ibs.hr.notice</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_team_meeting_list" model="ir.ui.view">
+    <field name="name">ibs.hr.team.meeting.list</field>
+    <field name="model">ibs.hr.team.meeting</field>
+    <field name="arch" type="xml">
+      <list string="Team Meeting">
+        <field name="name" />
+        <field name="start_at" />
+        <field name="end_at" />
+        <field name="organizer_id" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_team_meeting_form" model="ir.ui.view">
+    <field name="name">ibs.hr.team.meeting.form</field>
+    <field name="model">ibs.hr.team.meeting</field>
+    <field name="arch" type="xml">
+      <form string="Team Meeting">
+        <header>
+          <button name="action_submit" type="object" string="Submit" invisible="state != 'draft'" />
+          <button name="action_approve" type="object" string="Approve" invisible="state != 'submitted'" />
+          <button name="action_reject" type="object" string="Reject" invisible="state != 'submitted'" />
+          <field name="state" widget="statusbar" />
+        </header>
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="start_at" />
+            <field name="end_at" />
+            <field name="organizer_id" />
+            <field name="employee_ids" />
+            <field name="location" />
+            <field name="agenda" />
+            <field name="minutes" />
+            <field name="state" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_team_meeting" model="ir.actions.act_window">
+    <field name="name">Team Meeting</field>
+    <field name="res_model">ibs.hr.team.meeting</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <record id="view_ibs_hr_employee_asset_list" model="ir.ui.view">
+    <field name="name">ibs.hr.employee.asset.list</field>
+    <field name="model">ibs.hr.employee.asset</field>
+    <field name="arch" type="xml">
+      <list string="Employee Asset Assignment">
+        <field name="name" />
+        <field name="employee_id" />
+        <field name="product_id" />
+        <field name="assigned_date" />
+        <field name="returned_date" />
+      </list>
+    </field>
+  </record>
+  <record id="view_ibs_hr_employee_asset_form" model="ir.ui.view">
+    <field name="name">ibs.hr.employee.asset.form</field>
+    <field name="model">ibs.hr.employee.asset</field>
+    <field name="arch" type="xml">
+      <form string="Employee Asset Assignment">
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="employee_id" />
+            <field name="product_id" />
+            <field name="assigned_date" />
+            <field name="returned_date" />
+            <field name="condition" />
+            <field name="notes" />
+          </group>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="action_ibs_hr_employee_asset" model="ir.actions.act_window">
+    <field name="name">Employee Asset Assignment</field>
+    <field name="res_model">ibs.hr.employee.asset</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <menuitem id="menu_ibs_hr_operations_root" name="Legacy HR Operations" sequence="65" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_warehouse" name="Warehouse" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_warehouse" sequence="1" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_inventory_category" name="Inventory Category" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_inventory_category" sequence="2" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_inventory_product" name="Inventory Product" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_inventory_product" sequence="3" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_stock_movement" name="Stock Movement" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_stock_movement" sequence="4" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_purchase_request" name="Purchase Request" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_purchase_request" sequence="5" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_purchase_line" name="Purchase Request Line" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_purchase_line" sequence="6" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_investigation" name="Employee Investigation" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_investigation" sequence="7" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_clearance" name="Employee Clearance" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_clearance" sequence="8" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_clearance_item" name="Clearance Item" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_clearance_item" sequence="9" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_notice" name="Employee Notice" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_notice" sequence="10" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_team_meeting" name="Team Meeting" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_team_meeting" sequence="11" groups="hr.group_hr_user" />
+  <menuitem id="menu_ibs_hr_employee_asset" name="Employee Asset Assignment" parent="menu_ibs_hr_operations_root" action="action_ibs_hr_employee_asset" sequence="12" groups="hr.group_hr_user" />
+</odoo>

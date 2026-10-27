@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_ta_permissions"
+              name="Permissions"
+              parent="ellithy_hr_base.menu_time_attendance"
+              action="ibs_hr_permission_action"
+              sequence="40"/>
+
+    <menuitem id="menu_ta_missions"
+              name="Missions"
+              parent="ellithy_hr_base.menu_time_attendance"
+              action="ibs_hr_mission_action"
+              sequence="50"/>
+
+    <menuitem id="menu_cfg_permission_types"
+              name="Permission Types"
+              parent="ellithy_hr_base.menu_time_attendance_configuration"
+              action="ibs_hr_permission_type_action"
+              sequence="40"
+              groups="ibs_hr_permission.permission_admin"/>
+</odoo>

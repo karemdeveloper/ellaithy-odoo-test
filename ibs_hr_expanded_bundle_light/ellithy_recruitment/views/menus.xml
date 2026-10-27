@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_manpower_request" name="Manpower Shortage"
+              parent="hr_recruitment.menu_crm_case_categ0_act_job"
+              action="action_manpower_request" sequence="40"
+              groups="hr_recruitment.group_hr_recruitment_user"/>
+    <menuitem id="menu_candidate_contact" name="Contact Log"
+              parent="hr_recruitment.menu_crm_case_categ0_act_job"
+              action="action_candidate_contact" sequence="35"
+              groups="hr_recruitment.group_hr_recruitment_user"/>
+    <menuitem id="menu_applicant_evaluation" name="Interview Evaluations"
+              parent="hr_recruitment.menu_crm_case_categ0_act_job"
+              action="action_applicant_evaluation" sequence="38"/>
+    <menuitem id="menu_interview_question" name="Interview Questions"
+              parent="hr_recruitment.menu_hr_recruitment_configuration"
+              action="action_interview_question" sequence="15"
+              groups="hr_recruitment.group_hr_recruitment_manager"/>
+</odoo>

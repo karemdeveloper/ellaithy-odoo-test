@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_view_form_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.ellithy</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <!--
+                CR 2.5: the onboarding mail sits beside Launch Plan, because
+                welcoming a joiner and starting their onboarding plan are the
+                same moment in HR's day. It disappears once sent, so nobody
+                is welcomed twice.
+            -->
+            <xpath expr="//header" position="inside">
+                <button name="action_send_welcome_mail" type="object"
+                        string="Send Onboarding Mail" class="oe_highlight"
+                        groups="ellithy_hr_base.group_ellithy_hr_generalist"
+                        invisible="not active or not id or welcome_email_sent or not work_email"/>
+                <field name="welcome_email_sent" invisible="1"/>
+                <field name="welcome_email_sent_on" invisible="1"/>
+            </xpath>
+
+            <!-- CR 2.2: stock hr labels this tab "Private Information". -->
+            <xpath expr="//page[@name='personal_information']" position="attributes">
+                <attribute name="string">Personal Information</attribute>
+            </xpath>
+
+            <div name="button_box" position="inside">
+                <!--
+                    "Change Status" is gone: exits, suspensions and
+                    blacklisting are all hr.resignation requests now, reached
+                    from the Resignation smart button that
+                    ellithy_ohrms_bridge adds. A second way to archive an
+                    employee is a second way to do it without a reviewable
+                    record.
+                -->
+                <button name="action_force_logout" type="object"
+                        class="oe_stat_button" icon="fa-sign-out"
+                        confirm="End every active session for this employee?"
+                        invisible="not user_id"
+                        groups="ellithy_hr_base.group_ellithy_hr_admin">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Force</span>
+                        <span class="o_stat_text">Logout</span>
+                    </div>
+                </button>
+            </div>
+
+            <field name="job_title" position="before">
+                <field name="employee_code"/>
+                <field name="name_ar"/>
+            </field>
+
+            <field name="department_id" position="after">
+                <field name="branch_id"/>
+                <field name="section_id"/>
+                <field name="grade_id"/>
+            </field>
+
+            <notebook position="inside">
+
+                <page string="Employment Terms" name="ellithy_terms">
+                    <group>
+                        <group string="Engagement">
+                            <field name="joining_date"/>
+                            <field name="work_type"/>
+                            <field name="workspace_type"/>
+                            <field name="time_role"/>
+                        </group>
+                        <group string="Entitlement Policy">
+                            <field name="vacation_role"/>
+                            <field name="overtime_role"/>
+                            <field name="overtime_report"/>
+                        </group>
+                        <group string="Probation Evaluation" name="probation_evaluation">
+                            <field name="probation_state" widget="badge"
+                                   decoration-muted="probation_state == 'not_sent'"
+                                   decoration-warning="probation_state == 'pending'"
+                                   decoration-success="probation_state == 'done'"/>
+                            <field name="evaluation_date"/>
+                            <field name="evaluation_mail_sent_at"
+                                   invisible="not evaluation_mail_sent_at"/>
+                            <field name="probation_evaluator_id"
+                                   invisible="not probation_evaluator_id"/>
+                            <field name="probation_score" widget="progressbar"
+                                   invisible="probation_state != 'done'"/>
+                            <field name="probation_recommendation"
+                                   invisible="probation_state != 'done'"/>
+                            <field name="probation_completed_on"
+                                   invisible="probation_state != 'done'"/>
+                            <div colspan="2" class="d-flex gap-2"
+                                 groups="ellithy_hr_base.group_ellithy_hr_generalist">
+                                <button name="action_send_probation_evaluation"
+                                        type="object" class="btn-secondary btn-sm"
+                                        string="Send Evaluation to Manager"
+                                        invisible="probation_state != 'not_sent' or not id"/>
+                                <button name="action_send_probation_evaluation"
+                                        type="object" class="btn-link btn-sm"
+                                        string="Resend Link"
+                                        invisible="probation_state != 'pending'"/>
+                                <button name="action_view_probation_evaluation"
+                                        type="object" class="btn-link btn-sm"
+                                        string="View Answers"
+                                        invisible="probation_state != 'done'"/>
+                            </div>
+                        </group>
+                        <group string="Identity">
+                            <field name="card_issue_date"/>
+                            <field name="religion"/>
+                            <field name="office_number"/>
+                            <field name="created_from" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+                </page>
+
+                <!--
+                    Two tabs mirroring the contract's two: social and medical
+                    are separate schemes, and HR reads one or the other. Both
+                    are shown from the running contract and cannot be edited
+                    here, so renewing a contract does not rewrite what the
+                    previous one was filed under.
+                -->
+                <page string="Social Insurance" name="ellithy_social_insurance"
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
+                    <div class="alert alert-info" role="status"
+                         invisible="not contract_id">
+                        Social insurance is entered on the running contract.
+                        The registration below is shown from it and cannot be
+                        edited here.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="contract_id">
+                        This employee has no running contract, so there is
+                        nowhere to record insurance yet. Create a contract
+                        first.
+                    </div>
+                    <field name="contract_id" invisible="1"/>
+                    <group invisible="not contract_id">
+                        <!-- readonly on the FORM, writable on the model: an
+                             import aimed at the employee must land on the
+                             contract rather than be silently dropped. -->
+                        <group string="Registration">
+                            <field name="has_social_insurance" readonly="1"/>
+                            <field name="social_insurance_office_id" readonly="1"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_number" readonly="1"
+                                   invisible="not has_social_insurance"/>
+                            <field name="social_insurance_start_date" readonly="1"
+                                   invisible="not has_social_insurance"/>
+                        </group>
+                        <group string="Contribution Basis">
+                            <!-- Salary stays writable: HR has always set a
+                                 raise from the employee file, and the edit
+                                 lands on the running contract. -->
+                            <field name="basic_salary"/>
+                            <field name="subscription_salary"/>
+                            <field name="total_salary"/>
+                            <field name="profession"/>
+                        </group>
+                    </group>
+                    <group string="Superseded Insurance Columns"
+                           groups="base.group_no_one"
+                           invisible="not contract_id">
+                        <group>
+                            <field name="insurance_entered_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="insurance_salary" readonly="1"/>
+                            <field name="social_insurance_price" readonly="1"/>
+                        </group>
+                    </group>
+                </page>
+
+                <page string="Medical Insurance" name="ellithy_medical_insurance"
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
+                    <div class="alert alert-info" role="status"
+                         invisible="not contract_id">
+                        The tier and its costs are entered on the running
+                        contract and shown here read-only. Covered relatives
+                        belong to the person, so they are recorded below and
+                        may equally be edited from the contract.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="contract_id">
+                        This employee has no running contract, so there is no
+                        medical tier to show. Relatives can still be recorded
+                        below.
+                    </div>
+                    <group invisible="not contract_id">
+                        <group string="Coverage">
+                            <field name="medical_insurance_type" readonly="1"/>
+                            <field name="medical_insurance_date" readonly="1"/>
+                            <field name="medical_card_number" readonly="1"/>
+                            <field name="has_medical_relative" readonly="1"/>
+                        </group>
+                        <group string="Cost">
+                            <field name="medical_cost_per_year" readonly="1"/>
+                            <field name="medical_cost_per_month" readonly="1"/>
+                            <field name="medical_employee_share" readonly="1"/>
+                        </group>
+                    </group>
+                    <separator string="Covered Relatives"/>
+                    <!--
+                        Shown whatever the contract says. The list is the
+                        employee's own, so it stays reachable for someone
+                        between contracts, and the coverage flag on the
+                        contract no longer hides rows that exist.
+                    -->
+                    <field name="dependant_ids">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="relation"/>
+                            <field name="birthday"/>
+                            <field name="age"/>
+                            <field name="medical_insurance_type"/>
+                            <field name="card_number"/>
+                            <field name="code"/>
+                            <field name="insurance_date"/>
+                            <field name="overage_price"/>
+                            <field name="cost_per_year"/>
+                            <field name="cost_per_month"/>
+                            <field name="employee_share"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <div class="text-muted">
+                        Also listed on the contract's Medical Insurance tab.
+                        Either screen may edit them.
+                    </div>
+                </page>
+
+                <page string="Payout" name="ellithy_payout"
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
+                    <field name="payout_account_ids">
+                        <list editable="bottom">
+                            <field name="method"/>
+                            <field name="is_primary" widget="boolean_toggle"/>
+                            <field name="bank_name" invisible="method != 'bank'"/>
+                            <field name="account_holder" invisible="method != 'bank'"/>
+                            <field name="account_number" invisible="method != 'bank'"/>
+                            <field name="account_iban" invisible="method != 'bank'"/>
+                            <field name="branch_code" invisible="method != 'bank'"/>
+                            <field name="account_type" invisible="method != 'bank'"/>
+                            <field name="fawry_national_number" invisible="method != 'fawry'"/>
+                            <field name="fawry_phone_number" invisible="method != 'fawry'"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="HR File" name="ellithy_documents"
+                      groups="ellithy_hr_base.group_ellithy_hr_generalist">
+                    <group>
+                        <field name="document_completeness" widget="progressbar"/>
+                    </group>
+                    <field name="document_ids">
+                        <list editable="bottom" default_order="sequence">
+                            <field name="sequence" column_invisible="1"/>
+                            <field name="type_id" readonly="1"/>
+                            <field name="required" readonly="1" optional="show"/>
+                            <field name="copy_type"/>
+                            <field name="document" filename="filename" widget="binary"/>
+                            <field name="filename" column_invisible="1"/>
+                            <field name="received_date"/>
+                            <field name="expiry_date"/>
+                            <field name="note" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Custody" name="ellithy_custody">
+                    <group>
+                        <group string="Entitled To">
+                            <field name="has_uniform"/>
+                            <field name="has_id_file"/>
+                            <field name="has_mobile"/>
+                            <field name="has_medical"/>
+                            <field name="has_addition"/>
+                        </group>
+                        <group string="Uniforms Issued" colspan="2">
+                            <field name="uniform_ids" nolabel="1"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   placeholder="Select uniform items"/>
+                        </group>
+                        <!-- <group string="Costs" groups="base.group_no_one">
+                            <div colspan="2" class="text-muted">
+                                Unused in the source system: zero on every
+                                employee except three personal-card values.
+                            </div>
+                            <field name="mobile_price"/>
+                            <field name="medical_price"/>
+                            <field name="detection_price"/>
+                            <field name="personal_card_price"/>
+                        </group> -->
+                    </group>
+                </page>
+
+            </notebook>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_list_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.list.ellithy</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="before">
+                <field name="employee_code"/>
+            </field>
+            <field name="name" position="after">
+                <field name="name_ar" optional="show"/>
+            </field>
+            <field name="department_id" position="after">
+                <field name="branch_id" optional="show"/>
+                <field name="section_id" optional="show"/>
+                <field name="grade_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!--
+        The directory list HR asked for, in their column order. A primary
+        view with a lower priority than hr.view_employee_tree, so it is the
+        list every employee action opens, instead of a stack of xpaths on the
+        stock list that other modules keep adding columns to.
+        default_order uses the number inside the code: "EMP-2" before
+        "EMP-10", and the prefix-less codes in their numeric place.
+    -->
+    <record id="hr_employee_view_list_directory" model="ir.ui.view">
+        <field name="name">hr.employee.list.ellithy.directory</field>
+        <field name="model">hr.employee</field>
+        <field name="priority">5</field>
+        <field name="arch" type="xml">
+            <list string="Employees" expand="context.get('expand', False)"
+                  multi_edit="1" sample="1" js_class="hr_employee_list"
+                  default_order="employee_code_number, employee_code, name">
+                <header>
+                    <button name="%(hr.plan_wizard_action)d" string="Launch Plan"
+                            type="action" groups="hr.group_hr_user"/>
+                </header>
+                <field name="employee_code_number" column_invisible="1"/>
+                <field name="employee_code" string="Employee Code"/>
+                <field name="name" string="Employee Name" readonly="1"/>
+                <field name="private_phone" string="Personal Mobile" class="o_force_ltr"/>
+                <field name="department_id"/>
+                <field name="job_id" string="Job Position"
+                       context="{'default_no_of_recruitment': 0, 'default_is_favorite': False}"/>
+                <field name="branch_id"/>
+                <field name="grade_id"/>
+                <field name="work_email" string="Email"/>
+                <field name="joining_date"/>
+                <field name="contract_date_start"/>
+                <field name="contract_date_end"/>
+                <field name="section_id" optional="hide"/>
+                <field name="sector" optional="hide"/>
+                <field name="name_ar" optional="hide"/>
+                <field name="parent_id" widget="many2one_avatar_user" optional="hide"/>
+                <field name="work_phone" class="o_force_ltr" optional="hide"/>
+                <field name="mobile_phone" class="o_force_ltr" optional="hide"/>
+                <field name="probation_state" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="activity_ids" widget="list_activity" optional="hide"/>
+                <field name="active" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_search_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.search.ellithy</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="employee_code"/>
+                <field name="name_ar"/>
+                <field name="identification_id" string="National ID"/>
+                <field name="branch_id"/>
+                <field name="grade_id"/>
+            </field>
+            <filter name="group_department" position="after">
+                <filter name="group_branch" string="Branch"
+                        context="{'group_by': 'branch_id'}"/>
+                <filter name="group_section" string="Section"
+                        context="{'group_by': 'section_id'}"/>
+                <filter name="group_grade" string="Grade"
+                        context="{'group_by': 'grade_id'}"/>
+                <filter name="group_departure_reason" string="Leaving Reason"
+                        context="{'group_by': 'departure_reason_id'}"/>
+                <filter name="group_sector" string="Sector"
+                        context="{'group_by': 'sector'}"/>
+            </filter>
+            <filter name="group_department" position="before">
+                <filter name="filter_blacklisted" string="Blacklisted"
+                        domain="[('blacklist', '=', True)]"/>
+                <filter name="filter_incomplete_file" string="Incomplete HR File"
+                        domain="[('document_completeness', '&lt;', 100)]"/>
+                <filter name="filter_sector_sales" string="Sales Sector"
+                        domain="[('sector', '=', 'sales')]"/>
+                <filter name="filter_sector_services" string="Services Sector"
+                        domain="[('sector', '=', 'services')]"/>
+                <filter name="filter_sector_support" string="Support Sector"
+                        domain="[('sector', '=', 'support')]"/>
+                <separator/>
+                <filter name="filter_probation_pending" string="Probation Evaluation Pending"
+                        domain="[('probation_state', '=', 'pending')]"/>
+                <filter name="filter_probation_done" string="Probation Evaluation Completed"
+                        domain="[('probation_state', '=', 'done')]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Ex-employees: why and when they left, for the turnover report. -->
+    <record id="hr_employee_view_list_inactive" model="ir.ui.view">
+        <field name="name">hr.employee.list.ellithy.inactive</field>
+        <field name="model">hr.employee</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list string="Ex-Employees" js_class="hr_employee_list"
+                  default_order="departure_date desc, employee_code_number">
+                <field name="employee_code_number" column_invisible="1"/>
+                <field name="employee_code"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <field name="branch_id" optional="show"/>
+                <field name="joining_date" optional="show"/>
+                <field name="departure_date"/>
+                <field name="departure_reason_id"/>
+                <field name="inactive_type" optional="show"/>
+                <field name="departure_description" optional="hide"/>
+                <field name="blacklist" optional="hide"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_pivot_turnover" model="ir.ui.view">
+        <field name="name">hr.employee.pivot.ellithy.turnover</field>
+        <field name="model">hr.employee</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <pivot string="Turnover" sample="1">
+                <field name="departure_reason_id" type="row"/>
+                <field name="departure_date" interval="year" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_graph_turnover" model="ir.ui.view">
+        <field name="name">hr.employee.graph.ellithy.turnover</field>
+        <field name="model">hr.employee</field>
+        <field name="mode">primary</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <graph string="Turnover" type="bar" sample="1">
+                <field name="departure_reason_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="hr_employee_inactive_action" model="ir.actions.act_window">
+        <field name="name">Inactive Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="domain">[('active', '=', False)]</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+    <record id="hr_employee_inactive_action_view_list" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="hr_employee_view_list_inactive"/>
+        <field name="act_window_id" ref="hr_employee_inactive_action"/>
+    </record>
+    <record id="hr_employee_inactive_action_view_pivot" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="hr_employee_view_pivot_turnover"/>
+        <field name="act_window_id" ref="hr_employee_inactive_action"/>
+    </record>
+    <record id="hr_employee_inactive_action_view_graph" model="ir.actions.act_window.view">
+        <field name="sequence">3</field>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="hr_employee_view_graph_turnover"/>
+        <field name="act_window_id" ref="hr_employee_inactive_action"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+end_service_and_resign.access_end_rewards,access_end_rewards,end_service_and_resign.model_end_rewards,,1,1,1,1
+end_service_and_resign.access_end_service,access_end_service,end_service_and_resign.model_end_service,,1,1,1,1
+end_service_and_resign.access_type_amount,access_type_amount,end_service_and_resign.model_type_amount,,1,1,1,1
+end_service_and_resign.access_type_amount2,access_type_amount2,end_service_and_resign.model_type_amount2,,1,1,1,1
+end_service_and_resign.access_type_amount1,access_type_amount1,end_service_and_resign.model_type_amount1,,1,1,1,1

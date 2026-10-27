@@ -1,0 +1,188 @@
+from odoo.tests import tagged
+
+from .common import IbsHrCommon
+
+
+@tagged('post_install', '-at_install', 'ibs_payroll')
+class TestPenaltyCap(IbsHrCommon):
+
+    def test_two_payslips_in_one_month_share_the_cap(self):
+        warning = self._penalty(7.0)
+        first, second = self._payslip(), self._payslip()
+        (first | second).action_payslip_done()
+        self.assertEqual(sum((first | second).penalty_deduction_ids.mapped('days')), 5)
+        self.assertEqual(warning.days_remaining, 2)
+        july = self._payslip(month=7)
+        july.action_payslip_done()
+        self.assertEqual(sum(july.penalty_deduction_ids.mapped('days')), 2)
+
+    def test_reset_releases_monthly_budget_for_another_slip(self):
+        self._penalty(7.0)
+        first = self._payslip()
+        first.action_payslip_done()
+        second = self._payslip()
+        self.assertEqual(second._ibs_penalty_plan()[1], 0)
+        first.action_payslip_draft()
+        self.assertEqual(second._ibs_penalty_plan()[1], 5)
+    """CR 2.12 -- five days a month, the rest carried over.
+
+    The fixture pays 3,000 basic, so a day is worth exactly 100 and the
+    arithmetic below reads directly as days.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # A single-rung ladder: the penalty days are set per warning below,
+        # so the ladder itself must not interfere.
+        cls.violation = cls.env['ibs.hr.violation'].create({
+            'name': 'Serious misconduct',
+            'code': 'V999',
+            'penalty_ids': [
+                (0, 0, {'occurrence': 1, 'action': 'fine',
+                        'penalty_days': 1.0}),
+            ],
+        })
+
+    def _penalty(self, days, month=6, day=1):
+        warning = self.env['ibs.hr.warning'].create({
+            'employee_id': self.employee.id,
+            'violation_id': self.violation.id,
+            'date': f'2026-{month:02d}-{day:02d}',
+            'custom_penalty_days': days,
+        })
+        warning.action_submit()
+        warning.action_approve()
+        return warning
+
+    def test_execution_date_defaults_to_the_violation_date(self):
+        warning = self._penalty(1.0, month=6, day=9)
+        self.assertEqual(str(warning.execution_date), '2026-06-09')
+
+    def test_a_penalty_within_the_ceiling_is_taken_whole(self):
+        warning = self._penalty(3.0)
+        slip = self._payslip(month=6)
+        self.assertAlmostEqual(slip.penalty_days_taken, 3.0, places=2)
+        self.assertAlmostEqual(slip.penalty_days_deferred, 0.0, places=2)
+        slip.action_payslip_done()
+        self.assertTrue(warning.is_settled)
+
+    def test_a_penalty_above_the_ceiling_is_capped_and_carried(self):
+        warning = self._penalty(8.0)
+        june = self._payslip(month=6)
+        self.assertAlmostEqual(june.penalty_days_taken, 5.0, places=2)
+        self.assertAlmostEqual(june.penalty_days_deferred, 3.0, places=2)
+        self.assertAlmostEqual(june.penalty_amount, 500.0, places=2)
+
+        june.action_payslip_done()
+        self.assertFalse(warning.is_settled)
+        self.assertAlmostEqual(warning.days_settled, 5.0, places=2)
+        self.assertAlmostEqual(warning.days_remaining, 3.0, places=2)
+        # A part-paid penalty must not claim to have been settled by June.
+        self.assertFalse(warning.payslip_id)
+
+        july = self._payslip(month=7)
+        self.assertAlmostEqual(july.penalty_days_taken, 3.0, places=2)
+        july.action_payslip_done()
+        self.assertTrue(warning.is_settled)
+        self.assertEqual(warning.payslip_id, july)
+
+    def test_the_ceiling_is_shared_across_several_penalties(self):
+        """Two penalties totalling seven days still cost five this month."""
+        first = self._penalty(4.0, day=1)
+        second = self._penalty(3.0, day=2)
+        june = self._payslip(month=6)
+        self.assertAlmostEqual(june.penalty_days_taken, 5.0, places=2)
+        self.assertAlmostEqual(june.penalty_days_deferred, 2.0, places=2)
+
+        june.action_payslip_done()
+        # Oldest first: the four-day penalty clears, the newer one is part-paid.
+        self.assertTrue(first.is_settled)
+        self.assertFalse(second.is_settled)
+        self.assertAlmostEqual(second.days_remaining, 2.0, places=2)
+
+    def test_a_deferred_penalty_is_taken_before_a_newer_one(self):
+        old = self._penalty(8.0, month=6, day=1)
+        june = self._payslip(month=6)
+        june.action_payslip_done()
+
+        new = self._penalty(4.0, month=7, day=1)
+        july = self._payslip(month=7)
+        july.action_payslip_done()
+
+        self.assertTrue(old.is_settled)
+        # July's budget: 3 days of arrears, then 2 of the new four-day penalty.
+        self.assertAlmostEqual(new.days_settled, 2.0, places=2)
+        self.assertAlmostEqual(new.days_remaining, 2.0, places=2)
+
+    def test_the_ceiling_is_a_parameter_not_a_constant(self):
+        self.env['ir.config_parameter'].sudo().set_param(
+            'ibs_hr.max_penalty_days_per_month', '2')
+        self._penalty(8.0)
+        june = self._payslip(month=6)
+        self.assertAlmostEqual(june.penalty_days_taken, 2.0, places=2)
+        self.assertAlmostEqual(june.penalty_days_deferred, 6.0, places=2)
+
+    def test_a_penalty_deferred_to_a_later_month_is_not_taken_early(self):
+        """CR 2.11 -- payroll selects on the execution date."""
+        warning = self._penalty(2.0, month=6, day=1)
+        warning.execution_date = '2026-07-01'
+        june = self._payslip(month=6)
+        self.assertEqual(june.penalty_days_taken, 0.0)
+        july = self._payslip(month=7)
+        self.assertAlmostEqual(july.penalty_days_taken, 2.0, places=2)
+
+
+@tagged('post_install', '-at_install', 'ibs_payroll')
+class TestPenaltyAmountOverride(IbsHrCommon):
+    """HR letter item 22: HR Admin states a penalty in money."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.violation = cls.env['ibs.hr.violation'].create({
+            'name': 'Camera misconduct', 'code': 'V998',
+            'penalty_ids': [(0, 0, {'occurrence': 1, 'action': 'fine',
+                                    'penalty_days': 1.0})],
+        })
+
+    def _penalty(self, days, amount):
+        warning = self.env['ibs.hr.warning'].create({
+            'employee_id': self.employee.id,
+            'violation_id': self.violation.id,
+            'date': '2026-06-01',
+            'custom_penalty_days': days,
+            'custom_amount': amount,
+        })
+        warning.action_submit()
+        warning.action_approve()
+        return warning
+
+    def test_the_override_replaces_days_times_rate(self):
+        warning = self._penalty(2.0, 450.0)
+        self.assertEqual(warning.deducted_amount, 450.0)
+
+    def test_the_payslip_takes_the_stated_amount_within_the_cap(self):
+        # 7 days at 700 total: the cap takes 5 days (500) in June and the
+        # remaining 2 days (200) in July -- the amount, not 100/day x days.
+        warning = self._penalty(7.0, 700.0)
+        june = self._payslip()
+        june.action_payslip_done()
+        self.assertAlmostEqual(sum(june.penalty_deduction_ids.mapped('amount')), 500.0)
+        self.assertAlmostEqual(june.penalty_amount, 500.0)
+        july = self._payslip(month=7)
+        july.action_payslip_done()
+        self.assertAlmostEqual(sum(july.penalty_deduction_ids.mapped('amount')), 200.0)
+        self.assertTrue(warning.is_settled)
+
+    def test_only_hr_admin_may_set_the_amount(self):
+        from odoo.exceptions import ValidationError
+        officer = self.env['res.users'].create({
+            'name': 'Penalty Officer', 'login': 'penalty.officer',
+            'groups_id': [(6, 0, [self.env.ref('ellithy_hr_base.group_ellithy_hr_generalist').id])],
+        })
+        warning = self.env['ibs.hr.warning'].create({
+            'employee_id': self.employee.id, 'violation_id': self.violation.id,
+            'date': '2026-06-01', 'custom_penalty_days': 2.0})
+        with self.assertRaises(ValidationError):
+            warning.with_user(officer).write({'custom_amount': 999.0})

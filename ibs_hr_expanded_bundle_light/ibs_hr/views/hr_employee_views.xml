@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_view_form_ibs" model="ir.ui.view">
+        <field name="name">hr.employee.form.ibs</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_warnings" type="object"
+                        class="oe_stat_button" icon="fa-gavel"
+                        groups="ellithy_hr_base.group_ellithy_hr_branch_manager">
+                    <field name="warning_count" widget="statinfo"
+                           string="Violations"/>
+                </button>
+                <button name="action_view_investigations" type="object"
+                        class="oe_stat_button" icon="fa-search"
+                        groups="ellithy_hr_base.group_ellithy_hr_generalist">
+                    <field name="investigation_count" widget="statinfo"
+                           string="Investigations"/>
+                </button>
+            </div>
+
+            <!--
+                CR 2.6: the entitlement an allocation of the statutory annual
+                type will be pre-filled with. Shown read-only so HR can see
+                which tier the employee is in before raising one.
+            -->
+            <xpath expr="//page[@name='hr_settings']" position="inside">
+                <group string="Leave Entitlement">
+                    <field name="annual_leave_entitlement"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

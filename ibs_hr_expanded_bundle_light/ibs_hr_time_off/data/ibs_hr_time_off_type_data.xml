@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="time_off_type_casual" model="ibs.hr.time.off.type">
+        <field name="name">Casual / العارضة</field>
+        <field name="code">casual</field>
+        <field name="approval_route">hr</field>
+        <field name="required_period_months">3</field>
+        <field name="limit_days">7</field>
+        <field name="paid" eval="True"/>
+    </record>
+    <record id="time_off_type_annual" model="ibs.hr.time.off.type">
+        <field name="name">Annual / الاعتيادي</field>
+        <field name="code">annual</field>
+        <field name="approval_route">hr</field>
+        <field name="required_period_months">3</field>
+        <field name="limit_days">8</field>
+        <field name="paid" eval="True"/>
+    </record>
+    <record id="time_off_type_birthday" model="ibs.hr.time.off.type">
+        <field name="name">Birthday Time Off</field>
+        <field name="code">birthday</field>
+        <field name="approval_route">hr</field>
+        <field name="one_day_per_year" eval="True"/>
+        <field name="limit_days">1</field>
+        <field name="paid" eval="True"/>
+    </record>
+    <record id="time_off_type_public_holiday" model="ibs.hr.time.off.type">
+        <field name="name">Public Holiday Substitute</field>
+        <field name="code">public_holiday</field>
+        <field name="approval_route">hr</field>
+        <field name="limit_days">1</field>
+        <field name="paid" eval="True"/>
+    </record>
+    <record id="time_off_type_compensatory_rest" model="ibs.hr.time.off.type">
+        <field name="name">Compensatory Rest / بدل الراحة</field>
+        <field name="code">compensatory_rest</field>
+        <field name="approval_route">hr</field>
+        <field name="limit_days">1</field>
+        <field name="paid" eval="True"/>
+    </record>
+</odoo>

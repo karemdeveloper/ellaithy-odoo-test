@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_employment" model="hr.salary.rule">
+        <field name="name">JOB Allowance</field><field name="code">JOB</field><field name="sequence">200</field>
+        <field name="category_id" ref="hr_payroll_community.ALW"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.JOB.amount</field>
+        <field name="note">Monthly employment allowance from active contract.</field></record>
+    <record id="rule_transport" model="hr.salary.rule">
+        <field name="name">Transportation Allowance</field><field name="code">TRA</field><field name="sequence">201</field>
+        <field name="category_id" ref="hr_payroll_community.ALW"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.TRA.amount</field>
+        <field name="note">Eligible present days x daily transportation allowance.</field></record>
+    <record id="rule_commitment" model="hr.salary.rule">
+        <field name="name">Commitment Allowance</field><field name="code">Comm</field><field name="sequence">202</field>
+        <field name="category_id" ref="hr_payroll_community.ALW"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.Comm.amount</field>
+        <field name="note">Monthly commitment allowance from active contract.</field></record>
+    <record id="rule_other_allow" model="hr.salary.rule">
+        <field name="name">Other Allowance</field><field name="code">Meal</field><field name="sequence">203</field>
+        <field name="category_id" ref="hr_payroll_community.ALW"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.Meal.amount</field>
+        <field name="note">Monthly other allowance from active contract.</field></record>
+    <record id="rule_kpi" model="hr.salary.rule">
+        <field name="name">KPI</field><field name="code">KPI</field><field name="sequence">401</field>
+        <field name="category_id" ref="hr_payroll_community.ALW"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = contract.wage * 0.10</field>
+        <field name="note">10% of basic wage.</field></record>
+    <record id="rule_bonus" model="hr.salary.rule">
+        <field name="name">Employee Bonus</field><field name="code">BONUS</field><field name="sequence">402</field>
+        <field name="category_id" ref="hr_payroll_community.ALW"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.BONUS.amount</field>
+        <field name="note">Approved or manually entered bonus input.</field></record>
+    <record id="rule_overtime" model="hr.salary.rule">
+        <field name="name">Overtime</field><field name="code">OT100</field><field name="sequence">403</field>
+        <field name="category_id" ref="hr_payroll_community.ALW"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = inputs.OT100.amount</field>
+        <field name="note">Approved cash overtime.</field></record>
+    <record id="rule_mobile" model="hr.salary.rule">
+        <field name="name">Mobile</field><field name="code">MOB</field><field name="sequence">500</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.MOB.amount</field>
+        <field name="note">Approved invoice or contract default.</field></record>
+    <record id="rule_social_insurance" model="hr.salary.rule">
+        <field name="name">Social Insurance</field><field name="code">SOCIN</field><field name="sequence">501</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.SOCIN.amount</field>
+        <field name="note">Insurance salary x contract percentage.</field></record>
+    <record id="rule_medical_insurance" model="hr.salary.rule">
+        <field name="name">Medical Insurance</field><field name="code">MED-INS</field><field name="sequence">503</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -(contract.medical_cost_per_month * contract.medical_employee_share / 100.0)</field>
+        <field name="note">Monthly medical cost x employee share percentage.</field></record>
+    <record id="rule_advance" model="hr.salary.rule">
+        <field name="name">Advance Salary</field><field name="code">SAR</field><field name="sequence">601</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.SAR.amount</field>
+        <field name="note">Approved salary advance in period.</field></record>
+    <record id="rule_absence" model="hr.salary.rule">
+        <field name="name">Absence</field><field name="code">ABS</field><field name="sequence">603</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.ABS.amount</field>
+        <field name="note">Absent scheduled days x basic / 30.</field></record>
+    <record id="rule_lateness" model="hr.salary.rule">
+        <field name="name">Latency / Early Leave</field><field name="code">Late</field><field name="sequence">604</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.Late.amount</field>
+        <field name="note">Unexcused boundary minutes x hourly rate.</field></record>
+    <record id="rule_fingerprint" model="hr.salary.rule">
+        <field name="name">FingerPrint Missing</field><field name="code">Finger</field><field name="sequence">605</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.Finger.amount</field>
+        <field name="note">Single-fingerprint scheduled days x basic / 30.</field></record>
+    <record id="rule_unpaid_time" model="hr.salary.rule">
+        <field name="name">Unpaid Leave</field><field name="code">UNPaid</field><field name="sequence">606</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.UNPaid.amount</field>
+        <field name="note">Approved unpaid leave days x basic / 30.</field></record>
+    <record id="rule_loan" model="hr.salary.rule">
+        <field name="name">Loan</field><field name="code">Loan</field><field name="sequence">607</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.Loan.amount</field>
+        <field name="note">Approved loan installment due in period.</field></record>
+    <record id="rule_hiring_adjustment" model="hr.salary.rule">
+        <field name="name">Hiring Adjustment</field><field name="code">HIring</field><field name="sequence">608</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.HIring.amount</field>
+        <field name="note">Manual hiring adjustment input.</field></record>
+    <record id="rule_resignation_adjustment" model="hr.salary.rule">
+        <field name="name">Resignation Adjustment</field><field name="code">Res</field><field name="sequence">609</field>
+        <field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field>
+        <field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.Res.amount</field>
+        <field name="note">Manual resignation adjustment input.</field></record>
+    <record id="input_employment" model="hr.rule.input"><field name="name">JOB Allowance</field><field name="code">JOB</field><field name="input_id" ref="rule_employment"/></record>
+    <record id="input_transport" model="hr.rule.input"><field name="name">Transportation Allowance</field><field name="code">TRA</field><field name="input_id" ref="rule_transport"/></record>
+    <record id="input_commitment" model="hr.rule.input"><field name="name">Commitment Allowance</field><field name="code">Comm</field><field name="input_id" ref="rule_commitment"/></record>
+    <record id="input_other_allow" model="hr.rule.input"><field name="name">Other Allowance</field><field name="code">Meal</field><field name="input_id" ref="rule_other_allow"/></record>
+    <record id="input_bonus" model="hr.rule.input"><field name="name">Employee Bonus</field><field name="code">BONUS</field><field name="input_id" ref="rule_bonus"/></record>
+    <record id="input_overtime" model="hr.rule.input"><field name="name">Overtime</field><field name="code">OT100</field><field name="input_id" ref="rule_overtime"/></record>
+    <record id="input_mobile" model="hr.rule.input"><field name="name">Mobile</field><field name="code">MOB</field><field name="input_id" ref="rule_mobile"/></record>
+    <record id="input_social_insurance" model="hr.rule.input"><field name="name">Social Insurance</field><field name="code">SOCIN</field><field name="input_id" ref="rule_social_insurance"/></record>
+    <record id="input_advance" model="hr.rule.input"><field name="name">Advance Salary</field><field name="code">SAR</field><field name="input_id" ref="rule_advance"/></record>
+    <record id="input_absence" model="hr.rule.input"><field name="name">Absence</field><field name="code">ABS</field><field name="input_id" ref="rule_absence"/></record>
+    <record id="input_lateness" model="hr.rule.input"><field name="name">Latency / Early Leave</field><field name="code">Late</field><field name="input_id" ref="rule_lateness"/></record>
+    <record id="input_fingerprint" model="hr.rule.input"><field name="name">FingerPrint Missing</field><field name="code">Finger</field><field name="input_id" ref="rule_fingerprint"/></record>
+    <record id="input_unpaid_time" model="hr.rule.input"><field name="name">Unpaid Leave</field><field name="code">UNPaid</field><field name="input_id" ref="rule_unpaid_time"/></record>
+    <record id="input_loan" model="hr.rule.input"><field name="name">Loan</field><field name="code">Loan</field><field name="input_id" ref="rule_loan"/></record>
+    <record id="input_hiring_adjustment" model="hr.rule.input"><field name="name">Hiring Adjustment</field><field name="code">HIring</field><field name="input_id" ref="rule_hiring_adjustment"/></record>
+    <record id="input_resignation_adjustment" model="hr.rule.input"><field name="name">Resignation Adjustment</field><field name="code">Res</field><field name="input_id" ref="rule_resignation_adjustment"/></record>
+    <record id="hr_payroll_community.hr_rule_basic" model="hr.salary.rule"><field name="name">Basic Salary</field><field name="code">BASIC</field><field name="sequence">100</field><field name="category_id" ref="hr_payroll_community.BASIC"/><field name="condition_select">none</field><field name="amount_select">code</field><field name="amount_python_compute">result = contract.wage</field></record>
+    <record id="hr_payroll_community.hr_rule_taxable" model="hr.salary.rule"><field name="name">Gross</field><field name="code">GROSS</field><field name="sequence">300</field><field name="category_id" ref="hr_payroll_community.GROSS"/><field name="condition_select">none</field><field name="amount_select">code</field><field name="amount_python_compute">result = categories.BASIC + categories.ALW</field></record>
+    <record id="ibs_hr.hr_salary_rule_penalty" model="hr.salary.rule"><field name="name">Penalty</field><field name="code">PENALTY</field><field name="sequence">600</field><field name="category_id" ref="hr_payroll_community.DED"/><field name="condition_select">none</field><field name="amount_select">code</field><field name="amount_python_compute">result = -inputs.PENALTY.amount</field></record>
+    <record id="hr_payroll_community.hr_rule_net" model="hr.salary.rule"><field name="name">Net Salary</field><field name="code">NET</field><field name="sequence">700</field><field name="category_id" ref="hr_payroll_community.NET"/><field name="condition_select">none</field><field name="amount_select">code</field><field name="amount_python_compute">result = categories.BASIC + categories.ALW + categories.DED</field></record>
+    <record id="hr_payroll_community.structure_base" model="hr.payroll.structure">
+        <field name="rule_ids" eval="[(4, ref('rule_employment')), (4, ref('rule_transport')), (4, ref('rule_commitment')), (4, ref('rule_other_allow')), (4, ref('rule_kpi')), (4, ref('rule_bonus')), (4, ref('rule_overtime')), (4, ref('rule_mobile')), (4, ref('rule_social_insurance')), (4, ref('rule_medical_insurance')), (4, ref('rule_advance')), (4, ref('rule_absence')), (4, ref('rule_lateness')), (4, ref('rule_fingerprint')), (4, ref('rule_unpaid_time')), (4, ref('rule_loan')), (4, ref('rule_hiring_adjustment')), (4, ref('rule_resignation_adjustment')), (4, ref('ibs_hr.hr_salary_rule_penalty'))]"/>
+    </record>
+    <function model="res.groups" name="_hcm_apply_payroll_security"/>
+</odoo>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_overtime" name="Overtime"
+              parent="ellithy_hr_base.menu_time_attendance"
+              action="ibs_hr_overtime_action" sequence="40"/>
+</odoo>
+

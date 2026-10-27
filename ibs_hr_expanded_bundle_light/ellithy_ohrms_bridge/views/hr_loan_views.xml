@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Inherits ohrms_loan_accounting's view rather than ohrms_loan's,
+        because that module REPLACES the whole header. Anchoring on the
+        original header would leave the result dependent on which sibling
+        inheritance is applied last.
+    -->
+    <record id="hr_loan_view_form_ellithy" model="ir.ui.view">
+        <field name="name">hr.loan.view.form.inherit.ellithy</field>
+        <field name="model">hr.loan</field>
+        <field name="inherit_id" ref="ohrms_loan_accounting.hr_loan_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- CR 2.17: name the two signatures, and who gives each. -->
+            <xpath expr="//button[@name='action_approve']" position="attributes">
+                <attribute name="string">HR Approve</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.loan_generalist</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_double_approve']" position="attributes">
+                <attribute name="string">Finance Approve</attribute>
+                <attribute name="groups">ellithy_ohrms_bridge.loan_finance</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_refuse']" position="after">
+                <button name="action_reset_to_draft" type="object"
+                        string="Set to Draft"
+                        invisible="state not in ('refuse', 'cancel')"/>
+            </xpath>
+
+            <!-- The requester's own withdrawal, available while nobody has
+                 acted on it yet: not only in draft. Enforced in Python
+                 too, on ``action_cancel``. -->
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="invisible">state not in ('draft', 'waiting_approval_1')</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,waiting_approval_1,waiting_approval_2,approve</attribute>
+            </xpath>
+
+            <!-- Terms are locked the moment the request leaves draft, not
+                 only once HR has approved: the vendor left every one of
+                 these editable through both approval stages (and
+                 ``currency_id`` unconditionally, at every stage including
+                 approved), which let an amount or employee change slip
+                 past a signature that already happened. ``write()``
+                 enforces the same rule server-side. -->
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='loan_amount']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='installment']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_date']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='currency_id']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+
+            <!-- The installment schedule locks the same moment: recomputing
+                 or hand-editing it after submission is exactly the kind of
+                 term change this is meant to close off. HR approving a
+                 request that skipped this step in draft still gets a
+                 schedule: ``action_approve`` computes one itself when
+                 none exists, through ``hr.loan.line`` directly rather than
+                 through this form, so that safety net still works with
+                 the button gone. -->
+            <xpath expr="//field[@name='loan_lines']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_compute_installment']"
+                   position="attributes">
+                <attribute name="invisible">state != 'draft'</attribute>
+            </xpath>
+
+            <!-- HR letter item 13: HR Admin may waive the amount and
+                 instalment limits on one request, with a reason. -->
+            <xpath expr="//field[@name='installment']" position="after">
+                <field name="can_grant_exception" invisible="1"/>
+                <field name="is_exception"
+                       invisible="not can_grant_exception and not is_exception"
+                       readonly="not can_grant_exception or state != 'draft'"/>
+                <field name="exception_reason"
+                       invisible="not is_exception" required="is_exception"
+                       readonly="not can_grant_exception or state != 'draft'"
+                       placeholder="Why this loan goes beyond the usual limits"/>
+            </xpath>
+
+            <!-- CR 2.16: name the broken rules before the request is sent. -->
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div class="alert alert-warning" role="alert"
+                     invisible="not eligibility_warning">
+                    <strong>This request does not meet the loan rules:</strong>
+                    <field name="eligibility_warning" nolabel="1" readonly="1"/>
+                </div>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page name="approvals" string="Approvals">
+                    <group>
+                        <group string="HR">
+                            <field name="hr_approved_by"/>
+                            <field name="hr_approved_at"/>
+                        </group>
+                        <group string="Finance">
+                            <field name="finance_approved_by"/>
+                            <field name="finance_approved_at"/>
+                        </group>
+                    </group>
+                    <field name="refusal_reason"
+                           placeholder="Reason: required to refuse this request"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_loan_view_tree_ellithy" model="ir.ui.view">
+        <field name="name">hr.loan.view.tree.inherit.ellithy</field>
+        <field name="model">hr.loan</field>
+        <field name="inherit_id" ref="ohrms_loan.hr_loan_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="hr_approved_by" optional="hide"/>
+                <field name="finance_approved_by" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ============ Loan management ============ -->
+    <!-- ``ohrms_loan.hr_loan_menu`` ("Loan") has sat empty since the vendor
+         module shipped it: a parent menu item with no action and no
+         children, so it never actually rendered. "Request for Loan" was the
+         only door in, and its default "My Requests" filter means an HR or
+         Finance user opening it lands on their own requests (usually none),
+         not the queue waiting on their signature. This finishes it as the
+         management screen CR 2.17's two-signature flow needs: every loan,
+         unfiltered, restricted to the roles who can act on one. -->
+    <record id="hr_loan_view_search_ellithy" model="ir.ui.view">
+        <field name="name">hr.loan.view.search.inherit.ellithy</field>
+        <field name="model">hr.loan</field>
+        <field name="inherit_id" ref="ohrms_loan.hr_loan_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="myrequest" position="after">
+                <filter string="Pending HR Approval" name="pending_hr"
+                        domain="[('state', '=', 'waiting_approval_1')]"/>
+                <filter string="Pending Finance Approval" name="pending_finance"
+                        domain="[('state', '=', 'waiting_approval_2')]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="action_hr_loan_all" model="ir.actions.act_window">
+        <field name="name">All Loans</field>
+        <field name="res_model">hr.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="ohrms_loan.hr_loan_view_search"/>
+        <field name="context">{'search_default_status': 1}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">No loan requests yet.</p>
+        </field>
+    </record>
+
+    <!-- HR and Finance are the two roles CR 2.17 gives a signature to; a
+         plain employee stays on "Request for Loan" only, which
+         ``hr_loan_rule_employee`` already limits to their own record. -->
+    <record id="ohrms_loan.hr_loan_menu" model="ir.ui.menu">
+        <field name="name">All Loans</field>
+        <field name="action" ref="action_hr_loan_all"/>
+        <field name="groups_id" eval="[(6, 0, [ref('ellithy_ohrms_bridge.loan_generalist'), ref('ellithy_ohrms_bridge.loan_finance')])]"/>
+    </record>
+</odoo>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_mobile_deduction_company" model="ir.rule">
+        <field name="name">Mobile Deduction: HR companies</field>
+        <field name="model_id" ref="model_ibs_hr_mobile_deduction"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_payroll_generalist'), ref('ibs_hr_payroll_finance')])]"/>
+    </record>
+    <record id="rule_payroll_source_company" model="ir.rule">
+        <field name="name">HCM Payroll Source: HR companies</field>
+        <field name="model_id" ref="model_ibs_hr_payroll_source"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_payroll_generalist'), ref('ibs_hr_payroll_finance')])]"/>
+    </record>
+    <record id="rule_mobile_deduction_global_company" model="ir.rule">
+        <field name="name">mobile_deduction: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_mobile_deduction"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_payroll_source_global_company" model="ir.rule">
+        <field name="name">payroll_source: company boundary</field>
+        <field name="model_id" ref="model_ibs_hr_payroll_source"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_hcm_payslip_own" model="ir.rule">
+        <field name="name">HCM payslip own</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_operations" model="ir.rule">
+        <field name="name">HCM payslip operations</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_generalist')), (4, ref('ibs_hr_payroll_finance'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_global_company" model="ir.rule">
+        <field name="name">HCM payslip global_company</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_hcm_payslip_input_own" model="ir.rule">
+        <field name="name">HCM payslip_input own</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_input"/>
+        <field name="domain_force">[('payslip_id.employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_input_operations" model="ir.rule">
+        <field name="name">HCM payslip_input operations</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_input"/>
+        <field name="domain_force">[('payslip_id.employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_generalist')), (4, ref('ibs_hr_payroll_finance'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_input_global_company" model="ir.rule">
+        <field name="name">HCM payslip_input global_company</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_input"/>
+        <field name="domain_force">[('payslip_id.employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_hcm_payslip_worked_days_own" model="ir.rule">
+        <field name="name">HCM payslip_worked_days own</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_worked_days"/>
+        <field name="domain_force">[('payslip_id.employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_worked_days_operations" model="ir.rule">
+        <field name="name">HCM payslip_worked_days operations</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_worked_days"/>
+        <field name="domain_force">[('payslip_id.employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_generalist')), (4, ref('ibs_hr_payroll_finance'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_worked_days_global_company" model="ir.rule">
+        <field name="name">HCM payslip_worked_days global_company</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_worked_days"/>
+        <field name="domain_force">[('payslip_id.employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_hcm_payslip_line_own" model="ir.rule">
+        <field name="name">HCM payslip_line own</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_line"/>
+        <field name="domain_force">[('slip_id.employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_line_operations" model="ir.rule">
+        <field name="name">HCM payslip_line operations</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_line"/>
+        <field name="domain_force">[('slip_id.employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_generalist')), (4, ref('ibs_hr_payroll_finance'))]"/>
+    </record>
+    <record id="rule_hcm_payslip_line_global_company" model="ir.rule">
+        <field name="name">HCM payslip_line global_company</field>
+        <field name="model_id" ref="hr_payroll_community.model_hr_payslip_line"/>
+        <field name="domain_force">[('slip_id.employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_payroll_penalty_ledger" model="ir.rule">
+        <field name="name">Payroll: employee penalty ledger</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_warning_deduction"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_generalist')), (4, ref('ibs_hr_payroll_finance'))]"/>
+    </record>
+    <record id="rule_payroll_finance_attendance" model="ir.rule">
+        <field name="name">Payroll Finance: attendance companies</field>
+        <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_attendance_day" model="ir.rule">
+        <field name="name">Payroll Finance: attendance day companies</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_attendance_day"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_holiday" model="ir.rule">
+        <field name="name">Payroll Finance: holiday companies</field>
+        <field name="model_id" ref="ibs_hr_holiday.model_ibs_hr_public_holiday"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_time_off" model="ir.rule">
+        <field name="name">Payroll Finance: time off companies</field>
+        <field name="model_id" ref="ibs_hr_time_off.model_ibs_hr_time_off_request"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_permission" model="ir.rule">
+        <field name="name">Payroll Finance: permission companies</field>
+        <field name="model_id" ref="ibs_hr_permission.model_ibs_hr_permission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_mission" model="ir.rule">
+        <field name="name">Payroll Finance: mission companies</field>
+        <field name="model_id" ref="ibs_hr_permission.model_ibs_hr_mission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_warning" model="ir.rule">
+        <field name="name">Payroll Finance: penalty companies</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_warning"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_overtime" model="ir.rule">
+        <field name="name">Payroll Finance: overtime companies</field>
+        <field name="model_id" ref="ibs_hr_overtime.model_ibs_hr_overtime"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_loan" model="ir.rule">
+        <field name="name">Payroll Finance: loan companies</field>
+        <field name="model_id" ref="ohrms_loan.model_hr_loan"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_payroll_finance_advance" model="ir.rule">
+        <field name="name">Payroll Finance: salary advance companies</field>
+        <field name="model_id" ref="ohrms_salary_advance.model_salary_advance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_payroll_finance'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>

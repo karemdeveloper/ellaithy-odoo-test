@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_attendance_day_own" model="ir.rule">
+        <field name="name">Attendance Day: own records</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_attendance_day"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_attendance_day_manager" model="ir.rule">
+        <field name="name">Attendance Day: manager branch</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_attendance_day"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(6, 0, [ref('ibs_hr_shift.ibs_hr_shift_generalist')])]"/>
+    </record>
+    <record id="rule_attendance_day_hr" model="ir.rule">
+        <field name="name">Attendance Day: HR companies</field>
+        <field name="model_id" ref="ibs_hr.model_ibs_hr_attendance_day"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('ibs_hr_shift.ibs_hr_shift_generalist'))]"/>
+    </record>
+</odoo>
